@@ -1,0 +1,378 @@
+{
+  "meta": {
+    "title": "Dental Discovery — Trouvez un dentiste de confiance au Maroc",
+    "description": "Annuaire des dentistes et cliniques dentaires au Maroc : Tanger, Casablanca, Rabat, Marrakech et tout le Royaume. Avis, spécialités, contact direct."
+  },
+  "nav": {
+    "home": "Accueil",
+    "dentists": "Trouver un dentiste",
+    "treatments": "Traitements",
+    "blog": "Conseils dentaires",
+    "app": "Dental App",
+    "forClinics": "Espace cliniques",
+    "listClinic": "Ajouter votre clinique",
+    "menu": "Menu",
+    "close": "Fermer"
+  },
+  "common": {
+    "search": "Rechercher",
+    "searchCity": "Dans quelle ville ?",
+    "searchSpecialty": "Quelle spécialité ?",
+    "allCities": "Toutes les villes",
+    "allSpecialties": "Toutes les spécialités",
+    "viewProfile": "Voir la fiche",
+    "callNow": "Appeler",
+    "whatsapp": "WhatsApp",
+    "bookAppointment": "Prendre rendez-vous",
+    "learnMore": "En savoir plus",
+    "readMore": "Lire l'article",
+    "minRead": "min de lecture",
+    "back": "Retour",
+    "backToBlog": "Tous les articles",
+    "clinics": "cliniques",
+    "clinic": "clinique",
+    "verified": "Vérifiée",
+    "usesApp": "Rendez-vous en ligne",
+    "ratingSource": "Source : Google",
+    "lastSynced": "Mis à jour le",
+    "dataAttribution": "Certaines informations proviennent de Google Maps.",
+    "openingHours": "Horaires",
+    "specialties": "Spécialités",
+    "contact": "Contact",
+    "location": "Localisation",
+    "openMap": "Ouvrir dans Google Maps",
+    "similarClinics": "Cliniques similaires à",
+    "skipToContent": "Aller au contenu"
+  },
+  "hero": {
+    "eyebrow": "Annuaire dentaire du Maroc",
+    "title": "Trouvez un dentiste de confiance",
+    "titleHighlight": "près de chez vous",
+    "subtitle": "Comparez les cliniques dentaires de votre ville : avis, spécialités, horaires et contact direct. Gratuit, sans inscription.",
+    "popularCities": "Villes populaires :",
+    "ctaSecondary": "Parcourir les spécialités"
+  },
+  "stats": {
+    "cities": "villes couvertes",
+    "clinics": "cliniques référencées",
+    "specialties": "spécialités dentaires",
+    "free": "100 % gratuit pour les patients"
+  },
+  "citiesSection": {
+    "eyebrow": "Par ville",
+    "title": "Dentistes dans les grandes villes du Maroc",
+    "subtitle": "Sélectionnez votre ville pour explorer les cabinets et cliniques référencés.",
+    "exploreCity": "Explorer",
+    "allCitiesCta": "Voir toutes les villes"
+  },
+  "featuredClinics": {
+    "eyebrow": "Sélection",
+    "title": "Cliniques en vedette",
+    "subtitle": "Les cabinets les mieux notés de la plateforme, vérifiés par notre équipe."
+  },
+  "specialtiesSection": {
+    "eyebrow": "Par traitement",
+    "title": "Recherchez par spécialité dentaire",
+    "subtitle": "De l'implantologie à l'orthodontie, trouvez le praticien adapté à votre traitement.",
+    "clinicsCount": "cliniques"
+  },
+  "claimSection": {
+    "eyebrow": "Vous êtes dentiste ?",
+    "title": "Votre clinique est-elle visible ?",
+    "subtitle": "Votre cabinet figure peut-être déjà dans l'annuaire avec des informations incomplètes. Reprenez le contrôle de votre fiche : photos, horaires, spécialités et rendez-vous en ligne.",
+    "lookupLabel": "Recherchez votre clinique",
+    "lookupPlaceholder": "Nom de votre clinique ou ville…",
+    "lookupFound": "Bonne nouvelle : votre fiche existe déjà",
+    "lookupFoundDesc": "Elle est actuellement en version de base. Réclamez-la gratuitement pour l'enrichir.",
+    "lookupNotFound": "Aucune fiche trouvée",
+    "lookupNotFoundDesc": "Créez votre fiche en quelques minutes et gagnez en visibilité.",
+    "claimCta": "Réclamer ma fiche",
+    "createCta": "Créer ma fiche"
+  },
+  "appSection": {
+    "eyebrow": "Dental App",
+    "title": "Le logiciel de gestion pensé pour les cabinets dentaires",
+    "subtitle": "Dental App connecte votre cabinet aux patients de l'annuaire et orchestre toute votre journée.",
+    "features": [
+      {
+        "title": "Copilot IA & Assistant Clinique",
+        "description": "Briefing matinal de l'équipe, remplissage intelligent des créneaux annulés et assistant vocal pour vos actes."
+      },
+      {
+        "title": "Agenda Multi-Fauteuils & Kanban",
+        "description": "Synchronisation temps réel de plusieurs praticiens, vue Kanban du parcours patient et rappels WhatsApp."
+      },
+      {
+        "title": "Odontogramme 3D & Parodontogramme",
+        "description": "Schéma dentaire 3D adulte et enfant, sondage parodontal et analyse céphalométrique par IA."
+      },
+      {
+        "title": "Dossier Médical & Imagerie DICOM",
+        "description": "Historique chronologique complet, antécédents, visionneuse radio panoramique et photos intra-orales."
+      },
+      {
+        "title": "Plans de Traitement & Devis 3D",
+        "description": "Génération de devis multi-options (A/B/C), phasage clair des soins et signature électronique instantanée."
+      },
+      {
+        "title": "Facturation, Mutuelles CNSS & AMO",
+        "description": "Édition automatique des feuilles de soins mutuelles, conformité fiscale et suivi des encaissements."
+      }
+    ],
+    "cta": "Demander une démonstration",
+    "ctaSecondary": "Découvrir Dental App"
+  },
+  "websiteSection": {
+    "eyebrow": "Site web dentaire",
+    "title": "Votre site web professionnel, clé en main",
+    "subtitle": "Nous créons des sites de cliniques rapides, multilingues et optimisés SEO — comme celui de nos clients existants.",
+    "features": [
+      "Design premium mobile-first",
+      "Référencement local (Google & Bing)",
+      "Prise de rendez-vous + WhatsApp",
+      "Multilingue FR / AR / EN",
+      "Fiches traitements optimisées SEO",
+      "Hébergement et maintenance inclus"
+    ],
+    "demoLabel": "Exemple réel",
+    "demoCta": "Voir un site client",
+    "cta": "Demander mon site web"
+  },
+  "pricingTeaser": {
+    "eyebrow": "Offres cliniques",
+    "title": "Des formules pour chaque étape de votre cabinet",
+    "subtitle": "Commencez gratuitement, évoluez vers Dental App puis votre propre site web.",
+    "free": {
+      "name": "Fiche de base",
+      "price": "Gratuit",
+      "period": "pour toujours",
+      "features": [
+        "Fiche dans l'annuaire",
+        "Coordonnées et horaires",
+        "Apparition dans les recherches"
+      ],
+      "cta": "Créer ma fiche"
+    },
+    "pro": {
+      "name": "Dental App",
+      "price": "Sur devis",
+      "period": "selon la taille du cabinet",
+      "features": [
+        "Fiche enrichie + badge vérifié",
+        "Rendez-vous en ligne",
+        "Agenda, dossiers patients, rappels",
+        "Statistiques d'activité"
+      ],
+      "cta": "Demander une démo",
+      "badge": "Recommandé"
+    },
+    "website": {
+      "name": "Site web complet",
+      "price": "Sur devis",
+      "period": "création + maintenance",
+      "features": [
+        "Site professionnel multilingue",
+        "SEO local et pages traitements",
+        "Intégration Dental App",
+        "Nom de domaine et hébergement"
+      ],
+      "cta": "Demander un devis"
+    },
+    "allCta": "Comparer toutes les offres"
+  },
+  "blogSection": {
+    "eyebrow": "Conseils dentaires",
+    "title": "Guides et conseils pour bien choisir",
+    "subtitle": "Prix, traitements, urgences et guides par ville — rédigés et vérifiés par notre équipe.",
+    "allCta": "Tous les articles"
+  },
+  "faqSection": {
+    "eyebrow": "Questions fréquentes",
+    "title": "Tout savoir sur Dental Discovery",
+    "items": [
+      {
+        "question": "Dental Discovery est-il gratuit pour les patients ?",
+        "answer": "Oui, totalement. Les patients cherchent, comparent et contactent les cliniques sans aucun frais ni inscription."
+      },
+      {
+        "question": "D'où viennent les informations des cliniques ?",
+        "answer": "Les fiches sont constituées à partir de données publiques (Google Maps) puis enrichies et vérifiées par notre équipe et par les praticiens qui réclament leur fiche."
+      },
+      {
+        "question": "Je suis dentiste, comment apparaître dans l'annuaire ?",
+        "answer": "Créez ou réclamez votre fiche gratuitement depuis l'espace cliniques. Vous contrôlez alors vos informations, vos photos et vos horaires."
+      },
+      {
+        "question": "Qu'est-ce que Dental App ?",
+        "answer": "Dental App est notre logiciel de gestion pour cabinets dentaires : rendez-vous en ligne depuis l'annuaire, agenda, dossiers patients et rappels automatiques."
+      },
+      {
+        "question": "Faites-vous aussi les sites web de cliniques ?",
+        "answer": "Oui. Nous concevons des sites professionnels multilingues optimisés SEO, avec prise de rendez-vous et WhatsApp. Demandez un devis depuis la page dédiée."
+      }
+    ]
+  },
+  "finalCta": {
+    "patientTitle": "Prêt à sourire ?",
+    "patientSubtitle": "Trouvez votre dentiste en moins de deux minutes.",
+    "patientCta": "Trouver un dentiste",
+    "clinicTitle": "Développez votre cabinet ?",
+    "clinicSubtitle": "Fiche enrichie, rendez-vous en ligne et site web professionnel.",
+    "clinicCta": "Découvrir les offres"
+  },
+  "footer": {
+    "tagline": "L'annuaire dentaire de référence au Maroc.",
+    "patients": "Patients",
+    "clinics": "Cliniques",
+    "resources": "Ressources",
+    "cities": "Villes",
+    "legal": "Mentions légales",
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "contactUs": "Nous contacter",
+    "rights": "Tous droits réservés.",
+    "madeIn": "Fait avec soin au Maroc"
+  },
+  "dentistsPage": {
+    "title": "Dentistes au Maroc",
+    "subtitle": "Sélectionnez une ville pour explorer les cabinets et cliniques dentaires référencés.",
+    "searchLabel": "Rechercher une ville",
+    "searchPlaceholder": "Tanger, Casablanca…",
+    "noResults": "Aucune ville ne correspond à votre recherche.",
+    "inCity": "Dentistes à",
+    "clinicsFound": "cliniques référencées",
+    "filterBySpecialty": "Filtrer par spécialité",
+    "noClinicsForSpecialty": "Aucune clinique ne correspond à ce filtre dans cette ville.",
+    "nearbyCities": "Villes à proximité",
+    "faqTitle": "Questions fréquentes",
+    "relatedTreatments": "Traitements populaires à"
+  },
+  "clinicPage": {
+    "aboutTitle": "À propos de la clinique",
+    "requestAppointment": "Demander un rendez-vous",
+    "claimedNote": "Fiche gérée par la clinique",
+    "unclaimedNote": "Fiche de base — informations issues de données publiques",
+    "youAreOwner": "Vous êtes le praticien de cette clinique ?",
+    "claimThisClinic": "Réclamer cette fiche",
+    "otherInCity": "Autres cliniques à"
+  },
+  "treatmentsPage": {
+    "title": "Traitements dentaires au Maroc",
+    "subtitle": "Comprenez chaque traitement avant de choisir votre praticien : déroulement, prix indicatifs et durée.",
+    "seeClinics": "Voir les cliniques",
+    "citiesWith": "Spécialistes par ville"
+  },
+  "blogPage": {
+    "title": "Conseils et guides dentaires",
+    "subtitle": "Prix des traitements, guides par ville et conseils pratiques — tout pour prendre les bonnes décisions pour votre sourire.",
+    "relatedLinks": "Pour aller plus loin",
+    "relatedClinics": "Cliniques concernées"
+  },
+  "appPage": {
+    "eyebrow": "Dental App",
+    "title": "Le cabinet dentaire, orchestré",
+    "subtitle": "Rendez-vous, agenda, dossiers patients et rappels : Dental App connecte votre cabinet aux patients de l'annuaire Dental Discovery.",
+    "workflowTitle": "Votre journée type avec Dental App",
+    "workflow": [
+      {
+        "step": "Briefing Matinal & IA",
+        "detail": "Le Copilot IA résume les rendez-vous du jour, les rappels de prévention dus et les devis à relancer."
+      },
+      {
+        "step": "Accueil & Parcours Kanban",
+        "detail": "Le patient est enregistré en 1 clic, passe en salle d'attente puis est appelé au fauteuil assigné."
+      },
+      {
+        "step": "Examen & Diagnostic 3D",
+        "detail": "Mise à jour directe de l'odontogramme 3D, radios associées et proposition immédiate d'un plan de traitement."
+      },
+      {
+        "step": "Règlement & Feuilles Mutuelle",
+        "detail": "Encaissement multi-moyens, génération des feuilles CNSS/CNOPS/AMO et programmation du rappel WhatsApp."
+      }
+    ],
+    "pricingTitle": "Une tarification adaptée à votre cabinet",
+    "pricingNote": "Devis personnalisé selon le nombre de praticiens et les options choisies.",
+    "cta": "Demander une démonstration",
+    "demoTitle": "Réservez votre démonstration",
+    "demoSubtitle": "30 minutes en visio avec notre équipe, sans engagement.",
+    "clinicName": "Nom de la clinique",
+    "yourName": "Votre nom",
+    "yourEmail": "Votre email",
+    "yourPhone": "Votre téléphone",
+    "city": "Ville",
+    "message": "Votre message (optionnel)",
+    "send": "Envoyer",
+    "sending": "Envoi…",
+    "success": "Merci ! Nous vous recontactons sous 24 h.",
+    "error": "Une erreur est survenue. Réessayez ou contactez-nous directement."
+  },
+  "forClinicsPage": {
+    "eyebrow": "Espace cliniques",
+    "title": "Chaque jour, des patients cherchent votre clinique",
+    "subtitle": "Dental Discovery vous rend visible là où les patients cherchent — et Dental App transforme cette visibilité en rendez-vous.",
+    "steps": [
+      {
+        "title": "Créez ou réclamez votre fiche",
+        "description": "Gratuit, en 5 minutes. Vos coordonnées, horaires et spécialités enfin exacts."
+      },
+      {
+        "title": "Enrichissez votre présence",
+        "description": "Photos, descriptions, badge vérifié : une fiche complète génère davantage de contacts."
+      },
+      {
+        "title": "Recevez des rendez-vous",
+        "description": "Avec Dental App, les patients réservent directement depuis l'annuaire."
+      }
+    ],
+    "benefitsTitle": "Pourquoi les cabinets nous rejoignent",
+    "benefits": [
+      "Visibilité gratuite dans l'annuaire",
+      "Informations vérifiées et à jour",
+      "Demandes de rendez-vous qualifiées",
+      "Badge « rendez-vous en ligne » sur votre fiche",
+      "Avis Google centralisés",
+      "Site web professionnel sur option"
+    ],
+    "cta": "Réclamer ma fiche gratuitement",
+    "formTitle": "Créer ou réclamer une fiche",
+    "formSubtitle": "Remplissez ce formulaire, notre équipe valide votre fiche sous 48 h."
+  },
+  "websitePage": {
+    "eyebrow": "Site web dentaire",
+    "title": "Un site web qui remplit votre agenda",
+    "subtitle": "Nous concevons des sites de cliniques dentaires qui chargent vite, se positionnent sur Google et convertissent les visiteurs en rendez-vous.",
+    "beforeTitle": "Un site générique",
+    "before": [
+      "Invisible sur Google",
+      "Lent sur mobile",
+      "Sans prise de rendez-vous",
+      "Une seule langue"
+    ],
+    "afterTitle": "Un site Dental Discovery",
+    "after": [
+      "SEO local et pages traitements",
+      "Mobile-first, Lighthouse 90+",
+      "Rendez-vous + WhatsApp intégrés",
+      "FR / AR / EN selon votre patientèle"
+    ],
+    "demoTitle": "Exemple de site livré",
+    "demoDesc": "Site multilingue d'une clinique à Tanger : traitements, avant/après, avis Google et prise de rendez-vous WhatsApp.",
+    "demoCta": "Visiter le site",
+    "cta": "Demander un devis gratuit",
+    "formTitle": "Parlons de votre site",
+    "formSubtitle": "Dites-nous ce que vous voulez, nous revenons vers vous avec une proposition détaillée."
+  },
+  "pricingPage": {
+    "eyebrow": "Offres",
+    "title": "Des offres claires pour les cabinets dentaires",
+    "subtitle": "Commencez gratuitement. Évoluez quand votre cabinet grandit.",
+    "faqTitle": "Questions fréquentes sur les offres"
+  },
+  "contactPage": {
+    "eyebrow": "Contact",
+    "title": "Parlons ensemble",
+    "subtitle": "Une question sur l'annuaire, Dental App ou un site web ? Écrivez-nous, nous répondons sous 24 h ouvrées.",
+    "formTitle": "Envoyer un message"
+  }
+}

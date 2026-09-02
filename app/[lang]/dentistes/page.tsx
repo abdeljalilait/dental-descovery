@@ -1,0 +1,68 @@
+import type { Metadata } from "next";
+import { locales, type Locale } from "@/lib/i18n/config";
+import { getDictionaryFor } from "@/lib/i18n/dictionaries";
+import { PageHero } from "@/components/layout/page-hero";
+import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
+import { CityCard } from "@/components/directory/city-card";
+import { FinalCtaSection } from "@/components/landing/final-cta";
+import { cities } from "@/lib/data/cities";
+import { localizedPath } from "@/lib/routes";
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ lang: locale }));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = await getDictionaryFor("fr");
+  return {
+    title: dict.dentistsPage.title,
+    description: dict.dentistsPage.subtitle,
+    alternates: {
+      canonical: localizedPath("dentists", "fr"),
+      languages: {
+        fr: localizedPath("dentists", "fr"),
+        ar: localizedPath("dentists", "ar"),
+      },
+    },
+  };
+}
+
+export default async function DentistsPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang: value } = await params;
+  const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
+  const dict = await getDictionaryFor(locale);
+
+  return (
+    <>
+      <PageHero
+        eyebrow={dict.citiesSection.eyebrow}
+        title={dict.dentistsPage.title}
+        subtitle={dict.dentistsPage.subtitle}
+        crumbs={[{ label: dict.nav.home, href: `/${locale}` }, { label: dict.nav.dentists }]}
+      />
+      <Section>
+        <Container>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {cities.map((city) => (
+              <CityCard
+                key={city.slug}
+                city={city}
+                locale={locale}
+                exploreLabel={dict.citiesSection.exploreCity}
+                clinicsLabel={dict.common.clinics}
+              />
+            ))}
+          </div>
+        </Container>
+      </Section>
+      <FinalCtaSection locale={locale} dict={dict} />
+    </>
+  );
+}
