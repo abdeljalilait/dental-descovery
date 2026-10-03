@@ -1,0 +1,191 @@
+// use prisma-8
+
+model City {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  name         String
+  nameAr       String
+  regionFr     String
+  regionAr     String
+  lat          Float
+  lng          Float
+  populationFr String
+  populationAr String
+  seoIntroFr   String
+  seoIntroAr   String
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    temporal.updatedAt()
+
+  @@map("cities")
+}
+
+model Specialty {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  nameFr        String
+  nameAr        String
+  descriptionFr String
+  descriptionAr String
+  icon          String
+  createdAt     DateTime @default(now())
+
+  @@map("specialties")
+}
+
+model Clinic {
+  id             String   @id @default(uuid())
+  slug           String   @unique
+  googlePlaceId  String   @unique
+  name           String
+  nameAr         String
+  citySlug       String
+  city           City     @relation(fields: [citySlug], references: [slug], onDelete: Restrict)
+  specialties    ClinicSpecialty[]
+  neighborhoodFr String
+  neighborhoodAr String
+  addressFr      String
+  addressAr      String
+  phone          String?
+  phoneHref      String?
+  whatsapp       String?
+  website        String?
+  email          String?
+  emailSource    String?
+  outreach       ClinicOutreach[]
+  rating         Float    @default(5.0)
+  reviewCount    Int      @default(0)
+  verified       Boolean  @default(false)
+  claimed        Boolean  @default(false)
+  usesApp        Boolean  @default(false)
+  descriptionFr  String
+  descriptionAr  String
+  lat            Float
+  lng            Float
+  hours          Json
+  lastSyncedAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      temporal.updatedAt()
+
+  @@index([citySlug])
+  @@index([rating])
+  @@map("clinics")
+}
+
+model ClinicSpecialty {
+  clinicId    String
+  specialtyId String
+  clinic      Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  specialty   Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+  @@id([clinicId, specialtyId])
+  @@map("clinic_specialties")
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  type        String   // APP_DEMO, WEBSITE_QUOTE, CLINIC_CLAIM, CONTACT
+  clinicId    String?
+  clinic      Clinic?  @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  clinicName  String?
+  name        String
+  email       String
+  phone       String?
+  city        String?
+  message     String?
+  locale      String   @default("fr")
+  status      String   @default("NEW") // NEW, CONTACTED, CONVERTED, CLOSED
+  createdAt   DateTime @default(now())
+  updatedAt   temporal.updatedAt()
+
+  @@index([type])
+  @@index([status])
+  @@map("leads")
+}
+
+model ClinicOutreach {
+  id         String    @id @default(uuid())
+  clinicId   String
+  clinic     Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  channel    String    // WHATSAPP, EMAIL
+  status     String    @default("PENDING") // PENDING, SENT, REPLIED, OPTED_OUT, BOUNCED
+  template   String?
+  note       String?
+  sentAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  temporal.updatedAt()
+
+  @@unique([clinicId, channel])
+  @@index([status])
+  @@map("clinic_outreach")
+}
+
+model ClinicClaim {
+  id                  String   @id @default(uuid())
+  clinicId            String
+  clinic              Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  doctorName          String
+  phone               String
+  email               String
+  professionalCardUrl String?
+  status              String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt           DateTime @default(now())
+  updatedAt           temporal.updatedAt()
+
+  @@map("clinic_claims")
+}
+
+model BlogPost {
+  id                   String    @id @default(uuid())
+  slug                 String    @unique
+  titleFr              String
+  titleAr              String
+  excerptFr            String
+  excerptAr            String
+  contentFr            String
+  contentAr            String
+  categoryFr           String
+  categoryAr           String
+  readTime             Int       @default(5)
+  coverImageUrl        String?
+  relatedCitySlug      String?
+  relatedSpecialtySlug String?
+  status               String    @default("DRAFT") // DRAFT, PUBLISHED
+  publishedAt          DateTime?
+
+  // Per-article SEO overrides. Any null field falls back to the article's own
+  // title/excerpt when metadata is built.
+  metaTitleFr          String?
+  metaTitleAr          String?
+  metaDescriptionFr    String?
+  metaDescriptionAr    String?
+  keywordsFr           String?
+  keywordsAr           String?
+  ogImageUrl           String?
+
+  createdAt            DateTime  @default(now())
+  updatedAt            temporal.updatedAt()
+
+  @@index([status])
+  @@index([relatedSpecialtySlug])
+  @@index([relatedCitySlug])
+  @@map("blog_posts")
+}
+
+model PageSeo {
+  id              String   @id @default(uuid())
+  routeKey        String
+  locale          String
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  ogImageUrl      String?
+  canonicalUrl    String?
+  metaRobots      String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       temporal.updatedAt()
+
+  @@unique([routeKey, locale])
+  @@map("page_seos")
+}
