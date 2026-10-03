@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Building2, Search } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
-import { searchClinicsByName } from "@/lib/data/clinics";
 import { clinicPath } from "@/lib/routes";
 import { LeadModal } from "@/components/clinic/lead-modal";
+
+/** The subset of `Clinic` the lookup renders, as returned by /api/clinics/search. */
+interface LookupResult {
+  slug: string;
+  citySlug: string;
+  name: string;
+  nameAr: string;
+  address: Record<Locale, string>;
+  claimed: boolean;
+}
 
 export function ClaimLookup({
   locale,
@@ -20,6 +29,7 @@ export function ClaimLookup({
     lookupFoundDesc: string;
     lookupNotFound: string;
     lookupNotFoundDesc: string;
+    lookupSearching: string;
     claimCta: string;
     createCta: string;
     viewProfile: string;
@@ -27,8 +37,42 @@ export function ClaimLookup({
   };
 }) {
   const [query, setQuery] = useState("");
-  const results = searchClinicsByName(query);
-  const showResults = query.trim().length >= 2;
+  // The response is tagged with the term that produced it, so a stale answer for
+  // a previous keystroke is ignored during render instead of needing an effect
+  // to clear it.
+  const [response, setResponse] = useState<{ term: string; results: LookupResult[] } | null>(null);
+  // Guards against a slow earlier request overwriting a newer result set.
+  const requestId = useRef(0);
+
+  const trimmed = query.trim();
+  const showResults = trimmed.length >= 2;
+  const results = response?.term === trimmed ? response.results : [];
+  const isSearching = showResults && response?.term !== trimmed;
+
+  useEffect(() => {
+    if (trimmed.length < 2) return;
+
+    const current = ++requestId.current;
+
+    // Debounced so typing a practice name issues one request, not one per key.
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/clinics/search?q=${encodeURIComponent(trimmed)}`);
+        if (!res.ok) throw new Error(`search failed: ${res.status}`);
+        const data = (await res.json()) as { clinics: LookupResult[] };
+        if (current === requestId.current) {
+          setResponse({ term: trimmed, results: data.clinics ?? [] });
+        }
+      } catch (error) {
+        console.error("Clinic lookup failed:", error);
+        if (current === requestId.current) {
+          setResponse({ term: trimmed, results: [] });
+        }
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [trimmed]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -53,7 +97,11 @@ export function ClaimLookup({
 
       {showResults ? (
         <div className="mt-4 overflow-hidden rounded-card border border-border bg-surface shadow-card">
-          {results.length > 0 ? (
+          {isSearching ? (
+            <div className="p-6 text-center">
+              <p className="text-sm text-muted">{labels.lookupSearching}</p>
+            </div>
+          ) : results.length > 0 ? (
             <ul className="divide-y divide-border">
               {results.map((clinic) => (
                 <li key={clinic.slug} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
