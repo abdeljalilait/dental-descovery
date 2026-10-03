@@ -5,11 +5,14 @@ import { Container } from "@/components/ui/container";
 import { SpecialtyIcon } from "@/components/ui/specialty-icon";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { specialties } from "@/lib/data/specialties";
-import { clinics } from "@/lib/data/clinics";
+import { getSpecialtiesDb, getClinicCountBySpecialtyDb } from "@/lib/repositories/specialties";
 import { treatmentPath } from "@/lib/routes";
 
-export function SpecialtiesSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export async function SpecialtiesSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const [specialties, countsBySpecialty] = await Promise.all([
+    getSpecialtiesDb(),
+    getClinicCountBySpecialtyDb(),
+  ]);
   return (
     <Section tone="surface">
       <Container>
@@ -20,7 +23,7 @@ export function SpecialtiesSection({ locale, dict }: { locale: Locale; dict: Dic
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {specialties.map((specialty) => {
-            const count = clinics.filter((c) => c.specialtySlugs.includes(specialty.slug)).length;
+            const count = countsBySpecialty[specialty.slug] ?? 0;
             return (
               <Link
                 key={specialty.slug}

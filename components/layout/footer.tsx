@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
-import { cities } from "@/lib/data/cities";
-import { specialties } from "@/lib/data/specialties";
+import { getCitiesDb } from "@/lib/repositories/cities";
+import { getSpecialtiesDb } from "@/lib/repositories/specialties";
 import type { Locale } from "@/lib/i18n/config";
 import { cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export async function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const [cities, specialties] = await Promise.all([getCitiesDb(), getSpecialtiesDb()]);
+
   const year = new Date().getFullYear();
 
   return (
@@ -68,7 +70,7 @@ export function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
           <nav aria-label={dict.footer.cities}>
             <h3 className="text-sm font-bold text-foreground">{dict.footer.cities}</h3>
             <ul className="mt-4 space-y-2.5 text-sm">
-              {cities.slice(0, 6).map((city) => (
+              {(cities ?? []).slice(0, 6).map((city) => (
                 <li key={city.slug}>
                   <Link
                     href={cityPath(locale, city.slug)}
@@ -84,7 +86,7 @@ export function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
 
         <nav aria-label={dict.footer.resources} className="mt-10 border-t border-border pt-6">
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            {specialties.slice(0, 4).map((s) => (
+            {(specialties ?? []).slice(0, 4).map((s) => (
               <li key={s.slug}>
                 <Link href={treatmentPath(locale, s.slug)} className="text-muted transition-colors hover:text-primary">
                   {s.name[locale]}

@@ -3,10 +3,10 @@ import { Container } from "@/components/ui/container";
 import { ClinicCard } from "@/components/directory/clinic-card";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { getFeaturedClinics } from "@/lib/data/clinics";
+import { getFeaturedClinicsDb } from "@/lib/repositories/clinics";
 
-export function FeaturedClinicsSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const clinics = getFeaturedClinics(6);
+export async function FeaturedClinicsSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const clinics = await getFeaturedClinicsDb(6);
 
   return (
     <Section>

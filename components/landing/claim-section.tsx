@@ -20,6 +20,7 @@ export function ClaimSection({ locale, dict }: { locale: Locale; dict: Dictionar
             lookupFoundDesc: dict.claimSection.lookupFoundDesc,
             lookupNotFound: dict.claimSection.lookupNotFound,
             lookupNotFoundDesc: dict.claimSection.lookupNotFoundDesc,
+            lookupSearching: dict.claimSection.lookupSearching,
             claimCta: dict.claimSection.claimCta,
             createCta: dict.claimSection.createCta,
             viewProfile: dict.common.viewProfile,

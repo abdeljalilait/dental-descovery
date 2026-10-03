@@ -9,8 +9,9 @@ test.describe("Atelier Neo-Clinical Design System & Styling", () => {
     const heroTitle = page.locator("h1");
     await expect(heroTitle).toBeVisible();
 
-    // Check verified badge and social proof
-    const socialProof = page.getByText("4.9/5");
+    // Check verified badge and social proof. The rating is now the real average
+    // computed from the database, so assert the shape rather than a fixed claim.
+    const socialProof = page.getByText(/[0-9],[0-9]\/5/);
     await expect(socialProof).toBeVisible();
 
     // Check search container exists

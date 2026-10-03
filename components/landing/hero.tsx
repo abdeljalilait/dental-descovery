@@ -2,12 +2,19 @@ import Link from "next/link";
 import { BadgeCheck, MapPin, Star } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { cities } from "@/lib/data/cities";
+import { getCitiesDb } from "@/lib/repositories/cities";
+import { getSpecialtiesDb } from "@/lib/repositories/specialties";
+import { getDirectoryStatsDb } from "@/lib/repositories/stats";
 import { cityPath, localizedPath } from "@/lib/routes";
 import { SearchBar } from "@/components/directory/search-bar";
 
-export function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const popular = cities.filter((c) => c.featured).slice(0, 5);
+export async function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const [allCities, specialties, stats] = await Promise.all([
+    getCitiesDb(),
+    getSpecialtiesDb(),
+    getDirectoryStatsDb(),
+  ]);
+  const popular = allCities.filter((c) => c.featured).slice(0, 5);
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-primary-dark via-primary to-primary-dark text-white">
@@ -49,12 +56,18 @@ export function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
                   <Star key={i} className="h-3.5 w-3.5 fill-current text-gold" />
                 ))}
               </span>
-              <strong className="font-bold text-white">4.9/5</strong> (1 200+ avis vérifiés)
+              {/* Real figures from the directory, not a marketing claim. */}
+              <strong className="font-bold text-white">
+                {stats.averageRating.toFixed(1).replace(".", locale === "ar" ? "٫" : ",")}/5
+              </strong>{" "}
+              ({stats.reviewCount.toLocaleString(locale === "ar" ? "ar-MA" : "fr-FR")}+ {dict.hero.verifiedReviews})
             </span>
             <span className="h-3 w-px bg-white/20" />
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5 text-accent" />
-              <span>12 villes du Maroc • 100% Gratuit</span>
+              <span>
+                {stats.cityCount} {dict.hero.citiesCoverage} • {dict.hero.freeForever}
+              </span>
             </span>
           </div>
         </div>
@@ -64,6 +77,8 @@ export function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
           <SearchBar
             locale={locale}
             variant="hero"
+            cities={allCities}
+            specialties={specialties}
             labels={{
               search: dict.common.search,
               searchCity: dict.common.searchCity,

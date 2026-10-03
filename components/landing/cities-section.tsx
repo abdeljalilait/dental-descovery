@@ -4,10 +4,13 @@ import { CityCard } from "@/components/directory/city-card";
 import { ButtonLink } from "@/components/ui/button-link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { cities } from "@/lib/data/cities";
+import { getCitiesDb } from "@/lib/repositories/cities";
+import { getClinicCountByCityDb } from "@/lib/repositories/stats";
 import { localizedPath } from "@/lib/routes";
 
-export function CitiesSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export async function CitiesSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const [cities, countsByCity] = await Promise.all([getCitiesDb(), getClinicCountByCityDb()]);
+
   return (
     <Section tone="surface">
       <Container>
@@ -24,6 +27,7 @@ export function CitiesSection({ locale, dict }: { locale: Locale; dict: Dictiona
               locale={locale}
               exploreLabel={dict.citiesSection.exploreCity}
               clinicsLabel={dict.common.clinics}
+              clinicCount={countsByCity[city.slug] ?? 0}
             />
           ))}
         </div>
