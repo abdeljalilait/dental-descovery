@@ -6,7 +6,8 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { CityCard } from "@/components/directory/city-card";
 import { FinalCtaSection } from "@/components/landing/final-cta";
-import { cities } from "@/lib/data/cities";
+import { getCitiesDb } from "@/lib/repositories/cities";
+import { getClinicCountByCityDb } from "@/lib/repositories/stats";
 import { localizedPath } from "@/lib/routes";
 
 export const dynamicParams = false;
@@ -38,6 +39,7 @@ export default async function DentistsPage({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
+  const [cities, countsByCity] = await Promise.all([getCitiesDb(), getClinicCountByCityDb()]);
 
   return (
     <>
@@ -57,6 +59,7 @@ export default async function DentistsPage({
                 locale={locale}
                 exploreLabel={dict.citiesSection.exploreCity}
                 clinicsLabel={dict.common.clinics}
+                clinicCount={countsByCity[city.slug] ?? 0}
               />
             ))}
           </div>

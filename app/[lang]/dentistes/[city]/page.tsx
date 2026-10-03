@@ -12,16 +12,22 @@ import { CityCard } from "@/components/directory/city-card";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 import { StructuredData } from "@/components/seo/structured-data";
 import { breadcrumbSchema, graph, itemListSchema, websiteSchema } from "@/lib/seo/schema";
-import { cities, getCity, cityDisplayName } from "@/lib/data/cities";
-import { getClinicsByCity } from "@/lib/data/clinics";
-import { specialties } from "@/lib/data/specialties";
+import { cityDisplayName } from "@/lib/utils/city-display";
+import { getCitiesDb, getCityDb, getCitySlugsDb } from "@/lib/repositories/cities";
+import { getClinicsByCityDb } from "@/lib/repositories/clinics";
+import { getClinicCountByCityDb } from "@/lib/repositories/stats";
+import { getSpecialtiesDb } from "@/lib/repositories/specialties";
 import { cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 import { cn } from "@/lib/utils/cn";
 
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return locales.flatMap((locale) => cities.map((city) => ({ lang: locale, city: city.slug })));
+/** Clinic data refreshes on the monthly SerpApi sync, so revalidate hourly. */
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const slugs = await getCitySlugsDb();
+  return locales.flatMap((locale) => slugs.map((city) => ({ lang: locale, city })));
 }
 
 export async function generateMetadata({
@@ -30,7 +36,7 @@ export async function generateMetadata({
   params: Promise<{ lang: string; city: string }>;
 }): Promise<Metadata> {
   const { lang: localeValue, city: citySlug } = await params;
-  const city = getCity(citySlug);
+  const city = await getCityDb(citySlug);
   if (!city) return {};
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   const inCity = locale === "ar" ? `أطباء الأسنان في ${city.nameAr}` : `Dentistes à ${city.name}`;
@@ -55,18 +61,23 @@ export default async function CityDentistsPage({
   const { spec } = await searchParams;
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  const city = getCity(citySlug);
+  const city = await getCityDb(citySlug);
   if (!city) notFound();
 
   const cityName = cityDisplayName(city, locale);
-  const allClinics = getClinicsByCity(city.slug);
+  const [allClinics, specialties, allCities, countsByCity] = await Promise.all([
+    getClinicsByCityDb(city.slug),
+    getSpecialtiesDb(),
+    getCitiesDb(),
+    getClinicCountByCityDb(),
+  ]);
   const activeSpecialty = spec && specialties.some((s) => s.slug === spec) ? spec : null;
   const clinics = activeSpecialty
     ? allClinics.filter((c) => c.specialtySlugs.includes(activeSpecialty))
     : allClinics;
 
   const inCity = locale === "ar" ? `${dict.dentistsPage.inCity} ${cityName}` : `${dict.dentistsPage.inCity} ${cityName}`;
-  const nearby = cities
+  const nearby = allCities
     .filter((c) => c.slug !== city.slug && c.region[locale] === city.region[locale])
     .slice(0, 3);
 
@@ -168,6 +179,7 @@ export default async function CityDentistsPage({
                     locale={locale}
                     exploreLabel={dict.citiesSection.exploreCity}
                     clinicsLabel={dict.common.clinics}
+                    clinicCount={countsByCity[nearCity.slug] ?? 0}
                   />
                 ))}
               </div>

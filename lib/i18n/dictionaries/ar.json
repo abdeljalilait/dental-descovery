@@ -50,6 +50,9 @@
     "titleHighlight": "قريباً منك",
     "subtitle": "قارن عيادات الأسنان في مدينتك: التقييمات والتخصصات وأوقات العمل والتواصل المباشر. مجاناً وبدون تسجيل.",
     "popularCities": "مدن شائعة:",
+    "verifiedReviews": "تقييم موثّق",
+    "citiesCoverage": "مدينة مغربية",
+    "freeForever": "مجاني 100%",
     "ctaSecondary": "تصفح التخصصات"
   },
   "stats": {
@@ -85,6 +88,7 @@
     "lookupFound": "خبر جيد: ملفك موجود بالفعل",
     "lookupFoundDesc": "لكنه حالياً في نسخته الأساسية. اطلبه مجاناً لإثرائه.",
     "lookupNotFound": "لم يُوجد أي ملف",
+    "lookupSearching": "جارٍ البحث…",
     "lookupNotFoundDesc": "أنشئ ملفك في دقائق واكسب ظهوراً أكبر.",
     "claimCta": "اطلب ملفي",
     "createCta": "أنشئ ملفي"

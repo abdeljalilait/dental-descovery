@@ -42,7 +42,7 @@ export function dentistSchema(clinic: Clinic, locale: string, citySlug: string, 
     "@id": `${siteConfig.url}${clinicPath(locale, citySlug, clinic.slug)}#dentist`,
     name: clinic.name,
     url: `${siteConfig.url}${clinicPath(locale, citySlug, clinic.slug)}`,
-    telephone: clinic.phone,
+    ...(clinic.phone ? { telephone: clinic.phone } : {}),
     address: {
       "@type": "PostalAddress",
       streetAddress: clinic.address[locale === "ar" ? "ar" : "fr"],

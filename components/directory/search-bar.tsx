@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Search, Stethoscope } from "lucide-react";
-import { cities, cityDisplayName } from "@/lib/data/cities";
-import { specialties } from "@/lib/data/specialties";
+import { cityDisplayName } from "@/lib/utils/city-display";
+import type { City, Specialty } from "@/lib/data/types";
 import type { Locale } from "@/lib/i18n/config";
 import { cityPath, localizedPath } from "@/lib/routes";
 import { cn } from "@/lib/utils/cn";
@@ -12,11 +12,16 @@ import { cn } from "@/lib/utils/cn";
 export function SearchBar({
   locale,
   labels,
+  cities,
+  specialties,
   variant = "hero",
   defaultCitySlug,
   defaultSpecialtySlug,
 }: {
   locale: Locale;
+  /** Passed in from the server: this is a client component and cannot query. */
+  cities: City[];
+  specialties: Specialty[];
   labels: {
     search: string;
     searchCity: string;

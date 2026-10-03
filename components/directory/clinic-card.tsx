@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { MapPin, Phone } from "lucide-react";
 import type { Clinic } from "@/lib/data/types";
-import { getCity, cityDisplayName } from "@/lib/data/cities";
-import { getSpecialty } from "@/lib/data/specialties";
+import { cityDisplayName } from "@/lib/utils/city-display";
+import { getCityForRender } from "@/lib/repositories/cities";
 import type { Locale } from "@/lib/i18n/config";
 import { clinicPath } from "@/lib/routes";
 import { cn } from "@/lib/utils/cn";
 import { RatingValue } from "@/components/ui/rating";
 import { VerifiedBadge, OnlineBookingBadge, FeaturedBadge } from "@/components/ui/badges";
 
-export function ClinicCard({
+export async function ClinicCard({
   clinic,
   locale,
   dict,
@@ -20,9 +20,10 @@ export function ClinicCard({
   dict: { viewProfile: string; ratingSource: string; callNow: string };
   className?: string;
 }) {
-  const city = getCity(clinic.citySlug);
+  const city = await getCityForRender(clinic.citySlug);
   const href = clinicPath(locale, clinic.citySlug, clinic.slug);
-  const firstSpecialty = clinic.specialtySlugs[0] ? getSpecialty(clinic.specialtySlugs[0]) : undefined;
+  // Specialties arrive resolved on the clinic row, so no per-card lookup.
+  const firstSpecialty = clinic.specialties[0];
 
   return (
     <article
@@ -75,12 +76,10 @@ export function ClinicCard({
 
         {/* Specialties Tags */}
         <div className="mt-3.5 flex flex-wrap gap-1.5">
-          {clinic.specialtySlugs.slice(0, 3).map((slug) => {
-            const specialty = getSpecialty(slug);
-            if (!specialty) return null;
+          {clinic.specialties.slice(0, 3).map((specialty) => {
             return (
               <span
-                key={slug}
+                key={specialty.slug}
                 className="rounded-pill border border-border-subtle bg-surface-subtle px-2.5 py-0.5 text-[11px] font-semibold text-muted"
               >
                 {specialty.name[locale]}
@@ -91,13 +90,15 @@ export function ClinicCard({
 
         {/* Action Buttons */}
         <div className="mt-auto flex items-center gap-2 pt-6">
-          <a
-            href={`tel:${clinic.phoneHref}`}
-            className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-pill border border-border bg-surface text-xs sm:text-sm font-bold text-foreground transition-all hover:border-primary hover:text-primary hover:bg-primary-soft/50"
-          >
-            <Phone className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-            <span>{dict.callNow}</span>
-          </a>
+          {clinic.phoneHref ? (
+            <a
+              href={`tel:${clinic.phoneHref}`}
+              className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-pill border border-border bg-surface text-xs sm:text-sm font-bold text-foreground transition-all hover:border-primary hover:text-primary hover:bg-primary-soft/50"
+            >
+              <Phone className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+              <span>{dict.callNow}</span>
+            </a>
+          ) : null}
           <Link
             href={href}
             className="inline-flex h-10 flex-1 items-center justify-center rounded-pill bg-primary text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift"

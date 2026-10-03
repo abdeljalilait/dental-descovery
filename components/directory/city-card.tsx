@@ -3,7 +3,6 @@ import { ArrowRight, MapPin } from "lucide-react";
 import type { City } from "@/lib/data/types";
 import type { Locale } from "@/lib/i18n/config";
 import { cityPath } from "@/lib/routes";
-import { clinicCountByCity } from "@/lib/data/clinics";
 import { cn } from "@/lib/utils/cn";
 
 export function CityCard({
@@ -11,15 +10,17 @@ export function CityCard({
   locale,
   exploreLabel,
   clinicsLabel,
+  clinicCount,
   className,
 }: {
   city: City;
   locale: Locale;
   exploreLabel?: string;
   clinicsLabel: string;
+  /** Live count from the database; supplied by the caller rather than imported. */
+  clinicCount: number;
   className?: string;
 }) {
-  const count = clinicCountByCity(city.slug);
   const name = locale === "ar" ? city.nameAr : city.name;
 
   return (
@@ -37,10 +38,10 @@ export function CityCard({
           <span className="truncate">{name}</span>
         </p>
         <p className="mt-1 text-xs sm:text-sm font-medium text-muted">
-          {count > 0 ? (
+          {clinicCount > 0 ? (
             <span className="inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              <span>{count} {clinicsLabel}</span>
+              <span>{clinicCount} {clinicsLabel}</span>
             </span>
           ) : (
             city.region[locale]

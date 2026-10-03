@@ -50,6 +50,9 @@
     "titleHighlight": "près de chez vous",
     "subtitle": "Comparez les cliniques dentaires de votre ville : avis, spécialités, horaires et contact direct. Gratuit, sans inscription.",
     "popularCities": "Villes populaires :",
+    "verifiedReviews": "avis vérifiés",
+    "citiesCoverage": "villes du Maroc",
+    "freeForever": "100 % gratuit",
     "ctaSecondary": "Parcourir les spécialités"
   },
   "stats": {
@@ -85,6 +88,7 @@
     "lookupFound": "Bonne nouvelle : votre fiche existe déjà",
     "lookupFoundDesc": "Elle est actuellement en version de base. Réclamez-la gratuitement pour l'enrichir.",
     "lookupNotFound": "Aucune fiche trouvée",
+    "lookupSearching": "Recherche en cours…",
     "lookupNotFoundDesc": "Créez votre fiche en quelques minutes et gagnez en visibilité.",
     "claimCta": "Réclamer ma fiche",
     "createCta": "Créer ma fiche"

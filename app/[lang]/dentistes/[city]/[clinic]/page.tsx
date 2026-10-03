@@ -13,18 +13,31 @@ import { VerifiedBadge, OnlineBookingBadge } from "@/components/ui/badges";
 import { LeadModal } from "@/components/clinic/lead-modal";
 import { StructuredData } from "@/components/seo/structured-data";
 import { breadcrumbSchema, dentistSchema, graph, websiteSchema } from "@/lib/seo/schema";
-import { cities, getCity, cityDisplayName } from "@/lib/data/cities";
-import { getClinic, getClinicsByCity } from "@/lib/data/clinics";
-import { getSpecialty } from "@/lib/data/specialties";
+import { cityDisplayName } from "@/lib/utils/city-display";
+import { getCityDb, getCitySlugsDb } from "@/lib/repositories/cities";
+import { getClinicDb, getClinicsByCityDb } from "@/lib/repositories/clinics";
 import { clinicPath, cityPath, localizedPath } from "@/lib/routes";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
-export function generateStaticParams() {
+/** Clinic data refreshes on the monthly SerpApi sync, so revalidate hourly. */
+export const revalidate = 3600;
+
+/** Prebuild the best-rated clinics per city; the rest render on demand and cache. */
+const PREBUILT_PER_CITY = 10;
+
+export async function generateStaticParams() {
+  const citySlugs = await getCitySlugsDb();
+  const perCity = await Promise.all(
+    citySlugs.map(async (citySlug) => {
+      const clinics = await getClinicsByCityDb(citySlug, PREBUILT_PER_CITY);
+      return clinics.map((clinic) => ({ citySlug, slug: clinic.slug }));
+    }),
+  );
+
+  const pairs = perCity.flat();
   return locales.flatMap((locale) =>
-    cities.flatMap((city) =>
-      getClinicsByCity(city.slug).map((clinic) => ({ lang: locale, city: city.slug, clinic: clinic.slug }))
-    )
+    pairs.map(({ citySlug, slug }) => ({ lang: locale, city: citySlug, clinic: slug })),
   );
 }
 
@@ -34,11 +47,11 @@ export async function generateMetadata({
   params: Promise<{ lang: string; city: string; clinic: string }>;
 }): Promise<Metadata> {
   const { lang: localeValue, city: citySlug, clinic: clinicSlug } = await params;
-  const clinic = getClinic(citySlug, clinicSlug);
+  const clinic = await getClinicDb(citySlug, clinicSlug);
   if (!clinic) return {};
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   return {
-    title: { absolute: `${clinic.name} — ${locale === "ar" ? clinic.nameAr : cityDisplayName(getCity(citySlug)!, locale)}` },
+    title: { absolute: `${clinic.name} — ${locale === "ar" ? clinic.nameAr : cityDisplayName((await getCityDb(citySlug))!, locale)}` },
     description: clinic.description[locale],
     alternates: {
       canonical: clinicPath(locale, citySlug, clinicSlug),
@@ -55,13 +68,13 @@ export default async function ClinicPage({
   const { lang: localeValue, city: citySlug, clinic: clinicSlug } = await params;
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  const clinic = getClinic(citySlug, clinicSlug);
-  const city = getCity(citySlug);
+  const clinic = await getClinicDb(citySlug, clinicSlug);
+  const city = await getCityDb(citySlug);
   if (!clinic || !city) notFound();
 
   const cityName = cityDisplayName(city, locale);
   const clinicName = locale === "ar" ? clinic.nameAr : clinic.name;
-  const others = getClinicsByCity(citySlug)
+  const others = (await getClinicsByCityDb(citySlug))
     .filter((c) => c.slug !== clinic.slug)
     .slice(0, 3);
 
@@ -128,7 +141,7 @@ export default async function ClinicPage({
                 </h3>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {clinic.specialtySlugs.map((slug) => {
-                    const specialty = getSpecialty(slug);
+                    const specialty = clinic.specialties.find((s) => s.slug === slug);
                     if (!specialty) return null;
                     return (
                       <li key={slug}>
@@ -163,22 +176,26 @@ export default async function ClinicPage({
 
             <aside className="space-y-4">
               <div className="rounded-card border border-border bg-surface p-6 shadow-soft">
-                <a
-                  href={`tel:${clinic.phoneHref}`}
-                  className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-primary text-base font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lift"
-                >
-                  <Phone className="h-5 w-5" strokeWidth={1.8} aria-hidden />
-                  {dict.common.callNow}
-                </a>
-                <a
-                  href={`https://wa.me/${clinic.whatsapp}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-pill border border-accent/40 bg-accent-soft text-base font-bold text-accent transition-all hover:bg-accent hover:text-white"
-                >
-                  <MessageCircle className="h-5 w-5" strokeWidth={1.8} aria-hidden />
-                  {dict.common.whatsapp}
-                </a>
+                {clinic.phoneHref ? (
+                  <a
+                    href={`tel:${clinic.phoneHref}`}
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-pill bg-primary text-base font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lift"
+                  >
+                    <Phone className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+                    {dict.common.callNow}
+                  </a>
+                ) : null}
+                {clinic.whatsapp ? (
+                  <a
+                    href={`https://wa.me/${clinic.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-pill border border-accent/40 bg-accent-soft text-base font-bold text-accent transition-all hover:bg-accent hover:text-white${clinic.phoneHref ? " mt-3" : ""}`}
+                  >
+                    <MessageCircle className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+                    {dict.common.whatsapp}
+                  </a>
+                ) : null}
 
                 <div className="mt-6 space-y-3 border-t border-border pt-5 text-sm">
                   <p className="flex items-start gap-2 text-muted">
