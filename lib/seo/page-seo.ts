@@ -68,5 +68,11 @@ export async function buildDynamicMetadata(options: SeoOptions): Promise<Metadat
         },
       ],
     },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl ?? defaultOgImageUrl(locale)],
+    },
   };
 }
