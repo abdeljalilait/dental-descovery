@@ -86,7 +86,7 @@ function byRecency(query: ReturnType<typeof blogPostRows>) {
  * Takes no locale: a row carries both translations, so hreflang links, the
  * sitemap and the article list are all served from one query.
  */
-export async function getBlogArticlesDb(): Promise<BlogPost[]> {
+export async function getBlogArticlesDb(): Promise<BlogPostRecord[]> {
   const rows = await byRecency(blogPostRows().where((post) => post.status.eq("PUBLISHED"))).all();
   return rows.map(mapBlogPostRow);
 }

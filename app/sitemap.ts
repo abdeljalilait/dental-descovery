@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site.config";
-import { locales } from "@/lib/i18n/config";
+import { defaultLocale, locales, type Locale } from "@/lib/i18n/config";
 import { cityPath, clinicPath, treatmentPath, blogPostPath, localizedPath } from "@/lib/routes";
 import { getCitySlugsDb } from "@/lib/repositories/cities";
 import { getClinicSlugsDb } from "@/lib/repositories/clinics";
@@ -25,23 +25,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getBlogArticlesDb(),
   ]);
 
+  /**
+   * hreflang for both locales plus `x-default`, which points at the locale the
+   * root URL redirects to. Google reads hreflang from a sitemap, which is how a
+   * layout that cannot see its own leaf segment gets alternates onto every page.
+   */
+  const alternates = (pathFor: (locale: Locale) => string) => ({
+    languages: {
+      ...Object.fromEntries(locales.map((l) => [l, `${base}${pathFor(l)}`])),
+      "x-default": `${base}${pathFor(defaultLocale)}`,
+    },
+  });
+
   const staticRouteKeys = ["home", "dentists", "treatments", "blog", "app", "forClinics", "website", "pricing", "contact"] as const;
 
   for (const routeKey of staticRouteKeys) {
     for (const locale of locales) {
-      const path = routeKey === "home" ? `/${locale}` : localizedPath(routeKey, locale);
+      const pathFor = (l: Locale) => (routeKey === "home" ? `/${l}` : localizedPath(routeKey, l));
       entries.push({
-        url: `${base}${path}`,
+        url: `${base}${pathFor(locale)}`,
         changeFrequency: routeKey === "home" ? "weekly" : "monthly",
         priority: routeKey === "home" ? 1 : routeKey === "dentists" ? 0.9 : 0.7,
-        alternates: {
-          languages: Object.fromEntries(
-            locales.map((l) => {
-              const p = routeKey === "home" ? `/${l}` : localizedPath(routeKey, l);
-              return [l, `${base}${p}`];
-            })
-          ),
-        },
+        alternates: alternates(pathFor),
       });
     }
   }
@@ -52,24 +57,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${base}${cityPath(locale, citySlug)}`,
         changeFrequency: "weekly",
         priority: 0.9,
-        alternates: {
-          languages: Object.fromEntries(locales.map((l) => [l, `${base}${cityPath(l, citySlug)}`])),
-        },
+        alternates: alternates((l) => cityPath(l, citySlug)),
       });
     }
   }
 
-  for (const { citySlug, slug } of clinicSlugs) {
+  for (const { citySlug, slug, updatedAt } of clinicSlugs) {
     for (const locale of locales) {
       entries.push({
         url: `${base}${clinicPath(locale, citySlug, slug)}`,
+        lastModified: updatedAt,
         changeFrequency: "monthly",
         priority: 0.7,
-        alternates: {
-          languages: Object.fromEntries(
-            locales.map((l) => [l, `${base}${clinicPath(l, citySlug, slug)}`])
-          ),
-        },
+        alternates: alternates((l) => clinicPath(l, citySlug, slug)),
       });
     }
   }
@@ -80,9 +80,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${base}${treatmentPath(locale, slug)}`,
         changeFrequency: "monthly",
         priority: 0.8,
-        alternates: {
-          languages: Object.fromEntries(locales.map((l) => [l, `${base}${treatmentPath(l, slug)}`])),
-        },
+        alternates: alternates((l) => treatmentPath(l, slug)),
       });
     }
   }
@@ -91,12 +89,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const locale of locales) {
       entries.push({
         url: `${base}${blogPostPath(locale, post.slug)}`,
-        lastModified: new Date(post.date),
-        changeFrequency: "yearly",
+        lastModified: new Date(post.updatedAt || post.date),
+        changeFrequency: "monthly",
         priority: 0.6,
-        alternates: {
-          languages: Object.fromEntries(locales.map((l) => [l, `${base}${blogPostPath(l, post.slug)}`])),
-        },
+        alternates: alternates((l) => blogPostPath(l, post.slug)),
       });
     }
   }

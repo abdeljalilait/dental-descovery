@@ -1,6 +1,8 @@
 import { siteConfig } from "@/lib/site.config";
 import type { Clinic } from "@/lib/data/types";
-import { clinicPath } from "@/lib/routes";
+import { blogPostPath, clinicPath } from "@/lib/routes";
+import { localeHtmlLang, type Locale } from "@/lib/i18n/config";
+import { defaultOgImageUrl } from "@/lib/seo/og-image";
 
 export function websiteSchema(locale: string) {
   return {
@@ -66,15 +68,47 @@ export function dentistSchema(clinic: Clinic, locale: string, citySlug: string, 
   };
 }
 
-export function articleSchema(post: { title: string; excerpt: string; date: string; slug: string }, locale: string) {
+export function articleSchema(
+  post: {
+    title: string;
+    excerpt: string;
+    date: string;
+    slug: string;
+    updatedAt?: string;
+    imageUrl?: string | null;
+  },
+  locale: Locale
+) {
+  const url = `${siteConfig.url}${blogPostPath(locale, post.slug)}`;
+  const image = post.imageUrl ?? defaultOgImageUrl(locale);
+
   return {
     "@type": "Article",
+    "@id": `${url}#article`,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    url,
     headline: post.title,
     description: post.excerpt,
+    image: [image],
     datePublished: post.date,
-    inLanguage: locale,
-    author: { "@type": "Organization", name: siteConfig.name },
-    publisher: { "@type": "Organization", name: siteConfig.name },
+    ...(post.updatedAt ? { dateModified: post.updatedAt } : {}),
+    inLanguage: localeHtmlLang[locale],
+    author: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteConfig.url}/logo.png`,
+        width: 512,
+        height: 512,
+      },
+    },
   };
 }
 

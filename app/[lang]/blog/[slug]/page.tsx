@@ -15,6 +15,7 @@ import { getBlogArticleBySlugDb, getBlogSlugsDb } from "@/lib/repositories/blog"
 import { getClinicsByCityDb } from "@/lib/repositories/clinics";
 import { getCityDb } from "@/lib/repositories/cities";
 import { blogPostPath, cityPath, localizedPath, treatmentPath } from "@/lib/routes";
+import { defaultOgImageUrl, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/seo/og-image";
 
 export const dynamicParams = true;
 
@@ -23,6 +24,11 @@ export const dynamicParams = true;
  * published from the admin revalidates its own path on save.
  */
 export const revalidate = 3600;
+
+/** Per-post image override, falling back to the cover image when one is set. */
+function ogImageUrlFor(post: { ogImageUrl: string | null; coverImageUrl: string | null }) {
+  return post.ogImageUrl ?? post.coverImageUrl;
+}
 
 export async function generateStaticParams() {
   const slugs = await getBlogSlugsDb();
@@ -44,7 +50,7 @@ export async function generateMetadata({
   const title = post.metaTitle[locale] || post.title[locale];
   const description = post.metaDescription[locale] || post.excerpt[locale];
   const keywords = post.keywords[locale];
-  const ogImageUrl = post.ogImageUrl ?? post.coverImageUrl;
+  const ogImageUrl = ogImageUrlFor(post);
 
   return {
     title: { absolute: title },
@@ -52,14 +58,22 @@ export async function generateMetadata({
     ...(keywords ? { keywords } : {}),
     alternates: {
       canonical: blogPostPath(locale, slug),
-      languages: { fr: blogPostPath("fr", slug), ar: blogPostPath("ar", slug) },
+      languages: { fr: blogPostPath("fr", slug), ar: blogPostPath("ar", slug), "x-default": blogPostPath(locale, slug) },
     },
     openGraph: {
       type: "article",
       title,
       description,
       publishedTime: post.date,
-      ...(ogImageUrl ? { images: [{ url: ogImageUrl, alt: title }] } : {}),
+      ...(post.updatedAt ? { modifiedTime: post.updatedAt } : {}),
+      images: [
+        {
+          url: ogImageUrl ?? defaultOgImageUrl(locale),
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
+          alt: title,
+        },
+      ],
     },
   };
 }
@@ -83,7 +97,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ lang:
         data={graph(
           websiteSchema(locale),
           articleSchema(
-            { title: post.title[locale], excerpt: post.excerpt[locale], date: post.date, slug: post.slug },
+            {
+              title: post.title[locale],
+              excerpt: post.excerpt[locale],
+              date: post.date,
+              slug: post.slug,
+              updatedAt: post.updatedAt,
+              imageUrl: ogImageUrlFor(post),
+            },
             locale
           ),
           breadcrumbSchema([

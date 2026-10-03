@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n/config";
 import { getPageSeoDb } from "@/lib/repositories/blog";
 import { siteConfig } from "@/lib/site.config";
+import { defaultOgImageUrl, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/seo/og-image";
 
 interface SeoOptions {
   routeKey: string;
@@ -58,7 +59,14 @@ export async function buildDynamicMetadata(options: SeoOptions): Promise<Metadat
       url,
       title,
       description,
-      ...(ogImageUrl ? { images: [{ url: ogImageUrl, width: 1200, height: 630, alt: title }] } : {}),
+      images: [
+        {
+          url: ogImageUrl ?? defaultOgImageUrl(locale),
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
+          alt: title,
+        },
+      ],
     },
   };
 }

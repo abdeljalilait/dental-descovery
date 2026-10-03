@@ -47,7 +47,7 @@ export async function generateMetadata({
     description: specialty.description[locale],
     alternates: {
       canonical: treatmentPath(locale, slug),
-      languages: { fr: treatmentPath("fr", slug), ar: treatmentPath("ar", slug) },
+      languages: { fr: treatmentPath("fr", slug), ar: treatmentPath("ar", slug), "x-default": treatmentPath("fr", slug) },
     },
   };
 }

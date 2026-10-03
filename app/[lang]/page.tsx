@@ -17,13 +17,19 @@ import { BlogHighlightsSection } from "@/components/landing/blog-highlights";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const dict = await getDictionaryFor("fr");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: value } = await params;
+  const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
+  const dict = await getDictionaryFor(locale);
   return {
     title: { absolute: dict.meta.title },
     description: dict.meta.description,
     alternates: {
-      canonical: "/fr",
+      canonical: `/${locale}`,
       languages: { fr: "/fr", ar: "/ar", "x-default": "/fr" },
     },
     openGraph: {

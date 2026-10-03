@@ -15,14 +15,20 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ lang: locale }));
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const dict = await getDictionaryFor("fr");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: value } = await params;
+  const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
+  const dict = await getDictionaryFor(locale);
   return {
     title: { absolute: `${dict.forClinicsPage.eyebrow} — ${dict.forClinicsPage.title}` },
     description: dict.forClinicsPage.subtitle,
     alternates: {
-      canonical: localizedPath("forClinics", "fr"),
-      languages: { fr: localizedPath("forClinics", "fr"), ar: localizedPath("forClinics", "ar") },
+      canonical: localizedPath("forClinics", locale),
+      languages: { fr: localizedPath("forClinics", "fr"), ar: localizedPath("forClinics", "ar"), "x-default": localizedPath("forClinics", locale) },
     },
   };
 }

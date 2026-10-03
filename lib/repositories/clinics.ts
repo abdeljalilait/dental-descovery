@@ -180,9 +180,13 @@ export async function searchClinicsDb(query: string, limit = 6): Promise<Clinic[
  * `(citySlug, clinicSlug)` pairs for sitemap generation, as a two-tuple list
  * rather than full rows — the sitemap needs URLs, not clinic payloads.
  */
-export async function getClinicSlugsDb(): Promise<{ citySlug: string; slug: string }[]> {
+export async function getClinicSlugsDb(): Promise<{ citySlug: string; slug: string; updatedAt: string }[]> {
   const rows = await prisma.orm.public.Clinic.all();
-  return rows.map((row) => ({ citySlug: row.citySlug, slug: row.slug }));
+  return rows.map((row) => ({
+    citySlug: row.citySlug,
+    slug: row.slug,
+    updatedAt: String(row.updatedAt),
+  }));
 }
 
 /**

@@ -55,7 +55,7 @@ export async function generateMetadata({
     description: clinic.description[locale],
     alternates: {
       canonical: clinicPath(locale, citySlug, clinicSlug),
-      languages: { fr: clinicPath("fr", citySlug, clinicSlug), ar: clinicPath("ar", citySlug, clinicSlug) },
+      languages: { fr: clinicPath("fr", citySlug, clinicSlug), ar: clinicPath("ar", citySlug, clinicSlug), "x-default": clinicPath(locale, citySlug, clinicSlug) },
     },
   };
 }

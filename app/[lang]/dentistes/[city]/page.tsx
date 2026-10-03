@@ -45,7 +45,7 @@ export async function generateMetadata({
     description: city.seoIntro[locale],
     alternates: {
       canonical: cityPath(locale, city.slug),
-      languages: { fr: cityPath("fr", city.slug), ar: cityPath("ar", city.slug) },
+      languages: { fr: cityPath("fr", city.slug), ar: cityPath("ar", city.slug), "x-default": cityPath(locale, city.slug) },
     },
   };
 }
