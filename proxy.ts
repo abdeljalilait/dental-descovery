@@ -20,6 +20,11 @@ export function proxy(request: NextRequest) {
 
   if (pathnameHasLocale) return;
 
+  // `/admin` is locale-agnostic and must not be prefixed with a language code.
+  // Authentication is enforced by `app/admin/layout.tsx`, which every admin page
+  // renders inside; this only stops the redirect from mangling the path.
+  if (pathname.startsWith("/admin")) return;
+
   if (pathname.startsWith("/api") || pathname.startsWith("/_next") || pathname.includes(".")) {
     return;
   }

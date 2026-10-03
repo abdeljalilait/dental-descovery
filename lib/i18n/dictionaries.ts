@@ -15,6 +15,11 @@ export async function getDictionaryFor(locale: Locale): Promise<Dictionary> {
 
 export async function getDictionary(): Promise<Dictionary> {
   const value = await lang();
-  const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : defaultLocale;
+  // `lang()` is `string | undefined` (absent on a non-localized route), and the
+  // guard keeps the narrowing explicit rather than relying on `includes`.
+  const locale =
+    value !== undefined && (locales as readonly string[]).includes(value)
+      ? (value as Locale)
+      : defaultLocale;
   return getDictionaryFor(locale);
 }
