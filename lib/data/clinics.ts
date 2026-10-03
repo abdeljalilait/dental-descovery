@@ -1,4 +1,4 @@
-import type { Clinic } from "./types";
+import type { Clinic, SeedClinic } from "./types";
 
 const weekdaysFr = "Lun – Ven";
 const saturdayFr = "Samedi";
@@ -10,7 +10,11 @@ function stdHours(morning: string, evening: string): Clinic["hours"] {
   ];
 }
 
-export const clinics: Clinic[] = [
+/**
+ * Seed-only reference rows. These exist to bootstrap Postgres via `prisma/seed.mjs`;
+ * the site reads every clinic from the database through `lib/repositories/clinics`.
+ */
+export const clinics: SeedClinic[] = [
   {
     slug: "dental-clinica-el-ouazzani",
     googlePlaceId: "ChIJxxxxxxxx-tanger-001",
@@ -20,7 +24,7 @@ export const clinics: Clinic[] = [
     neighborhood: { fr: "Résidence Tanex, Avenue Prince Héritier", ar: "إقامة تانكس، شارع ولي العهد" },
     address: {
       fr: "1er étage, Avenue Prince Héritier, Résidence Tanex, Tanger 90100",
-      ar: "الطابق الأول، شارع ولي العهد، إقامة تانكس، طنجة 90100",
+      ar: "الطابق الأول، شارع ولي العهد، إقامة تانكس، طنجة 90100"
     },
     phone: "+212 531 242 380",
     phoneHref: "+212531242380",
@@ -34,12 +38,12 @@ export const clinics: Clinic[] = [
     usesApp: true,
     description: {
       fr: "Clinique dentaire premium à Tanger dirigée par le Dr Chaimae El Ouazzani : implantologie, facettes, Hollywood Smile et orthodontie, avec suivi des patients internationaux.",
-      ar: "عيادة أسنان راقية في طنجة يديرها الدكتورة شيماء إلوازاني: زراعة الأسنان، القشور، ابتسامة هوليوود وتقويم الأسنان، مع متابعة المرضى الدوليين.",
+      ar: "عيادة أسنان راقية في طنجة يديرها الدكتورة شيماء إلوازاني: زراعة الأسنان، القشور، ابتسامة هوليوود وتقويم الأسنان، مع متابعة المرضى الدوليين."
     },
     lat: 35.7791,
     lng: -5.8122,
     hours: stdHours("09:00 – 19:00", "10:00 – 13:00"),
-    lastSyncedAt: "2026-08-28",
+    lastSyncedAt: "2026-08-28"
   },
   {
     slug: "cabinet-dentaire-tanger-center",
@@ -49,9 +53,6 @@ export const clinics: Clinic[] = [
     citySlug: "tanger",
     neighborhood: { fr: "Centre-ville, Boulevard Mohammed V", ar: "وسط المدينة، شارع محمد الخامس" },
     address: { fr: "Boulevard Mohammed V, Tanger 90000", ar: "شارع محمد الخامس، طنجة 90000" },
-    phone: "+212 539 XXX XXX",
-    phoneHref: "+212539000000",
-    whatsapp: "212600000001",
     website: null,
     rating: 4.4,
     reviewCount: 31,
@@ -61,12 +62,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet de ville au cœur de Tanger : soins généraux, détartrage, prothèses et urgences dentaires.",
-      ar: "عيادة في قلب طنجة: علاجات عامة وتنظيف وأطقم أسنان وطوارئ.",
+      ar: "عيادة في قلب طنجة: علاجات عامة وتنظيف وأطقم أسنان وطوارئ."
     },
     lat: 35.7734,
     lng: -5.8157,
     hours: stdHours("09:30 – 18:30", "09:30 – 12:30"),
-    lastSyncedAt: "2026-08-20",
+    lastSyncedAt: "2026-08-20"
   },
   {
     slug: "smile-clinic-casablanca-maarif",
@@ -76,9 +77,6 @@ export const clinics: Clinic[] = [
     citySlug: "casablanca",
     neighborhood: { fr: "Maârif, Rue Ibnou Mounir", ar: "المعاريف، شارع ابن مونير" },
     address: { fr: "Rue Ibnou Mounir, Maârif, Casablanca 20330", ar: "شارع ابن مونير، المعاريف، الدار البيضاء 20330" },
-    phone: "+212 522 XXX XXX",
-    phoneHref: "+212522000000",
-    whatsapp: "212600000002",
     website: null,
     rating: 4.7,
     reviewCount: 126,
@@ -88,12 +86,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Clinique esthétique dentaire à Maârif : facettes céramique, sourire hollywoodien et implants, équipe francophone et anglophone.",
-      ar: "عيادة تجميل أسنان في المعاريف: قشور خزفية وابتسامة هوليوود وزراعة أسنان، فريق ناطق بالفرنسية والإنجليزية.",
+      ar: "عيادة تجميل أسنان في المعاريف: قشور خزفية وابتسامة هوليوود وزراعة أسنان، فريق ناطق بالفرنسية والإنجليزية."
     },
     lat: 33.5834,
     lng: -7.6345,
     hours: stdHours("09:00 – 19:00", "10:00 – 14:00"),
-    lastSyncedAt: "2026-08-27",
+    lastSyncedAt: "2026-08-27"
   },
   {
     slug: "cab-dentaire-gauthier",
@@ -103,9 +101,7 @@ export const clinics: Clinic[] = [
     citySlug: "casablanca",
     neighborhood: { fr: "Gauthier, Boulevard d'Anfa", ar: "غوتييه، شارع أنفا" },
     address: { fr: "Boulevard d'Anfa, Casablanca 21210", ar: "شارع أنفا، الدار البيضاء 21210" },
-    phone: "+212 522 XXX XXX",
     phoneHref: "+212522000001",
-    whatsapp: "212600000003",
     website: null,
     rating: 4.6,
     reviewCount: 89,
@@ -115,12 +111,12 @@ export const clinics: Clinic[] = [
     usesApp: true,
     description: {
       fr: "Cabinet familial du quartier Gauthier : orthodontie enfants et adultes, aligneurs invisibles et soins des gencives.",
-      ar: "عيادة عائلية في حي غوتييه: تقويم أسنان للأطفال والكبار وتقويم شفاف وعلاج اللثة.",
+      ar: "عيادة عائلية في حي غوتييه: تقويم أسنان للأطفال والكبار وتقويم شفاف وعلاج اللثة."
     },
     lat: 33.5926,
     lng: -7.6315,
     hours: stdHours("09:00 – 18:00", "09:00 – 13:00"),
-    lastSyncedAt: "2026-08-26",
+    lastSyncedAt: "2026-08-26"
   },
   {
     slug: "dental-care-californie",
@@ -130,9 +126,7 @@ export const clinics: Clinic[] = [
     citySlug: "casablanca",
     neighborhood: { fr: "Californie, Ain Diab", ar: "كاليفورنيا، عين الذياب" },
     address: { fr: "Boulevard de la Corniche, Casablanca 21100", ar: "شارع الكورنيش، الدار البيضاء 21100" },
-    phone: "+212 522 XXX XXX",
     phoneHref: "+212522000002",
-    whatsapp: "212600000004",
     website: null,
     rating: 4.5,
     reviewCount: 57,
@@ -142,12 +136,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet moderne près de la Corniche : implantologie complète et prothèses zircone, devis numérique avant traitement.",
-      ar: "عيادة حديثة قرب الكورنيش: زراعة أسنان كاملة وأطقم زركونيا، عرض سعر رقمي قبل العلاج.",
+      ar: "عيادة حديثة قرب الكورنيش: زراعة أسنان كاملة وأطقم زركونيا، عرض سعر رقمي قبل العلاج."
     },
     lat: 33.6014,
     lng: -7.6621,
     hours: stdHours("10:00 – 19:00", "11:00 – 15:00"),
-    lastSyncedAt: "2026-08-18",
+    lastSyncedAt: "2026-08-18"
   },
   {
     slug: "clinique-dentaire-agdal-rabat",
@@ -157,9 +151,6 @@ export const clinics: Clinic[] = [
     citySlug: "rabat",
     neighborhood: { fr: "Agdal, Avenue Fal Ould Oumeir", ar: "أكدال، شارع فال ولد عمير" },
     address: { fr: "Avenue Fal Ould Oumeir, Agdal, Rabat 10000", ar: "شارع فال ولد عمير، أكدال، الرباط 10000" },
-    phone: "+212 537 XXX XXX",
-    phoneHref: "+212537000000",
-    whatsapp: "212600000005",
     website: null,
     rating: 4.8,
     reviewCount: 92,
@@ -169,12 +160,12 @@ export const clinics: Clinic[] = [
     usesApp: true,
     description: {
       fr: "Clinique premium à Agdal : esthétique dentaire, implants et urgences, rendez-vous en ligne via Dental App.",
-      ar: "عيادة راقية في أكدال: تجميل الأسنان والزراعة والطوارئ، حجز المواعيد عبر تطبيق Dental App.",
+      ar: "عيادة راقية في أكدال: تجميل الأسنان والزراعة والطوارئ، حجز المواعيد عبر تطبيق Dental App."
     },
     lat: 33.9905,
     lng: -6.8498,
     hours: stdHours("09:00 – 19:00", "10:00 – 13:00"),
-    lastSyncedAt: "2026-08-29",
+    lastSyncedAt: "2026-08-29"
   },
   {
     slug: "cabinet-dentiste-souissi",
@@ -184,9 +175,7 @@ export const clinics: Clinic[] = [
     citySlug: "rabat",
     neighborhood: { fr: "Souissi", ar: "السويسي" },
     address: { fr: "Quartier Souissi, Rabat 10100", ar: "حي السويسي، الرباط 10100" },
-    phone: "+212 537 XXX XXX",
     phoneHref: "+212537000001",
-    whatsapp: "212600000006",
     website: null,
     rating: 4.3,
     reviewCount: 22,
@@ -196,12 +185,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet intimiste à Souissi : prévention, soins des gencives et suivi dentaire des enfants.",
-      ar: "عيادة هادئة في السويسي: الوقاية وعلاج اللثة ومتابعة أسنان الأطفال.",
+      ar: "عيادة هادئة في السويسي: الوقاية وعلاج اللثة ومتابعة أسنان الأطفال."
     },
     lat: 33.9722,
     lng: -6.8298,
     hours: stdHours("09:30 – 17:30", "Fermé / مغلق"),
-    lastSyncedAt: "2026-08-15",
+    lastSyncedAt: "2026-08-15"
   },
   {
     slug: "marrakech-dental-studio",
@@ -211,9 +200,6 @@ export const clinics: Clinic[] = [
     citySlug: "marrakech",
     neighborhood: { fr: "Guéliz, Avenue Mohammed Zerktouni", ar: "جيليز، شارع محمد الزرقطوني" },
     address: { fr: "Avenue Mohammed Zerktouni, Guéliz, Marrakech 40000", ar: "شارع محمد الزرقطوني، جيليز، مراكش 40000" },
-    phone: "+212 524 XXX XXX",
-    phoneHref: "+212524000000",
-    whatsapp: "212600000007",
     website: null,
     rating: 4.9,
     reviewCount: 154,
@@ -223,12 +209,12 @@ export const clinics: Clinic[] = [
     usesApp: true,
     description: {
       fr: "Studio dentaire haut de gamme à Guéliz, référence du sourire hollywoodien à Marrakech : facettes, implants et patients internationaux.",
-      ar: "استوديو أسنان راقٍ في جيليز، مرجع ابتسامة هوليوود في مراكش: قشور وزراعة أسنان ومرضى دوليون.",
+      ar: "استوديو أسنان راقٍ في جيليز، مرجع ابتسامة هوليوود في مراكش: قشور وزراعة أسنان ومرضى دوليون."
     },
     lat: 31.6363,
     lng: -8.0089,
     hours: stdHours("09:00 – 19:30", "10:00 – 14:00"),
-    lastSyncedAt: "2026-08-30",
+    lastSyncedAt: "2026-08-30"
   },
   {
     slug: "cabinet-dentaire-hivernage",
@@ -238,9 +224,7 @@ export const clinics: Clinic[] = [
     citySlug: "marrakech",
     neighborhood: { fr: "Hivernage", ar: "الحي الشتوي" },
     address: { fr: "Quartier Hivernage, Marrakech 40000", ar: "الحي الشتوي، مراكش 40000" },
-    phone: "+212 524 XXX XXX",
     phoneHref: "+212524000001",
-    whatsapp: "212600000008",
     website: null,
     rating: 4.5,
     reviewCount: 41,
@@ -250,12 +234,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet du quartier Hivernage : orthodontie adulte et prothèses, plateaux techniques récents.",
-      ar: "عيادة في الحي الشتوي: تقويم أسنان للكبار وأطقم أسنان بتقنيات حديثة.",
+      ar: "عيادة في الحي الشتوي: تقويم أسنان للكبار وأطقم أسنان بتقنيات حديثة."
     },
     lat: 31.6226,
     lng: -8.0172,
     hours: stdHours("09:00 – 18:00", "09:00 – 12:00"),
-    lastSyncedAt: "2026-08-19",
+    lastSyncedAt: "2026-08-19"
   },
   {
     slug: "fes-dental-care",
@@ -265,9 +249,6 @@ export const clinics: Clinic[] = [
     citySlug: "fes",
     neighborhood: { fr: "Ville nouvelle, Avenue Hassan II", ar: "المدينة الجديدة، شارع الحسن الثاني" },
     address: { fr: "Avenue Hassan II, Fès 30000", ar: "شارع الحسن الثاني، فاس 30000" },
-    phone: "+212 535 XXX XXX",
-    phoneHref: "+212535000000",
-    whatsapp: "212600000009",
     website: null,
     rating: 4.6,
     reviewCount: 67,
@@ -277,12 +258,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet moderne de la ville nouvelle de Fès : orthodontie, implants et soins pédiatriques.",
-      ar: "عيادة حديثة في المدينة الجديدة بفاس: تقويم وزراعة وعلاجات أسنان الأطفال.",
+      ar: "عيادة حديثة في المدينة الجديدة بفاس: تقويم وزراعة وعلاجات أسنان الأطفال."
     },
     lat: 34.0372,
     lng: -5.0003,
     hours: stdHours("09:00 – 18:30", "09:30 – 12:30"),
-    lastSyncedAt: "2026-08-25",
+    lastSyncedAt: "2026-08-25"
   },
   {
     slug: "cabinet-dentaire-atlas-fes",
@@ -292,9 +273,7 @@ export const clinics: Clinic[] = [
     citySlug: "fes",
     neighborhood: { fr: "Route d'Immouzer", ar: "طريق إيموزار" },
     address: { fr: "Route d'Immouzer, Fès 30050", ar: "طريق إيموزار، فاس 30050" },
-    phone: "+212 535 XXX XXX",
     phoneHref: "+212535000001",
-    whatsapp: "212600000010",
     website: null,
     rating: 4.2,
     reviewCount: 18,
@@ -304,12 +283,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet de secteur sur la route d'Immouzer : prothèses, soins des gencives et urgences.",
-      ar: "عيادة على طريق إيموزار: أطقم أسنان وعلاج اللثة وطوارئ.",
+      ar: "عيادة على طريق إيموزار: أطقم أسنان وعلاج اللثة وطوارئ."
     },
     lat: 34.0509,
     lng: -4.9779,
     hours: stdHours("09:00 – 17:00", "Fermé / مغلق"),
-    lastSyncedAt: "2026-08-12",
+    lastSyncedAt: "2026-08-12"
   },
   {
     slug: "agadir-dental-clinic",
@@ -319,9 +298,6 @@ export const clinics: Clinic[] = [
     citySlug: "agadir",
     neighborhood: { fr: "Founty, Boulevard du 20 Août", ar: "فونتي، شارع 20 غشت" },
     address: { fr: "Boulevard du 20 Août, Agadir 80000", ar: "شارع 20 غشت، أكادير 80000" },
-    phone: "+212 528 XXX XXX",
-    phoneHref: "+212528000000",
-    whatsapp: "212600000011",
     website: null,
     rating: 4.7,
     reviewCount: 73,
@@ -331,12 +307,12 @@ export const clinics: Clinic[] = [
     usesApp: true,
     description: {
       fr: "Clinique littorale à Founty : blanchiment, facettes et urgences, idéale pour résidents et visiteurs d'Agadir.",
-      ar: "عيادة ساحلية في فونتي: تبييض وقشور وطوارئ، مثالية لسكان وزوار أكادير.",
+      ar: "عيادة ساحلية في فونتي: تبييض وقشور وطوارئ، مثالية لسكان وزوار أكادير."
     },
     lat: 30.4046,
     lng: -9.5679,
     hours: stdHours("09:00 – 19:00", "10:00 – 13:00"),
-    lastSyncedAt: "2026-08-28",
+    lastSyncedAt: "2026-08-28"
   },
   {
     slug: "cabinet-dentaire-talborjt",
@@ -346,9 +322,7 @@ export const clinics: Clinic[] = [
     citySlug: "agadir",
     neighborhood: { fr: "Talborjt", ar: "تالبرجت" },
     address: { fr: "Quartier Talborjt, Agadir 80080", ar: "حي تالبرجت، أكادير 80080" },
-    phone: "+212 528 XXX XXX",
     phoneHref: "+212528000001",
-    whatsapp: "212600000012",
     website: null,
     rating: 4.1,
     reviewCount: 15,
@@ -358,12 +332,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet de quartier à Talborjt : détartrage, soins des gencives et prothèses amovibles.",
-      ar: "عيادة حي في تالبرجت: تنظيف وعلاج اللثة وأطقم متحركة.",
+      ar: "عيادة حي في تالبرجت: تنظيف وعلاج اللثة وأطقم متحركة."
     },
     lat: 30.4237,
     lng: -9.5986,
     hours: stdHours("09:30 – 18:00", "09:30 – 12:00"),
-    lastSyncedAt: "2026-08-10",
+    lastSyncedAt: "2026-08-10"
   },
   {
     slug: "oujda-dental-center",
@@ -373,9 +347,6 @@ export const clinics: Clinic[] = [
     citySlug: "oujda",
     neighborhood: { fr: "Centre-ville, Boulevard Idriss Al Akbar", ar: "وسط المدينة، شارع إدريس الأكبر" },
     address: { fr: "Boulevard Idriss Al Akbar, Oujda 60000", ar: "شارع إدريس الأكبر، وجدة 60000" },
-    phone: "+212 536 XXX XXX",
-    phoneHref: "+212536000000",
-    whatsapp: "212600000013",
     website: null,
     rating: 4.4,
     reviewCount: 38,
@@ -385,12 +356,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Centre dentaire au cœur d'Oujda : implants et orthodontie avec facilités de paiement.",
-      ar: "مركز أسنان في قلب وجدة: زراعة وتقويم أسنان مع تسهيلات في الأداء.",
+      ar: "مركز أسنان في قلب وجدة: زراعة وتقويم أسنان مع تسهيلات في الأداء."
     },
     lat: 34.6867,
     lng: -1.9118,
     hours: stdHours("09:00 – 18:00", "09:00 – 12:30"),
-    lastSyncedAt: "2026-08-22",
+    lastSyncedAt: "2026-08-22"
   },
   {
     slug: "kenitra-dentaire-familia",
@@ -400,9 +371,7 @@ export const clinics: Clinic[] = [
     citySlug: "kenitra",
     neighborhood: { fr: "Centre-ville, Avenue Mohammed V", ar: "وسط المدينة، شارع محمد الخامس" },
     address: { fr: "Avenue Mohammed V, Kénitra 14000", ar: "شارع محمد الخامس، القنيطرة 14000" },
-    phone: "+212 537 XXX XXX",
     phoneHref: "+212537000002",
-    whatsapp: "212600000014",
     website: null,
     rating: 4.5,
     reviewCount: 29,
@@ -412,12 +381,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet familial à Kénitra : première consultation enfants, orthodontie et blanchiment.",
-      ar: "عيادة عائلية في القنيطرة: أول زيارة للأطفال وتقويم وتبييض.",
+      ar: "عيادة عائلية في القنيطرة: أول زيارة للأطفال وتقويم وتبييض."
     },
     lat: 34.2611,
     lng: -6.5802,
     hours: stdHours("09:00 – 18:30", "10:00 – 13:00"),
-    lastSyncedAt: "2026-08-21",
+    lastSyncedAt: "2026-08-21"
   },
   {
     slug: "tetouan-cabinet-dentaire-modern",
@@ -427,9 +396,7 @@ export const clinics: Clinic[] = [
     citySlug: "tetouan",
     neighborhood: { fr: "Ville nouvelle, Avenue Mohammed V", ar: "المدينة الجديدة، شارع محمد الخامس" },
     address: { fr: "Avenue Mohammed V, Tétouan 93000", ar: "شارع محمد الخامس، تطوان 93000" },
-    phone: "+212 539 XXX XXX",
     phoneHref: "+212539000001",
-    whatsapp: "212600000015",
     website: null,
     rating: 4.3,
     reviewCount: 26,
@@ -439,12 +406,12 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet de la ville nouvelle de Tétouan : prothèses, urgences et soins des gencives.",
-      ar: "عيادة في المدينة الجديدة بتطوان: أطقم وطوارئ وعلاج اللثة.",
+      ar: "عيادة في المدينة الجديدة بتطوان: أطقم وطوارئ وعلاج اللثة."
     },
     lat: 35.5747,
     lng: -5.3665,
     hours: stdHours("09:00 – 18:00", "09:00 – 12:00"),
-    lastSyncedAt: "2026-08-17",
+    lastSyncedAt: "2026-08-17"
   },
   {
     slug: "safi-cabinet-dentaire-atlas",
@@ -454,9 +421,7 @@ export const clinics: Clinic[] = [
     citySlug: "safi",
     neighborhood: { fr: "Centre-ville, Avenue de la Liberté", ar: "وسط المدينة، شارع الحرية" },
     address: { fr: "Avenue de la Liberté, Safi 46000", ar: "شارع الحرية، آسفي 46000" },
-    phone: "+212 524 XXX XXX",
     phoneHref: "+212524000002",
-    whatsapp: "212600000016",
     website: null,
     rating: 4.2,
     reviewCount: 21,
@@ -466,36 +431,11 @@ export const clinics: Clinic[] = [
     usesApp: false,
     description: {
       fr: "Cabinet de centre-ville à Safi : soins essentiels, détartrage et prothèses pour toute la région.",
-      ar: "عيادة في وسط آسفي: علاجات أساسية وتنظيف وأطقم أسنان لكل المنطقة.",
+      ar: "عيادة في وسط آسفي: علاجات أساسية وتنظيف وأطقم أسنان لكل المنطقة."
     },
     lat: 32.3011,
     lng: -9.2372,
     hours: stdHours("09:00 – 17:30", "09:00 – 12:30"),
-    lastSyncedAt: "2026-08-14",
+    lastSyncedAt: "2026-08-14"
   },
 ];
-
-export function getClinicsByCity(citySlug: string): Clinic[] {
-  return clinics.filter((c) => c.citySlug === citySlug);
-}
-
-export function getClinic(citySlug: string, clinicSlug: string): Clinic | undefined {
-  return clinics.find((c) => c.citySlug === citySlug && c.slug === clinicSlug);
-}
-
-export function getFeaturedClinics(limit = 6): Clinic[] {
-  return clinics
-    .filter((c) => c.verified)
-    .sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount)
-    .slice(0, limit);
-}
-
-export function searchClinicsByName(query: string): Clinic[] {
-  const q = query.trim().toLowerCase();
-  if (q.length < 2) return [];
-  return clinics.filter((c) => c.name.toLowerCase().includes(q) || c.citySlug.includes(q)).slice(0, 6);
-}
-
-export function clinicCountByCity(citySlug: string): number {
-  return clinics.filter((c) => c.citySlug === citySlug).length;
-}

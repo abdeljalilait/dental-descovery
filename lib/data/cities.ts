@@ -6,8 +6,8 @@ export const cities: City[] = [
     name: "Tanger",
     nameAr: "طنجة",
     region: { fr: "Tanger-Tétouan-Al Hoceïma", ar: "طنجة - تطوان - الحسيمة" },
-    lat: 35.7595,
-    lng: -5.834,
+    lat: 35.7767,
+    lng: -5.8039,
     populationNote: { fr: "plus d'un million d'habitants", ar: "أكثر من مليون نسمة" },
     seoIntro: {
       fr: "Tanger concentre un large éventail de cabinets dentaires, du centre-ville aux nouveaux quartiers de Tanger City. Comparez les cliniques par quartier, spécialité et avis avant de prendre rendez-vous.",
@@ -20,8 +20,8 @@ export const cities: City[] = [
     name: "Casablanca",
     nameAr: "الدار البيضاء",
     region: { fr: "Casablanca-Settat", ar: "الدار البيضاء - سطات" },
-    lat: 33.5731,
-    lng: -7.5898,
+    lat: 33.5992,
+    lng: -7.62,
     populationNote: { fr: "la plus grande ville du Maroc", ar: "أكبر مدينة في المغرب" },
     seoIntro: {
       fr: "Casablanca offre le plus grand choix de cabinets dentaires du Maroc : Maârif, Gauthier, Californie, Ain Diab... Trouvez le praticien adapté à votre budget et à votre traitement.",
@@ -34,8 +34,8 @@ export const cities: City[] = [
     name: "Rabat",
     nameAr: "الرباط",
     region: { fr: "Rabat-Salé-Kénitra", ar: "الرباط - سلا - القنيطرة" },
-    lat: 34.0209,
-    lng: -6.8416,
+    lat: 34.0211,
+    lng: -6.8414,
     populationNote: { fr: "la capitale du Royaume", ar: "عاصمة المملكة" },
     seoIntro: {
       fr: "À Rabat, d'Agdal à Souissi en passant par le centre-ville, les cabinets dentaires de la capitale couvrent toutes les spécialités : implantologie, orthodontie, esthétique dentaire.",
@@ -62,8 +62,8 @@ export const cities: City[] = [
     name: "Fès",
     nameAr: "فاس",
     region: { fr: "Fès-Meknès", ar: "فاس - مكناس" },
-    lat: 34.0331,
-    lng: -5.0003,
+    lat: 34.0433,
+    lng: -5.0033,
     populationNote: { fr: "capitale spirituelle du Royaume", ar: "العاصمة الروحية للمملكة" },
     seoIntro: {
       fr: "À Fès, les cabinets dentaires se concentrent autour de la ville nouvelle et des principaux axes. Orthodontie, soins conservateurs et prothèses dentaires y sont bien représentés.",
@@ -76,8 +76,8 @@ export const cities: City[] = [
     name: "Agadir",
     nameAr: "أكادير",
     region: { fr: "Souss-Massa", ar: "سوس - ماسة" },
-    lat: 30.4278,
-    lng: -9.5981,
+    lat: 30.4214,
+    lng: -9.5831,
     populationNote: { fr: "première station balnéaire du Maroc", ar: "أول منتجع سياحي في المغرب" },
     seoIntro: {
       fr: "À Agadir, entre Founty et le centre-ville, les cliniques dentaires accueillent autant les résidents que les visiteurs : blanchiment, implants et soins esthétiques au bord de l'Atlantique.",
@@ -90,8 +90,8 @@ export const cities: City[] = [
     name: "Oujda",
     nameAr: "وجدة",
     region: { fr: "Oriental", ar: "الشرق" },
-    lat: 34.6814,
-    lng: -1.9084,
+    lat: 34.6867,
+    lng: -1.9114,
     populationNote: { fr: "métropole de l'Oriental", ar: "حاضرة الشرق" },
     seoIntro: {
       fr: "Les cabinets dentaires d'Oujda couvrent l'ensemble de la région de l'Oriental : soins généraux, orthodontie et implantologie, avec des tarifs souvent plus accessibles.",
@@ -104,8 +104,8 @@ export const cities: City[] = [
     name: "Kénitra",
     nameAr: "القنيطرة",
     region: { fr: "Rabat-Salé-Kénitra", ar: "الرباط - سلا - القنيطرة" },
-    lat: 34.261,
-    lng: -6.5802,
+    lat: 34.25,
+    lng: -6.5833,
     populationNote: { fr: "carrefour entre Rabat et le nord", ar: "ملتقى بين الرباط والشمال" },
     seoIntro: {
       fr: "À Kénitra, les cabinets dentaires du centre et des nouveaux quartiers prennent en charge toute la famille : soins, orthodontie enfant et esthétique dentaire.",
@@ -118,8 +118,8 @@ export const cities: City[] = [
     name: "Tétouan",
     nameAr: "تطوان",
     region: { fr: "Tanger-Tétouan-Al Hoceïma", ar: "طنجة - تطوان - الحسيمة" },
-    lat: 35.5785,
-    lng: -5.3684,
+    lat: 35.5667,
+    lng: -5.3667,
     populationNote: { fr: "la colombe blanche", ar: "الحمامة البيضاء" },
     seoIntro: {
       fr: "À Tétouan, les praticiens dentaires de la médina et de la ville nouvelle proposent soins conservateurs, prothèses et orthodontie, à 40 minutes de Tanger.",
@@ -132,8 +132,8 @@ export const cities: City[] = [
     name: "Safi",
     nameAr: "آسفي",
     region: { fr: "Marrakech-Safi", ar: "مراكش - آسفي" },
-    lat: 32.2994,
-    lng: -9.2372,
+    lat: 32.2833,
+    lng: -9.2333,
     populationNote: { fr: "capitale de la céramique", ar: "عاصمة الفخار" },
     seoIntro: {
       fr: "Les cabinets dentaires de Safi couvrent les soins essentiels : consultations, détartrage, soins conservateurs et prothèses, pour toute la région.",
@@ -141,12 +141,78 @@ export const cities: City[] = [
     },
     featured: false,
   },
+  {
+    slug: "sale",
+    name: "Salé",
+    nameAr: "سلا",
+    region: { fr: "Rabat-Salé-Kénitra", ar: "الرباط - سلا - القنيطرة" },
+    lat: 34.05,
+    lng: -6.8167,
+    populationNote: { fr: "l'agglomération de la capitale", ar: "تجمّع العاصمة" },
+    seoIntro: {
+      fr: "Salé, en face de Rabat, concentre des cabinets dentaires modernes à Hay Karima, Bettana et Sidi Moussa. Implants, orthodontie et esthétique dentaire à portée de main.",
+      ar: "سلا، مقابل الرباط، تضم عيادات أسنان حديثة في حي Kareima وبتانة وسيدي موسى. زراعة الأسنان والتقويم والتجميل على مرمى يد.",
+    },
+    featured: false,
+  },
+  {
+    slug: "meknes",
+    name: "Meknès",
+    nameAr: "مكناس",
+    region: { fr: "Fès-Meknès", ar: "فاس - مكناس" },
+    lat: 33.8833,
+    lng: -5.55,
+    populationNote: { fr: "la ville impériale", ar: "المدينة الإمبراطورية" },
+    seoIntro: {
+      fr: "À Meknès, les cabinets dentaires se répartissent entre la médina et la ville nouvelle : soins conservateurs, prothèses et orthodontie pour toute la région du Moulouya.",
+      ar: "في مكناس، تتوزع عيادات الأسنان بين المدينة القديمة والمدينة الجديدة: علاجات ترميمية وأطقم وتقويم لكل منطقة الملوية.",
+    },
+    featured: false,
+  },
+  {
+    slug: "el-jadida",
+    name: "El Jadida",
+    nameAr: "الجديدة",
+    region: { fr: "Casablanca-Settat", ar: "الدار البيضاء - سطات" },
+    lat: 33.2566,
+    lng: -8.5025,
+    populationNote: { fr: "la cité portugaise", ar: "المدينة البرتغالية" },
+    seoIntro: {
+      fr: "El Jadida, avec sa cité portugaise classée à l'UNESCO, compte des cabinets dentaires à Hay El Massira et au centre-ville : soins généraux, implants et esthétique du sourire.",
+      ar: "الجديدة، ومعها المدينة البرتغالية المصنفة من طرف اليونسكو، تضم عيادات أسنان في حي المسيرة وبوسط المدينة: علاجات عامة وزراعة وتجميل الابتسامة.",
+    },
+    featured: false,
+  },
+  {
+    slug: "laayoune",
+    name: "Laâyoune",
+    nameAr: "العيون",
+    region: { fr: "Laâyoune-Sakia El Hamra", ar: "العيون - الساقية الحمراء" },
+    lat: 27.15,
+    lng: -13.2,
+    populationNote: { fr: "la capitale des Territoires du Sud", ar: "عاصمة الأقاليم الجنوبية" },
+    seoIntro: {
+      fr: "Laâyoune, capitale des Territoires du Sud, dispose de cabinets dentaire pour les soins généraux, l'orthodontie et l'esthétique, avec une offre plus limitée que dans le nord du pays.",
+      ar: "العيون، عاصمة الأقاليم الجنوبية، تتوفر على عيادات أسنان للعلاجات العامة والتقويم والتجميل، مع عرض أقل مقارنة بشمال البلاد.",
+    },
+    featured: false,
+  },
+  {
+    slug: "dakhla",
+    name: "Dakhla",
+    nameAr: "الداخلة",
+    region: { fr: "Dakhla-Oued Ed-Dahab", ar: "الداخلة - وادي الذهب" },
+    lat: 23.7167,
+    lng: -15.95,
+    populationNote: { fr: "la perle des Territoires du Sud", ar: "لؤلؤة الأقاليم الجنوبية" },
+    seoIntro: {
+      fr: "À Dakhla, la demande en soins dentaires augmente avec l'affluence touristique : cabinets pour consultations, détartrage, soins conservateurs et prothèses.",
+      ar: "في الداخلة، يزداد الطلب على علاجات الأسنان مع توافد السياح: عيادات للاستشارات والتنظيف والعلاجات الترميمية وأطقم الأسنان.",
+    },
+    featured: false,
+  },
 ];
 
 export function getCity(slug: string): City | undefined {
   return cities.find((c) => c.slug === slug);
-}
-
-export function cityDisplayName(city: City, locale: string): string {
-  return locale === "ar" ? city.nameAr : city.name;
 }
