@@ -4,11 +4,11 @@ import { Section, SectionHeading } from "@/components/ui/section";
 import { Container } from "@/components/ui/container";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { getBlogPosts } from "@/lib/data/blog";
+import { getBlogArticlesDb } from "@/lib/repositories/blog";
 import { blogPostPath, localizedPath } from "@/lib/routes";
 
-export function BlogHighlightsSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const posts = getBlogPosts().slice(0, 3);
+export async function BlogHighlightsSection({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const posts = (await getBlogArticlesDb()).slice(0, 3);
 
   return (
     <Section>

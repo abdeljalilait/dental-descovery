@@ -11,15 +11,22 @@ import { ClinicCard } from "@/components/directory/clinic-card";
 import { ButtonLink } from "@/components/ui/button-link";
 import { StructuredData } from "@/components/seo/structured-data";
 import { articleSchema, breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
-import { blogPosts, getBlogPost } from "@/lib/data/blog";
-import { getClinicsByCity } from "@/lib/data/clinics";
-import { getCity } from "@/lib/data/cities";
+import { getBlogArticleBySlugDb, getBlogSlugsDb } from "@/lib/repositories/blog";
+import { getClinicsByCityDb } from "@/lib/repositories/clinics";
+import { getCityDb } from "@/lib/repositories/cities";
 import { blogPostPath, cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
-export function generateStaticParams() {
-  return locales.flatMap((locale) => blogPosts.map((post) => ({ lang: locale, slug: post.slug })));
+/**
+ * Published posts are re-read hourly. Drafts are never generated, and a post
+ * published from the admin revalidates its own path on save.
+ */
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const slugs = await getBlogSlugsDb();
+  return locales.flatMap((lang) => slugs.map((slug) => ({ lang, slug })));
 }
 
 export async function generateMetadata({
@@ -28,21 +35,31 @@ export async function generateMetadata({
   params: Promise<{ lang: string; slug: string }>;
 }): Promise<Metadata> {
   const { lang: localeValue, slug } = await params;
-  const post = getBlogPost(slug);
-  if (!post) return {};
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
+  const post = await getBlogArticleBySlugDb(slug);
+  if (!post) return {};
+
+  // Per-article overrides are nullable by design; each falls back to the post's
+  // own title/excerpt so a partially filled SEO section still applies.
+  const title = post.metaTitle[locale] || post.title[locale];
+  const description = post.metaDescription[locale] || post.excerpt[locale];
+  const keywords = post.keywords[locale];
+  const ogImageUrl = post.ogImageUrl ?? post.coverImageUrl;
+
   return {
-    title: { absolute: post.title[locale] },
-    description: post.excerpt[locale],
+    title: { absolute: title },
+    description,
+    ...(keywords ? { keywords } : {}),
     alternates: {
       canonical: blogPostPath(locale, slug),
       languages: { fr: blogPostPath("fr", slug), ar: blogPostPath("ar", slug) },
     },
     openGraph: {
       type: "article",
-      title: post.title[locale],
-      description: post.excerpt[locale],
+      title,
+      description,
       publishedTime: post.date,
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl, alt: title }] } : {}),
     },
   };
 }
@@ -50,13 +67,15 @@ export async function generateMetadata({
 export default async function BlogPostPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { lang: localeValue, slug } = await params;
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
-  const dict = await getDictionaryFor(locale);
-  const post = getBlogPost(slug);
+  const [dict, post] = await Promise.all([
+    getDictionaryFor(locale),
+    getBlogArticleBySlugDb(slug),
+  ]);
   if (!post) notFound();
 
-  const paragraphs = post.content[locale].split("\n\n");
-  const city = post.relatedCitySlug ? getCity(post.relatedCitySlug) : undefined;
-  const cityClinics = city ? getClinicsByCity(city.slug).slice(0, 3) : [];
+  const paragraphs = (post.content[locale] || "").split("\n\n");
+  const city = post.relatedCitySlug ? await getCityDb(post.relatedCitySlug) : undefined;
+  const cityClinics = city ? (await getClinicsByCityDb(city.slug)).slice(0, 3) : [];
 
   return (
     <>

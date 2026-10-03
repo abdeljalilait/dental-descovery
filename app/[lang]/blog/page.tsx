@@ -7,28 +7,35 @@ import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
-import { getBlogPosts } from "@/lib/data/blog";
+import { getBlogArticlesDb } from "@/lib/repositories/blog";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
 import { blogPostPath, localizedPath } from "@/lib/routes";
 
-export const dynamicParams = false;
+export const dynamicParams = true;
+
+/** Published posts are re-read hourly; the admin revalidates this path on save. */
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ lang: locale }));
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const dict = await getDictionaryFor("fr");
-  return {
-    title: dict.blogPage.title,
-    description: dict.blogPage.subtitle,
-    alternates: {
-      canonical: localizedPath("blog", "fr"),
-      languages: {
-        fr: localizedPath("blog", "fr"),
-        ar: localizedPath("blog", "ar"),
-      },
-    },
-  };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang: value } = await params;
+  const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
+  const dict = await getDictionaryFor(locale);
+
+  return buildDynamicMetadata({
+    routeKey: "blog",
+    locale,
+    defaultTitle: dict.blogPage.title,
+    defaultDescription: dict.blogPage.subtitle,
+    canonicalPath: localizedPath("blog", locale),
+  });
 }
 
 export default async function BlogPage({
@@ -38,8 +45,10 @@ export default async function BlogPage({
 }) {
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
-  const dict = await getDictionaryFor(locale);
-  const posts = getBlogPosts();
+  const [dict, posts] = await Promise.all([
+    getDictionaryFor(locale),
+    getBlogArticlesDb(),
+  ]);
 
   return (
     <>

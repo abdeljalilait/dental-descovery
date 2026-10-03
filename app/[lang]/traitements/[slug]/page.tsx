@@ -11,16 +11,22 @@ import { ClinicCard } from "@/components/directory/clinic-card";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 import { StructuredData } from "@/components/seo/structured-data";
 import { breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
-import { specialties, getSpecialty } from "@/lib/data/specialties";
-import { cities } from "@/lib/data/cities";
-import { clinics } from "@/lib/data/clinics";
-import { blogPosts } from "@/lib/data/blog";
+import {
+  getCitiesWithSpecialtyDb,
+  getClinicCountBySpecialtyDb,
+  getSpecialtyDb,
+  getSpecialtySlugsDb,
+} from "@/lib/repositories/specialties";
+import { getCitiesDb } from "@/lib/repositories/cities";
+import { getClinicsBySpecialtyDb } from "@/lib/repositories/clinics";
+import { getBlogArticlesBySpecialtyDb } from "@/lib/repositories/blog";
 import { cityPath, localizedPath, treatmentPath, blogPostPath } from "@/lib/routes";
 
 export const dynamicParams = false;
 
-export function generateStaticParams() {
-  return locales.flatMap((locale) => specialties.map((specialty) => ({ lang: locale, slug: specialty.slug })));
+export async function generateStaticParams() {
+  const slugs = await getSpecialtySlugsDb();
+  return locales.flatMap((locale) => slugs.map((slug) => ({ lang: locale, slug })));
 }
 
 export async function generateMetadata({
@@ -29,7 +35,7 @@ export async function generateMetadata({
   params: Promise<{ lang: string; slug: string }>;
 }): Promise<Metadata> {
   const { lang: localeValue, slug } = await params;
-  const specialty = getSpecialty(slug);
+  const specialty = await getSpecialtyDb(slug);
   if (!specialty) return {};
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   const title =
@@ -50,14 +56,22 @@ export default async function TreatmentPage({ params }: { params: Promise<{ lang
   const { lang: localeValue, slug } = await params;
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  const specialty = getSpecialty(slug);
+  const specialty = await getSpecialtyDb(slug);
   if (!specialty) notFound();
 
-  const relatedClinics = clinics.filter((c) => c.specialtySlugs.includes(slug)).slice(0, 6);
-  const citiesWithSpecialty = cities.filter((city) =>
-    clinics.some((c) => c.citySlug === city.slug && c.specialtySlugs.includes(slug))
-  );
-  const relatedPosts = blogPosts.filter((p) => p.relatedSpecialtySlug === slug).slice(0, 2);
+  const [relatedClinics, citySlugsWithSpecialty, countsBySpecialty, allCities, relatedPosts] =
+    await Promise.all([
+      getClinicsBySpecialtyDb(slug, 6),
+      getCitiesWithSpecialtyDb(slug),
+      getClinicCountBySpecialtyDb(),
+      getCitiesDb(),
+      getBlogArticlesBySpecialtyDb(slug, 2),
+    ]);
+
+  // The headline figure is the real total, not the size of the grid below it.
+  const totalClinicsForSpecialty = countsBySpecialty[slug] ?? 0;
+  const withSpecialty = new Set(citySlugsWithSpecialty);
+  const citiesWithSpecialty = allCities.filter((city) => withSpecialty.has(city.slug));
 
   return (
     <>
@@ -91,7 +105,7 @@ export default async function TreatmentPage({ params }: { params: Promise<{ lang
                   {dict.treatmentsPage.seeClinics} — {dict.treatmentsPage.citiesWith}
                 </h2>
                 <p className="text-sm text-muted">
-                  {relatedClinics.length} {dict.common.clinics}
+                  {totalClinicsForSpecialty} {dict.common.clinics}
                 </p>
               </div>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
