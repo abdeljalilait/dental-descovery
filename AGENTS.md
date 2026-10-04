@@ -8,11 +8,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Dental Discovery Developer & Agent Guidelines
+# Dentora Developer & Agent Guidelines
 
 ## 1. Project Overview & Architecture
 
-**Dental Discovery** (`dental-discovery.ma`) is a bilingual (French & Moroccan Arabic) medical platform and SaaS ecosystem catering to two primary audiences:
+**Dentora** (`dentora.ma`) is a bilingual (French & Moroccan Arabic) medical platform and SaaS ecosystem catering to two primary audiences:
 - **B2C Patients**: Discover vetted dental clinics, dental specialties, pricing guides, and request appointments across major Moroccan cities.
 - **B2B Clinics & Dentists**: "Dental App" SaaS practice management software (AI copilot, 3D odontogram, agenda, automated WhatsApp reminders, analytics), turnkey dental website development, and clinic profile claim & verification.
 
@@ -152,8 +152,13 @@ npm run db:generate    # Generate Prisma client
 npm run db:push        # Push schema changes to PostgreSQL
 npm run db:seed        # Seed PostgreSQL with Moroccan cities, specialties, and clinics
 
-# Run background job scheduler (Bree.js worker)
-npm run worker
+# Container image for registry.hakiware.com (typecheck + lint + docker build)
+make all
+make push
+
+# Jobs are NOT scheduled: start them from /admin/jobs, or use the CLI
+npm run sync:clinics -- --city=casablanca
+npm run sync:clinics -- --dry-run
 ```
 
 ---
@@ -162,8 +167,14 @@ npm run worker
 
 - **Prisma Version**: Prisma 8 (modular architecture with `@prisma/orm-postgres`).
 - **Configuration**: `prisma.config.ts` using `definePrismaConfig` from `prisma/config` and `@prisma/orm-postgres/config`.
-- **Contract / Schema**: `prisma/schema.prisma` (datasource URLs managed centrally via `prisma.config.ts`).
-- **Models**: `City`, `Specialty`, `Clinic`, `ClinicSpecialty`, `Lead`, `ClinicClaim`.
+- **Contract / Schema**: `prisma/contract.prisma` (datasource URLs managed centrally via
+  `prisma.config.ts`). Emit with `npm run contract:emit`, then apply with `npm run db:push`.
+- **Temporal codec**: `timestamptz` columns are read and written through the global `Temporal`
+  API. Node LTS has no native `Temporal`, so `src/prisma/db.ts` installs the
+  `temporal-polyfill` global before creating the client, and every write must go through
+  `toInstant()` from `src/prisma/codecs.ts` (a plain `Date` is rejected by the codec).
+- **Models**: `City`, `Specialty`, `Clinic`, `ClinicSpecialty`, `Lead`, `ClinicClaim`,
+  `ClinicOtp`, `ClinicOutreach`, `JobRun`, `BlogPost`, `PageSeo`, `PageBlock`.
 - **Client Singleton**: `lib/prisma.ts` with connection caching.
 - **Repository Pattern & Resilience**: `lib/repositories/clinics.ts` queries Prisma when `DATABASE_URL` is set, with seamless fallback to static seed data if offline or during local development.
 - **Lead Persistence**: `app/api/leads/route.ts` saves leads to Prisma `Lead` table.
@@ -198,18 +209,23 @@ seed `blog_posts` via `prisma/seed.mjs`.
 
 ---
 
-## 9. Background Jobs & Scheduler (Bree.js & SerpApi)
+## 9. Admin-Triggered Jobs (No Scheduler)
 
-- **Bree.js Scheduler**: `jobs/index.mjs` manages background jobs via Node.js worker threads (no system crontab needed).
-- **Worker Job**: `jobs/sync-clinics.mjs` runs SerpApi sync in an isolated worker thread.
-- **PM2 Orchestration**: `ecosystem.config.cjs` manages Next.js (`dental-discovery-web`) and Bree (`dental-discovery-worker`).
-- **Free Tier Budget Guidelines**:
-  - SerpApi free tier provides **250 searches / month** and **50 throughput / hour**.
-  - Morocco has 10 target cities (`tanger`, `casablanca`, `rabat`, `marrakech`, `fes`, `agadir`, `oujda`, `kenitra`, `tetouan`, `safi`).
-  - 1 sync run across all 10 cities consumes **10 searches** (~200 clinic results).
-  - Configurable schedule via `SYNC_CRON_SCHEDULE` env var (default: `0 3 * * 0` weekly, 40 searches/month).
-  - Built-in 1.5s delay between requests prevents exceeding the 50/hour rate limit.
-  - Automatically upserts synced clinics into PostgreSQL via Prisma.
+There is no Bree, no cron and no `app/api/cron`. Both heavy jobs are started by an operator from
+`/admin/jobs` and report into the `job_runs` table.
+
+- **Start actions**: `app/admin/jobs-actions.ts` create a `job_runs` row, then run the work inside
+  Next.js `after()` so the HTTP response returns immediately.
+- **Progress**: `lib/repositories/job-runs.ts` owns the counters; the UI polls
+  `app/api/admin/jobs/[id]/route.ts`. Runs abandoned for 30 minutes are reaped as `FAILED`.
+- **WhatsApp campaign**: `sendCampaign()` in `lib/services/campaign-sender.ts` sends approved
+  templates via Kapso. `SENT` = accepted by WhatsApp; `DELIVERED`/`READ` come from
+  `app/api/webhooks/kapso/route.ts`, matched on `clinic_outreach.providerMessageId`. The webhook
+  fails closed unless `KAPSO_WEBHOOK_SECRET` is set.
+- **SerpApi sync**: `runClinicSync()` in the same module, capped per run by `SERAPI_MAX_SEARCHES`.
+- **Free Tier Budget**: 250 searches/month, 50/hour. The 10 target cities in `lib/data/cities.ts`
+  cost 10 searches for a full sweep; the 1.5s delay keeps throughput under the hourly limit.
+- **Deployment**: `make all` builds the image, `make push` publishes to `registry.hakiware.com`.
 
 ---
 
