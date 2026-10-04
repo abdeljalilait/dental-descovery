@@ -3,7 +3,7 @@
  *
  * This is defence in depth against online password guessing, not a replacement
  * for a strong password. It is an in-process `Map`, so it resets on deploy and
- * is per-instance — on a single PM2 instance (this project's deployment) that is
+ * is per-instance — on a single container instance (this project's deployment) that is
  * exactly the right scope. Behind multiple instances or a serverless runtime,
  * put a real limiter in the reverse proxy instead.
  */
