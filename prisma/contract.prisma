@@ -108,16 +108,45 @@ model ClinicOutreach {
   clinicId   String
   clinic     Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   channel    String    // WHATSAPP, EMAIL
-  status     String    @default("PENDING") // PENDING, SENT, REPLIED, OPTED_OUT, BOUNCED
+  status     String    @default("PENDING") // PENDING, SENT, DELIVERED, READ, FAILED, REPLIED, OPTED_OUT
   template   String?
   note       String?
+  // Kapso/Cloud API message id, needed to reconcile delivery webhooks back to
+  // the clinic. Null for rows written before tracking existed.
+  providerMessageId String?
   sentAt     DateTime?
+  deliveredAt DateTime?
+  failedAt   DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  temporal.updatedAt()
 
   @@unique([clinicId, channel])
   @@index([status])
+  @@index([providerMessageId])
   @@map("clinic_outreach")
+}
+
+// A single admin-triggered batch of work (WhatsApp campaign, SerpApi sync).
+// The admin UI polls the counters to show progress, so a run outlives the
+// request that started it.
+model JobRun {
+  id          String    @id @default(uuid())
+  kind        String    // WHATSAPP_CAMPAIGN, SERPAPI_SYNC
+  status      String    @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  requestedBy String?
+  params      Json?
+  total       Int       @default(0)
+  processed   Int       @default(0)
+  succeeded   Int       @default(0)
+  failed      Int       @default(0)
+  skipped     Int       @default(0)
+  message     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   temporal.updatedAt()
+  finishedAt  DateTime?
+
+  @@index([kind, status])
+  @@map("job_runs")
 }
 
 model ClinicClaim {
@@ -133,6 +162,24 @@ model ClinicClaim {
   updatedAt           temporal.updatedAt()
 
   @@map("clinic_claims")
+}
+
+
+model ClinicOtp {
+  id          String    @id @default(uuid())
+  email       String
+  purpose     String    @default("LOGIN") // LOGIN
+  codeHash    String
+  expiresAt   DateTime
+  attempts    Int       @default(0)
+  consumedAt  DateTime?
+  ip          String?
+  createdAt   DateTime  @default(now())
+  updatedAt   temporal.updatedAt()
+
+  @@index([email, purpose])
+  @@index([expiresAt])
+  @@map("clinic_otps")
 }
 
 model BlogPost {
@@ -170,6 +217,24 @@ model BlogPost {
   @@index([relatedSpecialtySlug])
   @@index([relatedCitySlug])
   @@map("blog_posts")
+}
+
+
+model PageBlock {
+  id          String   @id @default(uuid())
+  routeKey    String
+  locale      String
+  blockKey    String
+  title       String?
+  subtitle    String?
+  content     String?
+  data        Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   temporal.updatedAt()
+
+  @@unique([routeKey, locale, blockKey])
+  @@index([routeKey, locale])
+  @@map("page_blocks")
 }
 
 model PageSeo {

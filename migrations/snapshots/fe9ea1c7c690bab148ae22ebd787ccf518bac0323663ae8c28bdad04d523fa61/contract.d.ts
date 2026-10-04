@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4e45c6387fcfde2cff0c8f35a5653df22b1f4d30393587c7de741be739f32bd7'>;
+  StorageHashBase<'fe9ea1c7c690bab148ae22ebd787ccf518bac0323663ae8c28bdad04d523fa61'>;
 export type ExecutionHash =
-  ExecutionHashBase<'6c0e7e36ab86ddf5036ca05e3d42d2ba2298c37b6ac82b27b30f99ce896a41b8'>;
+  ExecutionHashBase<'5c151fe1f8c53bbab2a43a9bed4b40ccaa50ab83c98ed9afc6197749a2028f18'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -352,11 +352,8 @@ export type FieldOutputTypes = {
       readonly channel: CodecTypes['pg/text@1']['output'];
       readonly clinicId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly deliveredAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly failedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly note: CodecTypes['pg/text@1']['output'] | null;
-      readonly providerMessageId: CodecTypes['pg/text@1']['output'] | null;
       readonly sentAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly template: CodecTypes['pg/text@1']['output'] | null;
@@ -365,22 +362,6 @@ export type FieldOutputTypes = {
     readonly ClinicSpecialty: {
       readonly clinicId: CodecTypes['pg/text@1']['output'];
       readonly specialtyId: CodecTypes['pg/text@1']['output'];
-    };
-    readonly JobRun: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly failed: CodecTypes['pg/int4@1']['output'];
-      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly id: CodecTypes['pg/text@1']['output'];
-      readonly kind: CodecTypes['pg/text@1']['output'];
-      readonly message: CodecTypes['pg/text@1']['output'] | null;
-      readonly params: CodecTypes['pg/json@1']['output'] | null;
-      readonly processed: CodecTypes['pg/int4@1']['output'];
-      readonly requestedBy: CodecTypes['pg/text@1']['output'] | null;
-      readonly skipped: CodecTypes['pg/int4@1']['output'];
-      readonly status: CodecTypes['pg/text@1']['output'];
-      readonly succeeded: CodecTypes['pg/int4@1']['output'];
-      readonly total: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly Lead: {
       readonly city: CodecTypes['pg/text@1']['output'] | null;
@@ -538,11 +519,8 @@ export type FieldInputTypes = {
       readonly channel: CodecTypes['pg/text@1']['input'];
       readonly clinicId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly deliveredAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly failedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly note: CodecTypes['pg/text@1']['input'] | null;
-      readonly providerMessageId: CodecTypes['pg/text@1']['input'] | null;
       readonly sentAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly template: CodecTypes['pg/text@1']['input'] | null;
@@ -551,22 +529,6 @@ export type FieldInputTypes = {
     readonly ClinicSpecialty: {
       readonly clinicId: CodecTypes['pg/text@1']['input'];
       readonly specialtyId: CodecTypes['pg/text@1']['input'];
-    };
-    readonly JobRun: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly failed: CodecTypes['pg/int4@1']['input'];
-      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly id: CodecTypes['pg/text@1']['input'];
-      readonly kind: CodecTypes['pg/text@1']['input'];
-      readonly message: CodecTypes['pg/text@1']['input'] | null;
-      readonly params: CodecTypes['pg/json@1']['input'] | null;
-      readonly processed: CodecTypes['pg/int4@1']['input'];
-      readonly requestedBy: CodecTypes['pg/text@1']['input'] | null;
-      readonly skipped: CodecTypes['pg/int4@1']['input'];
-      readonly status: CodecTypes['pg/text@1']['input'];
-      readonly succeeded: CodecTypes['pg/int4@1']['input'];
-      readonly total: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly Lead: {
       readonly city: CodecTypes['pg/text@1']['input'] | null;
@@ -693,11 +655,8 @@ export type StorageColumnTypes = {
       readonly channel: CodecTypes['pg/text@1']['output'];
       readonly clinicId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly deliveredAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly failedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly note: CodecTypes['pg/text@1']['output'] | null;
-      readonly providerMessageId: CodecTypes['pg/text@1']['output'] | null;
       readonly sentAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly status: CodecTypes['pg/text@1']['output'];
       readonly template: CodecTypes['pg/text@1']['output'] | null;
@@ -737,22 +696,6 @@ export type StorageColumnTypes = {
       readonly verified: CodecTypes['pg/bool@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'] | null;
       readonly whatsapp: CodecTypes['pg/text@1']['output'] | null;
-    };
-    readonly job_runs: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly failed: CodecTypes['pg/int4@1']['output'];
-      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly id: CodecTypes['pg/text@1']['output'];
-      readonly kind: CodecTypes['pg/text@1']['output'];
-      readonly message: CodecTypes['pg/text@1']['output'] | null;
-      readonly params: CodecTypes['pg/json@1']['output'] | null;
-      readonly processed: CodecTypes['pg/int4@1']['output'];
-      readonly requestedBy: CodecTypes['pg/text@1']['output'] | null;
-      readonly skipped: CodecTypes['pg/int4@1']['output'];
-      readonly status: CodecTypes['pg/text@1']['output'];
-      readonly succeeded: CodecTypes['pg/int4@1']['output'];
-      readonly total: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly leads: {
       readonly city: CodecTypes['pg/text@1']['output'] | null;
@@ -879,11 +822,8 @@ export type StorageColumnInputTypes = {
       readonly channel: CodecTypes['pg/text@1']['input'];
       readonly clinicId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly deliveredAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly failedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly note: CodecTypes['pg/text@1']['input'] | null;
-      readonly providerMessageId: CodecTypes['pg/text@1']['input'] | null;
       readonly sentAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly status: CodecTypes['pg/text@1']['input'];
       readonly template: CodecTypes['pg/text@1']['input'] | null;
@@ -923,22 +863,6 @@ export type StorageColumnInputTypes = {
       readonly verified: CodecTypes['pg/bool@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'] | null;
       readonly whatsapp: CodecTypes['pg/text@1']['input'] | null;
-    };
-    readonly job_runs: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly failed: CodecTypes['pg/int4@1']['input'];
-      readonly finishedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly id: CodecTypes['pg/text@1']['input'];
-      readonly kind: CodecTypes['pg/text@1']['input'];
-      readonly message: CodecTypes['pg/text@1']['input'] | null;
-      readonly params: CodecTypes['pg/json@1']['input'] | null;
-      readonly processed: CodecTypes['pg/int4@1']['input'];
-      readonly requestedBy: CodecTypes['pg/text@1']['input'] | null;
-      readonly skipped: CodecTypes['pg/int4@1']['input'];
-      readonly status: CodecTypes['pg/text@1']['input'];
-      readonly succeeded: CodecTypes['pg/int4@1']['input'];
-      readonly total: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly leads: {
       readonly city: CodecTypes['pg/text@1']['input'] | null;
@@ -1105,11 +1029,8 @@ export namespace Models {
     channel: CodecTypes['pg/text@1']['output'];
     clinicId: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    deliveredAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-    failedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
     note: CodecTypes['pg/text@1']['output'] | null;
-    providerMessageId: CodecTypes['pg/text@1']['output'] | null;
     sentAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     status: CodecTypes['pg/text@1']['output'];
     template: CodecTypes['pg/text@1']['output'] | null;
@@ -1123,23 +1044,6 @@ export namespace Models {
     clinic: public_Clinic;
     specialty: public_Specialty;
     readonly [RelationKeys]?: 'clinic' | 'specialty';
-  };
-  export type public_JobRun = {
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    failed: CodecTypes['pg/int4@1']['output'];
-    finishedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-    id: CodecTypes['pg/text@1']['output'];
-    kind: CodecTypes['pg/text@1']['output'];
-    message: CodecTypes['pg/text@1']['output'] | null;
-    params: CodecTypes['pg/json@1']['output'] | null;
-    processed: CodecTypes['pg/int4@1']['output'];
-    requestedBy: CodecTypes['pg/text@1']['output'] | null;
-    skipped: CodecTypes['pg/int4@1']['output'];
-    status: CodecTypes['pg/text@1']['output'];
-    succeeded: CodecTypes['pg/int4@1']['output'];
-    total: CodecTypes['pg/int4@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    readonly [RelationKeys]?: never;
   };
   export type public_Lead = {
     city: CodecTypes['pg/text@1']['output'] | null;
@@ -1207,7 +1111,6 @@ export declare const models: {
     ClinicOtp: Models.public_ClinicOtp;
     ClinicOutreach: Models.public_ClinicOutreach;
     ClinicSpecialty: Models.public_ClinicSpecialty;
-    JobRun: Models.public_JobRun;
     Lead: Models.public_Lead;
     PageBlock: Models.public_PageBlock;
     PageSeo: Models.public_PageSeo;
@@ -1658,27 +1561,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
-                readonly deliveredAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: true;
-                };
-                readonly failedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: true;
-                };
                 readonly id: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
                 readonly note: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
-                };
-                readonly providerMessageId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -1715,12 +1603,6 @@ type ContractBase = Omit<
                   readonly name: 'clinic_outreach_clinicId_idx_8f933800';
                   readonly prefix: 'clinic_outreach_clinicId_idx';
                   readonly columns: readonly ['clinicId'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'clinic_outreach_providerMessageId_idx_6aba4afa';
-                  readonly prefix: 'clinic_outreach_providerMessageId_idx';
-                  readonly columns: readonly ['providerMessageId'];
                   readonly unique: false;
                 },
                 {
@@ -2004,116 +1886,6 @@ type ContractBase = Omit<
                   };
                 },
               ];
-            };
-            readonly job_runs: {
-              columns: {
-                readonly createdAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
-                };
-                readonly failed: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly finishedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: true;
-                };
-                readonly id: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly kind: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly message: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
-                };
-                readonly params: {
-                  readonly nativeType: 'json';
-                  readonly codecId: 'pg/json@1';
-                  readonly nullable: true;
-                };
-                readonly processed: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly requestedBy: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
-                };
-                readonly skipped: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly status: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/text@1', 'RUNNING'>;
-                  };
-                };
-                readonly succeeded: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly total: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly updatedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                };
-              };
-              primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
-              indexes: readonly [
-                {
-                  readonly name: 'job_runs_kind_status_idx_8034fcaa';
-                  readonly prefix: 'job_runs_kind_status_idx';
-                  readonly columns: readonly ['kind', 'status'];
-                  readonly unique: false;
-                },
-              ];
-              foreignKeys: readonly [];
             };
             readonly leads: {
               columns: {
@@ -2438,7 +2210,6 @@ type ContractBase = Omit<
       readonly model: 'ClinicSpecialty';
     };
     readonly clinics: { readonly namespace: 'public' & NamespaceId; readonly model: 'Clinic' };
-    readonly job_runs: { readonly namespace: 'public' & NamespaceId; readonly model: 'JobRun' };
     readonly leads: { readonly namespace: 'public' & NamespaceId; readonly model: 'Lead' };
     readonly page_blocks: {
       readonly namespace: 'public' & NamespaceId;
@@ -3053,29 +2824,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
-              readonly deliveredAt: {
-                readonly nullable: true;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly failedAt: {
-                readonly nullable: true;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly note: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly providerMessageId: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -3123,11 +2876,8 @@ type ContractBase = Omit<
                 readonly channel: { readonly column: 'channel' };
                 readonly clinicId: { readonly column: 'clinicId' };
                 readonly createdAt: { readonly column: 'createdAt' };
-                readonly deliveredAt: { readonly column: 'deliveredAt' };
-                readonly failedAt: { readonly column: 'failedAt' };
                 readonly id: { readonly column: 'id' };
                 readonly note: { readonly column: 'note' };
-                readonly providerMessageId: { readonly column: 'providerMessageId' };
                 readonly sentAt: { readonly column: 'sentAt' };
                 readonly status: { readonly column: 'status' };
                 readonly template: { readonly column: 'template' };
@@ -3178,96 +2928,6 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly clinicId: { readonly column: 'clinicId' };
                 readonly specialtyId: { readonly column: 'specialtyId' };
-              };
-            };
-          };
-          readonly JobRun: {
-            readonly fields: {
-              readonly createdAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly failed: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly finishedAt: {
-                readonly nullable: true;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly id: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly kind: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly message: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly params: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/json@1' };
-              };
-              readonly processed: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly requestedBy: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly skipped: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly status: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly succeeded: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly total: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly updatedAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-            };
-            readonly relations: Record<string, never>;
-            readonly storage: {
-              readonly table: 'job_runs';
-              readonly namespaceId: 'public';
-              readonly fields: {
-                readonly createdAt: { readonly column: 'createdAt' };
-                readonly failed: { readonly column: 'failed' };
-                readonly finishedAt: { readonly column: 'finishedAt' };
-                readonly id: { readonly column: 'id' };
-                readonly kind: { readonly column: 'kind' };
-                readonly message: { readonly column: 'message' };
-                readonly params: { readonly column: 'params' };
-                readonly processed: { readonly column: 'processed' };
-                readonly requestedBy: { readonly column: 'requestedBy' };
-                readonly skipped: { readonly column: 'skipped' };
-                readonly status: { readonly column: 'status' };
-                readonly succeeded: { readonly column: 'succeeded' };
-                readonly total: { readonly column: 'total' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
           };
@@ -3686,23 +3346,6 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'clinics';
-            readonly field: 'updatedAt';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
-          readonly ref: {
-            readonly entry: 'job_runs';
-            readonly field: 'id';
-            readonly namespace: 'public';
-          };
-        },
-        {
-          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
-          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
-          readonly ref: {
-            readonly entry: 'job_runs';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };
