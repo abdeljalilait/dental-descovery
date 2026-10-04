@@ -5,9 +5,24 @@ import { Container } from "@/components/ui/container";
 
 const navItems = [
   { href: "/admin", label: "Dashboard" },
+  { href: "/admin/clinics", label: "Clinics" },
   { href: "/admin/articles", label: "Articles" },
   { href: "/admin/seo", label: "Page SEO" },
+  { href: "/admin/blocks", label: "Content Blocks" },
+  { href: "/admin/leads", label: "Leads" },
+  { href: "/admin/jobs", label: "Jobs" },
 ];
+
+/**
+ * Every page in this tree is request-time only.
+ *
+ * Without this, `next build` prerenders the admin pages and bakes the
+ * unauthenticated `redirect("/admin/login")` into the static output: the built
+ * route then serves that redirect from cache to every operator, including signed-in
+ * ones. Forcing dynamic here rather than per page means a new admin page cannot
+ * reintroduce it.
+ */
+export const dynamic = "force-dynamic";
 
 /**
  * Guarded admin shell.
@@ -25,7 +40,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
         <Container className="flex flex-wrap items-center justify-between gap-4 py-4">
           <div className="flex items-center gap-6">
             <Link href="/admin" className="font-semibold text-primary">
-              Dental Discovery
+              Dentora
             </Link>
             <nav className="flex items-center gap-1">
               {navItems.map((item) => (
