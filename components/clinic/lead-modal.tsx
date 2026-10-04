@@ -69,7 +69,7 @@ export function LeadModal({ type, locale, clinicName, trigger }: LeadModalProps)
         <DialogHeader>
           <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase tracking-widest">
             <Building2 className="h-4 w-4 text-accent" strokeWidth={2} />
-            <span>Dental Discovery Pro</span>
+            <span>Dentora Pro</span>
           </div>
           <DialogTitle className="text-xl font-extrabold text-foreground mt-1">
             {titles[type][locale]}

@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/site.config";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Dental Discovery";
+export const alt = siteConfig.name;
 
 /**
  * Branded fallback card, generated once per locale.
@@ -49,7 +49,7 @@ export default async function OpengraphImage() {
           </svg>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 68, fontWeight: 800, color: "#ffffff", letterSpacing: -1.5 }}>
-              Dental Discovery
+              {siteConfig.name}
             </div>
             <div style={{ marginTop: 6, width: 120, height: 8, borderRadius: 999, backgroundColor: "#059669" }} />
           </div>

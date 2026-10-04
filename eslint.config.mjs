@@ -16,6 +16,13 @@ const eslintConfig = defineConfig([
     "prisma/contract.d.ts",
     "prisma/contract.json",
     "migrations/**",
+    // Vendored agent skill files (Prisma upgrade recipes) are upstream copies,
+    // not project code: linting them only reports their own style.
+    ".agents/**",
+    ".claude/**",
+    ".cursor/**",
+    ".devin/**",
+    ".opencode/**",
   ]),
 ]);
 
