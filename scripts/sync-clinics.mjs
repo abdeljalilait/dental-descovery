@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Dental Discovery - SerpApi Clinic Synchronizer CLI
+ * Dentora - SerpApi Clinic Synchronizer CLI
  *
  * Searches SerpApi's Google Maps engine once per dental keyword per city,
  * deduplicates the results and saves them to PostgreSQL.
@@ -153,7 +153,7 @@ async function run() {
   }
 
   console.log(`\n======================================================`);
-  console.log(`  Dental Discovery - SerpApi Clinic Sync`);
+  console.log(`  Dentora - SerpApi Clinic Sync`);
   console.log(`  Target Cities: ${targetCities.length}`);
   console.log(`  Search Budget This Run: ${budgetLimit}`);
   console.log(`  Mode: ${isDryRun ? "DRY-RUN (nothing written)" : "LIVE SYNC"}`);

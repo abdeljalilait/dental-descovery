@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Dental Discovery - Clinic Contact Enrichment
+ * Dentora - Clinic Contact Enrichment
  *
  * Google Maps never exposes email addresses, so the only source is the clinic
  * website recorded during the SerpApi sync. This walks each clinic site
@@ -35,7 +35,7 @@ const flag = (name) => {
 const DRY_RUN = args.includes("--dry-run");
 const LIMIT = flag("limit") ? Number(flag("limit")) : undefined;
 
-const USER_AGENT = "DentalDiscoveryBot/1.0 (clinic contact enrichment)";
+const USER_AGENT = "DentoraBot/1.0 (clinic contact enrichment)";
 const FETCH_TIMEOUT_MS = 12000;
 const REQUEST_DELAY_MS = 400;
 const CONCURRENCY = 4;

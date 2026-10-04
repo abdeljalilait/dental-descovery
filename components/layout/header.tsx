@@ -38,7 +38,7 @@ export function Header({ locale, nav }: { locale: Locale; nav: HeaderNav }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-surface/85 backdrop-blur-xl shadow-soft">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href={`/${locale}`} aria-label="Dental Discovery" className="shrink-0 transition-opacity hover:opacity-90">
+        <Link href={`/${locale}`} aria-label="Dentora" className="shrink-0 transition-opacity hover:opacity-90">
           <Logo />
         </Link>
 

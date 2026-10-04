@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Dental Discovery — Trouvez un dentiste de confiance au Maroc",
+    "title": "Dentora — Trouvez un dentiste de confiance au Maroc",
     "description": "Annuaire des dentistes et cliniques dentaires au Maroc : Tanger, Casablanca, Rabat, Marrakech et tout le Royaume. Avis, spécialités, contact direct."
   },
   "nav": {
@@ -192,10 +192,10 @@
   },
   "faqSection": {
     "eyebrow": "Questions fréquentes",
-    "title": "Tout savoir sur Dental Discovery",
+    "title": "Tout savoir sur Dentora",
     "items": [
       {
-        "question": "Dental Discovery est-il gratuit pour les patients ?",
+        "question": "Dentora est-il gratuit pour les patients ?",
         "answer": "Oui, totalement. Les patients cherchent, comparent et contactent les cliniques sans aucun frais ni inscription."
       },
       {
@@ -275,7 +275,7 @@
   "appPage": {
     "eyebrow": "Dental App",
     "title": "Le cabinet dentaire, orchestré",
-    "subtitle": "Rendez-vous, agenda, dossiers patients et rappels : Dental App connecte votre cabinet aux patients de l'annuaire Dental Discovery.",
+    "subtitle": "Rendez-vous, agenda, dossiers patients et rappels : Dental App connecte votre cabinet aux patients de l'annuaire Dentora.",
     "workflowTitle": "Votre journée type avec Dental App",
     "workflow": [
       {
@@ -314,7 +314,7 @@
   "forClinicsPage": {
     "eyebrow": "Espace cliniques",
     "title": "Chaque jour, des patients cherchent votre clinique",
-    "subtitle": "Dental Discovery vous rend visible là où les patients cherchent — et Dental App transforme cette visibilité en rendez-vous.",
+    "subtitle": "Dentora vous rend visible là où les patients cherchent — et Dental App transforme cette visibilité en rendez-vous.",
     "steps": [
       {
         "title": "Créez ou réclamez votre fiche",
@@ -353,7 +353,7 @@
       "Sans prise de rendez-vous",
       "Une seule langue"
     ],
-    "afterTitle": "Un site Dental Discovery",
+    "afterTitle": "Un site Dentora",
     "after": [
       "SEO local et pages traitements",
       "Mobile-first, Lighthouse 90+",

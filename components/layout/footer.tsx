@@ -5,6 +5,7 @@ import { getSpecialtiesDb } from "@/lib/repositories/specialties";
 import type { Locale } from "@/lib/i18n/config";
 import { cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { siteConfig } from "@/lib/site.config";
 
 export async function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const [cities, specialties] = await Promise.all([getCitiesDb(), getSpecialtiesDb()]);
@@ -98,7 +99,7 @@ export async function Footer({ locale, dict }: { locale: Locale; dict: Dictionar
 
         <div className="mt-8 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-sm text-muted sm:flex-row sm:items-center">
           <p>
-            © {year} Dental Discovery. {dict.footer.rights}
+            © {year} {siteConfig.name}. {dict.footer.rights}
           </p>
           <p className="flex items-center gap-4">
             <Link href={localizedPath("contact", locale)} className="transition-colors hover:text-primary">

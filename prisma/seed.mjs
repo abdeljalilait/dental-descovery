@@ -6,7 +6,7 @@ import { clinics } from "../lib/data/clinics.ts";
 import { blogPosts } from "../lib/data/blog.ts";
 
 async function main() {
-  console.log("🌱 Starting Dental Discovery database seed...");
+  console.log("🌱 Starting Dentora database seed...");
 
   // 1. Seed Cities
   console.log(`Inserting ${cities.length} cities...`);

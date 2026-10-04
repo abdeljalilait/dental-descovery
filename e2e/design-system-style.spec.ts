@@ -5,7 +5,7 @@ test.describe("Atelier Neo-Clinical Design System & Styling", () => {
     await page.goto("/fr");
 
     // Check title and hero display heading
-    await expect(page).toHaveTitle(/Dental Discovery/);
+    await expect(page).toHaveTitle(/Dentora/);
     const heroTitle = page.locator("h1");
     await expect(heroTitle).toBeVisible();
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Dental Discovery - Clinic Outreach List
+ * Dentora - Clinic Outreach List
  *
  * Exports a campaign list from the synced clinics so Dental App accounts can be
  * offered to practices that are not on the platform yet. WhatsApp is the primary
