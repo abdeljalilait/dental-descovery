@@ -2,7 +2,9 @@ import prisma from "@/lib/prisma";
 import { and } from "@prisma/orm-postgres/orm-client";
 import type { Locale } from "@/lib/i18n/config";
 import type { ResultType } from "@prisma/orm-postgres/components/runtime";
-import { toInstant } from "@/src/prisma/codecs";
+import type { JsonValue } from "@prisma/orm-framework/contract";
+import { toInstant, toJson } from "@/src/prisma/codecs";
+import { db } from "@/src/prisma/db";
 import type {
   BlogPost,
   BlogPostInput,
@@ -334,4 +336,92 @@ export async function getBlogPostCountsDb(): Promise<{ total: number; published:
     published: published.count,
     draft: total.count - published.count,
   };
+}
+export interface PageBlockInput {
+  routeKey: string;
+  locale: "fr" | "ar";
+  blockKey: string;
+  title?: string | null;
+  subtitle?: string | null;
+  content?: string | null;
+  data?: unknown;
+}
+
+export interface PageBlockRecord {
+  id: string;
+  routeKey: string;
+  locale: "fr" | "ar";
+  blockKey: string;
+  title: string | null;
+  subtitle: string | null;
+  content: string | null;
+  data: unknown;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const pageBlocks = () => db.orm.public.PageBlock;
+
+/**
+ * Row projection: return every column so a new block field cannot silently
+ * fall out of the mapper. `ResultType` keeps the mapper in sync with the
+ * contract instead of relying on a hand-written field list.
+ */
+type PageBlockRow = ResultType<ReturnType<typeof pageBlocks>>;
+
+function mapPageBlockRow(row: PageBlockRow): PageBlockRecord {
+  return {
+    id: row.id,
+    routeKey: row.routeKey,
+    locale: row.locale === "ar" ? "ar" : "fr",
+    blockKey: row.blockKey,
+    title: row.title,
+    subtitle: row.subtitle,
+    content: row.content,
+    data: row.data,
+    createdAt: toInstantString(row.createdAt) ?? "",
+    updatedAt: toInstantString(row.updatedAt) ?? "",
+  };
+}
+
+export async function listPageBlocksDb(): Promise<PageBlockRecord[]> {
+  const rows = await pageBlocks()
+    .orderBy((block) => block.routeKey.asc())
+    .orderBy((block) => block.locale.asc())
+    .orderBy((block) => block.blockKey.asc())
+    .all();
+  return rows.map((r) => mapPageBlockRow(r));
+}
+
+export async function getPageBlockDb(routeKey: string, locale: "fr" | "ar", blockKey: string): Promise<PageBlockRecord | undefined> {
+  const row = await pageBlocks().where({ routeKey, locale, blockKey }).first();
+  return row ? mapPageBlockRow(row) : undefined;
+}
+
+export async function upsertPageBlockDb(input: PageBlockInput): Promise<PageBlockRecord> {
+  const row = await pageBlocks().upsert({
+    conflictOn: { routeKey: input.routeKey, locale: input.locale, blockKey: input.blockKey },
+    update: toColumnsBlock(input),
+    create: toColumnsBlock(input),
+  });
+  return mapPageBlockRow(row);
+}
+
+function toColumnsBlock(input: PageBlockInput) {
+  // `data` is a jsonb column: it accepts a JSON value or is omitted entirely.
+  const data: JsonValue | undefined =
+    input.data === undefined || input.data === null ? undefined : toJson(input.data);
+  return {
+    routeKey: input.routeKey,
+    locale: input.locale,
+    blockKey: input.blockKey,
+    title: input.title ?? null,
+    subtitle: input.subtitle ?? null,
+    content: input.content ?? null,
+    data,
+  };
+}
+
+export async function deletePageBlockDb(routeKey: string, locale: "fr" | "ar", blockKey: string): Promise<void> {
+  await pageBlocks().where({ routeKey, locale, blockKey }).delete();
 }

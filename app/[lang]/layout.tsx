@@ -57,7 +57,7 @@ export default async function RootLayout({
   const dict = await getDictionaryFor(locale);
 
   return (
-    <html lang={localeHtmlLang[locale]} dir={localeDir[locale]} className={`${manrope.variable} ${notoArabic.variable}`}>
+    <html lang={localeHtmlLang[locale]} dir={localeDir[locale]} data-scroll-behavior="smooth" className={`${manrope.variable} ${notoArabic.variable}`}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <a
           href="#main"

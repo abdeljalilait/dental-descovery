@@ -13,8 +13,11 @@ import {
   setBlogPostStatusDb,
   updateBlogPostDb,
   upsertPageSeoDb,
+  upsertPageBlockDb,
+  deletePageBlockDb,
 } from "@/lib/repositories/blog";
 import type { BlogPostInput, PageSeoInput } from "@/lib/data/types";
+import type { PageBlockInput } from "@/lib/repositories/blog";
 import { isBlogPostStatus } from "@/lib/data/types";
 import {
   endAdminSession,
@@ -283,5 +286,53 @@ export async function deletePageSeoAction(formData: FormData): Promise<void> {
   if (!routeKey || !isLocale(locale)) return;
 
   await deletePageSeoDb(routeKey, locale);
+  revalidateListing(routeKey);
+}
+/* ------------------------------------------------------------------ *
+ * Page content blocks (editable copy)
+ * ------------------------------------------------------------------ */
+
+export interface PageBlockFormState {
+  error?: string;
+  saved?: boolean;
+}
+
+export async function savePageBlockAction(
+  _prev: PageBlockFormState,
+  formData: FormData,
+): Promise<PageBlockFormState> {
+  await requireAdmin();
+
+  const routeKey = text(formData, "routeKey");
+  const blockKey = text(formData, "blockKey");
+  if (!routeKey || !blockKey) return { error: "routeKey and blockKey are required." };
+
+  const locale = text(formData, "locale");
+  if (!isLocale(locale)) return { error: "Locale must be fr or ar." };
+
+  const input: PageBlockInput = {
+    routeKey,
+    locale,
+    blockKey,
+    title: optional(formData, "title"),
+    subtitle: optional(formData, "subtitle"),
+    content: optional(formData, "content"),
+  };
+
+  await upsertPageBlockDb(input);
+  revalidateListing(routeKey);
+
+  return { saved: true };
+}
+
+export async function deletePageBlockAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const routeKey = text(formData, "routeKey");
+  const blockKey = text(formData, "blockKey");
+  const locale = text(formData, "locale");
+  if (!routeKey || !blockKey || !isLocale(locale)) return;
+
+  await deletePageBlockDb(routeKey, locale, blockKey);
   revalidateListing(routeKey);
 }
