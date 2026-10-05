@@ -111,22 +111,19 @@ async function saveToDatabase(clinics) {
       const hours = toJson(clinic.hours);
 
       // Match in descending order of confidence: the Google place id, then the
-      // exact slug, then city + phone, then the name — where the name match only
-      // counts when a phone or address confirms the same practice.
+      // exact slug, then the name — where the name match only counts when a
+      // phone or address confirms the same practice. There is deliberately no
+      // city + phone lookup: one switchboard number covers several distinct
+      // place entries at a group practice, so it would clobber a sibling clinic.
       const byPlaceId = clinic.googlePlaceId
         ? await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
         : null;
       const bySlug = byPlaceId
         ? null
         : await db.orm.public.Clinic.where({ slug: clinic.slug }).first();
-      const byPhone =
-        byPlaceId || bySlug || !clinic.phone
-          ? null
-          : await db.orm.public.Clinic.where({ citySlug: clinic.citySlug, phone: clinic.phone }).first();
       const existing =
         byPlaceId ||
         bySlug ||
-        byPhone ||
         (await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all()).find(
           (row) => isSameClinicAs(clinic, row),
         );

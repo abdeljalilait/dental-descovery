@@ -3353,6 +3353,15 @@
                 },
                 {
                   "columns": [
+                    "citySlug",
+                    "phone"
+                  ],
+                  "name": "clinics_citySlug_phone_idx_b5807e40",
+                  "prefix": "clinics_citySlug_phone_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "rating"
                   ],
                   "name": "clinics_rating_idx_fcb0b199",
@@ -3374,12 +3383,6 @@
                 {
                   "columns": [
                     "googlePlaceId"
-                  ]
-                },
-                {
-                  "columns": [
-                    "citySlug",
-                    "phone"
                   ]
                 }
               ]
@@ -4254,7 +4257,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e82990736a100beb814932b5e10fcab20561ff082b74022d61f93b103604dbcc"
+    "storageHash": "1624c4c81abcc6f75f674ef1a6d14b6484e9ff6728ec7ae14de7b606dd15ec94"
   },
   "execution": {
     "executionHash": "22eb9fcfc80d2f97866a5557352f5b9c660098582506d995f0b2646224f000ee",

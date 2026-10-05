@@ -72,10 +72,15 @@ model Clinic {
 
   @@index([citySlug])
   @@index([rating])
-  // Hard backstop against the same practice being inserted twice under two
-  // different place ids. Postgres treats NULLs as distinct, so clinics without a
-  // phone are unaffected.
-  @@unique([citySlug, phone])
+  // NOT unique on purpose. A group practice publishes one switchboard number that
+  // Google attaches to several distinct place entries, one per practitioner, so
+  // (citySlug, phone) is not an identity key here: 11 of the 16 duplicate groups
+  // in production are unrelated clinics or separate dentists at one practice.
+  // Enforcing it merged distinct clinics or rejected valid inserts.
+  // Identity is googlePlaceId above, with the deterministic
+  // place_id -> data_id -> name/city/address hash fallback covering rows that
+  // Google returns without an id.
+  @@index([citySlug, phone])
   @@map("clinics")
 }
 

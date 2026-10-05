@@ -310,18 +310,17 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
       const bySlug = byPlaceId
         ? null
         : await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first();
-      // Same city plus same phone is the strongest signal Google can drift on:
-      // the same practice can come back under a different place id.
-      const byPhone =
-        byPlaceId || bySlug || !clinic.phone
-          ? null
-          : await prisma.orm.public.Clinic
-              .where({ citySlug: clinic.citySlug, phone: clinic.phone })
-              .first();
+      // Deliberately no city+phone lookup. A group practice publishes one
+      // switchboard number that Google attaches to several distinct place
+      // entries, one per practitioner: 11 pairs in production are unrelated
+      // clinics or separate dentists sharing a line. Matching on phone alone
+      // would overwrite one clinic's details with another's, and since
+      // (citySlug, phone) is not unique the lookup would pick an arbitrary row.
+      // The slug already covers the id-less case, because it embeds the
+      // deterministic name/city/address hash.
       const existing =
         byPlaceId ||
         bySlug ||
-        byPhone ||
         (await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all())
           .find((row) => isSameClinicAs(clinic, row));
 
