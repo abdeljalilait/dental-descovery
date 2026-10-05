@@ -8,6 +8,8 @@ export interface KeywordGroup {
   id: string;
   label: string;
   hint?: string;
+  /** Google interface language for the group's queries, shown as a hint. */
+  hl?: string;
   keywords: string[];
 }
 
@@ -85,6 +87,11 @@ export function KeywordPicker({ groups, cities, account }: KeywordPickerProps) {
         <fieldset key={group.id}>
           <legend className="text-xs font-semibold uppercase tracking-wide text-muted">
             {group.label}
+            {group.hl && group.hl !== "fr" ? (
+              <span className="ms-1.5 font-normal normal-case tracking-normal text-muted">
+                searches in {group.hl}
+              </span>
+            ) : null}
           </legend>
           {group.hint ? <p className="mb-2 text-xs text-muted">{group.hint}</p> : null}
           <div className="flex flex-wrap gap-2">
