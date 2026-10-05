@@ -28,6 +28,7 @@ export function InteractiveAppStudio({
   const [selectedTooth, setSelectedTooth] = useState<number | null>(16);
   const [whatsappSent, setWhatsappSent] = useState(false);
   const [copilotAction, setCopilotAction] = useState<"briefing" | "slot" | "quotes">("briefing");
+  const [activeChair, setActiveChair] = useState<1 | 2 | 3 | "all">("all");
 
   const teeth = [
     { id: 11, name: isAr ? "قاطع علوي أيمن" : "Incisive centrale sup. D", status: "ok" },
@@ -44,13 +45,13 @@ export function InteractiveAppStudio({
     <TooltipProvider delayDuration={150}>
       <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-lift" data-testid="interactive-app-studio">
         {/* Studio Top Control Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-surface-subtle px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 border-b border-border bg-surface-subtle px-4 sm:px-6 py-3.5 sm:py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <Activity className="h-5 w-5" strokeWidth={2} />
             </div>
             <div>
-              <p className="flex items-center gap-2 text-sm font-extrabold text-foreground">
+              <p className="flex flex-wrap items-center gap-2 text-sm font-extrabold text-foreground">
                 <span>Dental-App Suite</span>
                 <span className="rounded-pill bg-accent-soft px-2 py-0.5 text-[11px] font-bold text-accent">
                   v3.4 Powered by AI Copilot
@@ -64,12 +65,12 @@ export function InteractiveAppStudio({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <LeadModal
               type="app-demo"
               locale={locale}
               trigger={
-                <button className="inline-flex cursor-pointer items-center gap-2 rounded-pill bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift">
+                <button className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift w-full sm:w-auto">
                   <Play className="h-3.5 w-3.5 text-accent" />
                   <span>{isAr ? "طلب تجربة كاملة" : "Essayer en direct"}</span>
                 </button>
@@ -79,27 +80,27 @@ export function InteractiveAppStudio({
         </div>
 
         {/* Studio Interactive Body */}
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-3.5 sm:p-6 lg:p-8">
           <Tabs defaultValue="copilot" className="w-full">
-            <div className="flex justify-center pb-6">
-              <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-1 p-1 bg-surface-subtle max-w-3xl w-full">
-                <TabsTrigger value="copilot" className="gap-1.5 text-xs sm:text-sm">
+            <div className="flex justify-center pb-5 sm:pb-6 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
+              <TabsList className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-5 gap-1.5 p-1.5 bg-surface-subtle max-w-4xl w-full rounded-2xl touch-pan-x">
+                <TabsTrigger value="copilot" className="flex-1 shrink-0 whitespace-nowrap min-w-[125px] sm:min-w-0 py-2 sm:py-2.5 px-3 gap-1.5 text-xs sm:text-sm font-bold">
                   <Bot className="h-4 w-4 shrink-0 text-accent" />
                   <span>{isAr ? "مساعد Copilot IA" : "Copilot IA"}</span>
                 </TabsTrigger>
-                <TabsTrigger value="agenda" className="gap-1.5 text-xs sm:text-sm">
+                <TabsTrigger value="agenda" className="flex-1 shrink-0 whitespace-nowrap min-w-[110px] sm:min-w-0 py-2 sm:py-2.5 px-3 gap-1.5 text-xs sm:text-sm font-bold">
                   <Calendar className="h-4 w-4 shrink-0" />
                   <span>{isAr ? "الأجندة الذكية" : "Agenda"}</span>
                 </TabsTrigger>
-                <TabsTrigger value="patient" className="gap-1.5 text-xs sm:text-sm">
+                <TabsTrigger value="patient" className="flex-1 shrink-0 whitespace-nowrap min-w-[145px] sm:min-w-0 py-2 sm:py-2.5 px-3 gap-1.5 text-xs sm:text-sm font-bold">
                   <FileText className="h-4 w-4 shrink-0" />
                   <span>{isAr ? "مخطط الأسنان 3D" : "Odontogramme 3D"}</span>
                 </TabsTrigger>
-                <TabsTrigger value="whatsapp" className="gap-1.5 text-xs sm:text-sm">
+                <TabsTrigger value="whatsapp" className="flex-1 shrink-0 whitespace-nowrap min-w-[120px] sm:min-w-0 py-2 sm:py-2.5 px-3 gap-1.5 text-xs sm:text-sm font-bold">
                   <MessageSquare className="h-4 w-4 shrink-0" />
                   <span>{isAr ? "واتساب وتذكير" : "WhatsApp"}</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm">
+                <TabsTrigger value="analytics" className="flex-1 shrink-0 whitespace-nowrap min-w-[110px] sm:min-w-0 py-2 sm:py-2.5 px-3 gap-1.5 text-xs sm:text-sm font-bold">
                   <TrendingUp className="h-4 w-4 shrink-0" />
                   <span>{isAr ? "الإحصائيات" : "Analytics"}</span>
                 </TabsTrigger>
@@ -269,9 +270,56 @@ export function InteractiveAppStudio({
                   </div>
                 </div>
 
+                {/* Mobile Chair Switcher */}
+                <div className="flex sm:hidden items-center gap-1.5 mb-3.5 overflow-x-auto no-scrollbar pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveChair("all")}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-bold rounded-pill transition-all shrink-0 cursor-pointer",
+                      activeChair === "all" ? "bg-primary text-white shadow-sm" : "bg-surface-subtle text-muted hover:text-foreground"
+                    )}
+                  >
+                    {isAr ? "الكل (3)" : "Tous les fauteuils"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveChair(1)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-bold rounded-pill transition-all shrink-0 cursor-pointer",
+                      activeChair === 1 ? "bg-primary text-white shadow-sm" : "bg-surface-subtle text-muted hover:text-foreground"
+                    )}
+                  >
+                    Fauteuil 1
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveChair(2)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-bold rounded-pill transition-all shrink-0 cursor-pointer",
+                      activeChair === 2 ? "bg-accent text-white shadow-sm" : "bg-surface-subtle text-muted hover:text-foreground"
+                    )}
+                  >
+                    Fauteuil 2
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveChair(3)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-bold rounded-pill transition-all shrink-0 cursor-pointer",
+                      activeChair === 3 ? "bg-gold text-white shadow-sm" : "bg-surface-subtle text-muted hover:text-foreground"
+                    )}
+                  >
+                    Fauteuil 3
+                  </button>
+                </div>
+
                 <div className="grid gap-3 sm:grid-cols-3">
                   {/* Fauteuil 1 */}
-                  <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <div className={cn(
+                    "rounded-xl border border-border bg-surface-subtle p-3",
+                    activeChair !== "all" && activeChair !== 1 ? "hidden sm:block" : "block"
+                  )}>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-bold text-primary">Fauteuil 1 (Chirurgie)</span>
                       <span className="text-[10px] rounded bg-primary-soft px-1.5 py-0.5 text-primary font-bold">Dr. Bennani</span>
@@ -295,7 +343,10 @@ export function InteractiveAppStudio({
                   </div>
 
                   {/* Fauteuil 2 */}
-                  <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <div className={cn(
+                    "rounded-xl border border-border bg-surface-subtle p-3",
+                    activeChair !== "all" && activeChair !== 2 ? "hidden sm:block" : "block"
+                  )}>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-bold text-accent">Fauteuil 2 (Orthodontie)</span>
                       <span className="text-[10px] rounded bg-accent-soft px-1.5 py-0.5 text-accent font-bold">Dr. Alami</span>
@@ -319,7 +370,10 @@ export function InteractiveAppStudio({
                   </div>
 
                   {/* Fauteuil 3 */}
-                  <div className="rounded-xl border border-border bg-surface-subtle p-3">
+                  <div className={cn(
+                    "rounded-xl border border-border bg-surface-subtle p-3",
+                    activeChair !== "all" && activeChair !== 3 ? "hidden sm:block" : "block"
+                  )}>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-bold text-gold">Fauteuil 3 (Hygiène & Soins)</span>
                       <span className="text-[10px] rounded bg-gold-soft px-1.5 py-0.5 text-gold font-bold">Dr. Chraibi</span>

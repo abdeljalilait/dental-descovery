@@ -65,25 +65,28 @@ export function LeadModal({ type, locale, clinicName, trigger }: LeadModalProps)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg border-border/80 bg-surface/98 backdrop-blur-xl">
-        <DialogHeader>
-          <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase tracking-widest">
-            <Building2 className="h-4 w-4 text-accent" strokeWidth={2} />
-            <span>Dentora Pro</span>
-          </div>
-          <DialogTitle className="text-xl font-extrabold text-foreground mt-1">
-            {titles[type][locale]}
-          </DialogTitle>
-          <DialogDescription className="text-sm text-muted mt-1">
-            {subtitles[type][locale]}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-lg border-border/80 bg-surface/98 backdrop-blur-xl p-0 overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88dvh]">
+        <div className="p-4 sm:p-6 pb-3 sm:pb-3.5 border-b border-border/50 pe-12 shrink-0">
+          <DialogHeader>
+            <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase tracking-widest">
+              <Building2 className="h-4 w-4 text-accent" strokeWidth={2} />
+              <span>Dentora Pro</span>
+            </div>
+            <DialogTitle className="text-lg sm:text-xl font-extrabold text-foreground mt-1">
+              {titles[type][locale]}
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm text-muted mt-0.5 leading-relaxed">
+              {subtitles[type][locale]}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="mt-2">
+        <div className="p-4 sm:p-6 pt-3 sm:pt-4 flex-1 overflow-hidden flex flex-col min-h-0">
           <LeadForm
             type={type}
             locale={locale}
             clinicName={clinicName}
+            inModal={true}
             onSuccess={() => {
               setTimeout(() => setOpen(false), 2000);
             }}

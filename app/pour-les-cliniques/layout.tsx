@@ -29,7 +29,7 @@ export const viewport: Viewport = {
 
 export default function ClinicPortalRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" dir="ltr" className={manrope.variable}>
+    <html lang="fr" dir="ltr" data-scroll-behavior="smooth" className={manrope.variable}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         {children}
       </body>

@@ -56,6 +56,7 @@ export function LeadForm({
   showMessage = true,
   submitLabel,
   className,
+  inModal = false,
   onSuccess,
 }: {
   type: "app-demo" | "website-quote" | "clinic-claim" | "contact";
@@ -68,6 +69,7 @@ export function LeadForm({
   showMessage?: boolean;
   submitLabel?: string;
   className?: string;
+  inModal?: boolean;
   onSuccess?: () => void;
 }) {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -120,6 +122,130 @@ export function LeadForm({
         <CheckCircle2 className="h-10 w-10 text-accent" strokeWidth={1.5} aria-hidden />
         <p className="text-base font-bold text-foreground">{formLabels.success}</p>
       </div>
+    );
+  }
+
+  if (inModal) {
+    return (
+      <form onSubmit={handleSubmit} className={cn("flex flex-col flex-1 min-h-0", className)} noValidate={false}>
+        {/* Scrollable Fields Body */}
+        <div
+          className="flex-1 overflow-y-auto overscroll-contain px-0.5 py-1 space-y-3"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {showClinicName ? (
+            <div>
+              <label htmlFor={`${type}-clinic`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                {formLabels.clinicName}
+              </label>
+              <input
+                id={`${type}-clinic`}
+                name="clinicName"
+                type="text"
+                className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                autoComplete="organization"
+              />
+            </div>
+          ) : null}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor={`${type}-name`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                {formLabels.yourName} *
+              </label>
+              <input
+                id={`${type}-name`}
+                name="name"
+                type="text"
+                required
+                className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                autoComplete="name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor={`${type}-email`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                {formLabels.yourEmail} *
+              </label>
+              <input
+                id={`${type}-email`}
+                name="email"
+                type="email"
+                required
+                className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                autoComplete="email"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {showPhone ? (
+              <div>
+                <label htmlFor={`${type}-phone`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                  {formLabels.yourPhone}
+                </label>
+                <input
+                  id={`${type}-phone`}
+                  name="phone"
+                  type="tel"
+                  className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  autoComplete="tel"
+                />
+              </div>
+            ) : null}
+
+            {showCity ? (
+              <div>
+                <label htmlFor={`${type}-city`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                  {formLabels.city}
+                </label>
+                <input
+                  id={`${type}-city`}
+                  name="city"
+                  type="text"
+                  className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  autoComplete="address-level2"
+                />
+              </div>
+            ) : null}
+          </div>
+
+          {showMessage ? (
+            <div>
+              <label htmlFor={`${type}-message`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                {formLabels.message}
+              </label>
+              <textarea
+                id={`${type}-message`}
+                name="message"
+                rows={2}
+                className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Pinned Submit Button Footer */}
+        <div className="shrink-0 pt-3 sm:pt-4 border-t border-border/60 bg-surface">
+          <button
+            type="submit"
+            disabled={status === "sending"}
+            className="inline-flex h-11 sm:h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary px-6 text-sm font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60"
+          >
+            {status === "sending" ? (
+              <Loader2 className="h-4.5 w-4.5 animate-spin" strokeWidth={2} aria-hidden />
+            ) : (
+              <Send className="h-4.5 w-4.5 rtl:rotate-180" strokeWidth={2} aria-hidden />
+            )}
+            <span>{status === "sending" ? formLabels.sending : (submitLabel ?? formLabels.send)}</span>
+          </button>
+          {status === "error" ? (
+            <p role="alert" className="mt-2 text-center text-xs sm:text-sm font-medium text-destructive">
+              {formLabels.error}
+            </p>
+          ) : null}
+        </div>
+      </form>
     );
   }
 
@@ -194,7 +320,7 @@ export function LeadForm({
         </div>
       ) : null}
 
-      <div className="sm:col-span-2">
+      <div className="sm:col-span-2 pt-1 pb-2">
         <button
           type="submit"
           disabled={status === "sending"}

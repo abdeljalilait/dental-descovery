@@ -33,4 +33,23 @@ test.describe("Radix UI Headless Components & Interactions", () => {
     await page.keyboard.press("Escape");
     await expect(dialog).not.toBeVisible();
   });
+
+  test("Radix Dialog LeadModal is scrollable on small mobile screen and submit button is clickable", async ({ page }) => {
+    // Small mobile viewport (iPhone SE)
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/fr");
+
+    // Open LeadModal
+    const demoButton = page.getByRole("button", { name: /démo|référencer/i }).first();
+    await demoButton.click();
+
+    const dialog = page.locator("[role='dialog']");
+    await expect(dialog).toBeVisible();
+
+    // The submit button is pinned and immediately visible in viewport
+    const submitBtn = dialog.getByRole("button", { name: /envoyer/i });
+    await expect(submitBtn).toBeVisible();
+    await expect(submitBtn).toBeInViewport();
+    await expect(submitBtn).toBeEnabled();
+  });
 });

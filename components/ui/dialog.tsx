@@ -34,13 +34,13 @@ export const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl border border-border/80 bg-surface p-6 shadow-lift duration-200 data-[state=open]:animate-dialog-content sm:max-w-xl",
+        "fixed left-1/2 top-1/2 z-50 flex flex-col w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 max-h-[92dvh] sm:max-h-[88dvh] overflow-hidden rounded-2xl border border-border/80 bg-surface shadow-lift duration-200 data-[state=open]:animate-dialog-content sm:max-w-xl",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute end-4 top-4 rounded-pill p-1.5 text-muted transition-colors hover:bg-primary-soft hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+      <DialogPrimitive.Close className="absolute end-3.5 top-3.5 z-20 rounded-pill p-2 text-muted transition-colors hover:bg-primary-soft hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary touch-manipulation">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
