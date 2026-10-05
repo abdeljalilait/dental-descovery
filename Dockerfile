@@ -28,7 +28,7 @@ ARG NEXT_PUBLIC_SITE_URL
 # Placeholder keeps the build hermetic when no database is supplied: the
 # prerender of DB-backed routes then fails loudly instead of silently shipping
 # empty pages.
-ENV DATABASE_URL=${DATABASE_URL}
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgrespassword@host.docker.internal:5432/dental_discovery?schema=public}
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://dentora.ma}
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -49,17 +49,29 @@ ENV HOSTNAME=0.0.0.0
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
 
+# 1. Heavy dependencies layer first: cached across builds!
+# Placing this FIRST in the runner stage before any builder artifacts ensures
+# Docker reuses this layer across builds and NEVER re-pushes it unless
+# package.json or package-lock.json changes.
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+
+# 2. Entrypoint and scripts
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
+# 3. Static assets and Prisma configurations (rarely change)
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/src/prisma ./src/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/migrations ./migrations
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+
+# 4. Next.js standalone application and static chunks (frequently change)
+# Only these small layers change when modifying application code (~15MB vs 358MB)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/server.js ./server.js
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone/.next ./.next
 
 USER nextjs
 EXPOSE 3000
