@@ -37,14 +37,29 @@ test("keyword picker prices a run and delete affordances render", async ({ page 
   await expect(page.locator('select[name="keywordMode"]')).toHaveCount(0);
 
   const chips = page.locator('input[name="keywords"]');
-  await expect(chips).toHaveCount(15);
+  // Derived from the catalogue rather than hardcoded, so growing
+  // DENTAL_KEYWORD_GROUPS does not silently invalidate this spec.
+  const keywordCount = await chips.count();
+  expect(keywordCount).toBeGreaterThan(0);
+
+  // The campaign form above carries its own `city` filter, so scope to the form
+  // that owns the keyword chips rather than matching the name page-wide.
+  const syncForm = page.locator('form:has(input[name="keywords"])');
+  const cityOptions = await syncForm
+    .locator('select[name="city"] option')
+    .first()
+    .textContent();
+  const cityCount = Number(cityOptions?.match(/\((\d+)\)/)?.[1] ?? 0);
+  expect(cityCount).toBeGreaterThan(0);
 
   // Default: one keyword over every city.
-  await expect(page.getByText(/1 keyword × 15 cities/).first()).toBeVisible();
+  await expect(page.getByText(new RegExp(`1 keyword × ${cityCount} cities`)).first()).toBeVisible();
 
-  // Selecting all 15 keywords over 15 cities is 225 credits.
+  // Selecting everything prices the full catalogue across every city.
   await page.getByRole("button", { name: /Select all/ }).click();
-  await expect(page.getByText(/15 keywords × 15 cities/).first()).toBeVisible();
+  await expect(
+    page.getByText(new RegExp(`${keywordCount} keywords × ${cityCount} cities`)).first(),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Clear" }).click();
   await expect(page.getByText(/No keyword selected/).first()).toBeVisible();
