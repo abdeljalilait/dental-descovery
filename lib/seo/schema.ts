@@ -1,5 +1,5 @@
 import { siteConfig } from "@/lib/site.config";
-import type { Clinic } from "@/lib/data/types";
+import type { Clinic, PricingPlanView } from "@/lib/data/types";
 import { blogPostPath, clinicPath } from "@/lib/routes";
 import { localeHtmlLang, type Locale } from "@/lib/i18n/config";
 import { defaultOgImageUrl } from "@/lib/seo/og-image";
@@ -123,7 +123,35 @@ export function faqSchema(items: { question: string; answer: string }[]) {
   };
 }
 
-export function graph(...nodes: object[]) {
+export function offerCatalogSchema(plans: PricingPlanView[], locale: Locale) {
+  const items = plans
+    .map((plan) => {
+      const cleaned = plan.price.replace(/[^\d.,]/g, "").replace(",", ".");
+      const numericPrice = parseFloat(cleaned);
+      if (isNaN(numericPrice)) {
+        return null;
+      }
+      return {
+        "@type": "Offer",
+        name: plan.name,
+        price: numericPrice,
+        priceCurrency: "MAD",
+        availability: "https://schema.org/InStock",
+        ...(plan.features.length > 0 ? { description: plan.features.join(" • ") } : {}),
+      };
+    })
+    .filter(Boolean);
+
+  if (items.length === 0) return null;
+
+  return {
+    "@type": "OfferCatalog",
+    name: locale === "ar" ? "عروض وأسعار Dentora" : "Tarifs et offres Dentora",
+    itemListElement: items,
+  };
+}
+
+export function graph(...nodes: (object | null | undefined)[]) {
   return {
     "@context": "https://schema.org",
     "@graph": nodes.filter(Boolean),

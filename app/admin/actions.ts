@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { locales } from "@/lib/i18n/config";
 import { isLocale } from "@/lib/i18n/config";
+import { routes, localizedPath, type RouteKey } from "@/lib/routes";
 import {
   createBlogPostDb,
   deleteBlogPostDb,
@@ -60,10 +61,18 @@ function revalidateBlog(slugs: string[]): void {
   revalidatePath("/sitemap.xml");
 }
 
-/** Revalidate the listing only, plus a page-level SEO override when one changed. */
+/** Revalidate the route only, plus a page-level SEO override when one changed. */
 function revalidateListing(routeKey?: string): void {
   for (const locale of locales) {
-    revalidatePath(`/${locale}/blog`);
+    if (routeKey) {
+      if (routeKey in routes) {
+        revalidatePath(localizedPath(routeKey as RouteKey, locale));
+      } else {
+        revalidatePath(`/${locale}/${routeKey}`);
+      }
+    } else {
+      revalidatePath(`/${locale}/blog`);
+    }
   }
   if (routeKey) revalidatePath("/sitemap.xml");
 }

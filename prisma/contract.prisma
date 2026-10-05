@@ -254,3 +254,29 @@ model PageSeo {
   @@unique([routeKey, locale])
   @@map("page_seos")
 }
+
+model PricingPlan {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  active      Boolean  @default(true)
+  highlighted Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  leadType    String   // app-demo, website-quote, clinic-claim, contact
+  nameFr      String
+  nameAr      String
+  priceFr     String
+  priceAr     String
+  periodFr    String
+  periodAr    String
+  ctaFr       String
+  ctaAr       String
+  badgeFr     String?
+  badgeAr     String?
+  featuresFr  Json
+  featuresAr  Json
+  createdAt   DateTime @default(now())
+  updatedAt   temporal.updatedAt()
+
+  @@index([active, sortOrder])
+  @@map("pricing_plans")
+}

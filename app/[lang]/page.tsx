@@ -16,6 +16,7 @@ import { PricingTeaserSection } from "@/components/landing/pricing-teaser";
 import { BlogHighlightsSection } from "@/components/landing/blog-highlights";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
+import { getResolvedPricingPlans } from "@/lib/pricing/plans";
 
 export async function generateMetadata({
   params,
@@ -50,6 +51,7 @@ export default async function HomePage({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
+  const plans = await getResolvedPricingPlans(locale, dict);
 
   return (
     <>
@@ -67,7 +69,7 @@ export default async function HomePage({
       <ClaimSection locale={locale} dict={dict} />
       <AppPromoSection locale={locale} dict={dict} />
       <WebsiteOfferSection locale={locale} dict={dict} />
-      <PricingTeaserSection locale={locale} dict={dict} />
+      <PricingTeaserSection locale={locale} dict={dict} plans={plans} />
       <BlogHighlightsSection locale={locale} dict={dict} />
       <FaqSection dict={dict} />
       <FinalCtaSection locale={locale} dict={dict} />

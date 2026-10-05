@@ -128,3 +128,46 @@ export interface PageSeoRecord {
 }
 
 export type PageSeoInput = Omit<PageSeoRecord, "id" | "createdAt" | "updatedAt">;
+
+export const leadTypes: readonly LeadType[] = [
+  "app-demo",
+  "website-quote",
+  "clinic-claim",
+  "contact",
+];
+
+export function isLeadType(value: string): value is LeadType {
+  return (leadTypes as readonly string[]).includes(value);
+}
+
+export interface PricingPlanRecord {
+  id: string;
+  key: string;
+  active: boolean;
+  highlighted: boolean;
+  sortOrder: number;
+  leadType: LeadType;
+  name: LocalizedText;
+  price: LocalizedText;
+  period: LocalizedText;
+  cta: LocalizedText;
+  badge: { fr: string | null; ar: string | null };
+  features: { fr: string[]; ar: string[] };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PricingPlanInput = Omit<PricingPlanRecord, "id" | "createdAt" | "updatedAt">;
+
+export interface PricingPlanView {
+  key: string;
+  name: string;
+  price: string;
+  period: string;
+  features: string[];
+  cta: string;
+  leadType: LeadType;
+  badge?: string;
+  highlighted: boolean;
+  sortOrder: number;
+}

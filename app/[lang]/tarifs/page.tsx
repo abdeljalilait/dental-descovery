@@ -7,9 +7,11 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { StructuredData } from "@/components/seo/structured-data";
-import { faqSchema, graph, websiteSchema } from "@/lib/seo/schema";
+import { faqSchema, graph, offerCatalogSchema, websiteSchema } from "@/lib/seo/schema";
 import { localizedPath } from "@/lib/routes";
-import { cn } from "@/lib/utils/cn";
+import { ClinicRoiCalculator } from "@/components/landing/clinic-roi-calculator";
+import { PricingPlans } from "@/components/landing/pricing-plans";
+import { getResolvedPricingPlans } from "@/lib/pricing/plans";
 
 export const dynamicParams = false;
 
@@ -30,24 +32,14 @@ export async function generateMetadata({
     description: dict.pricingPage.subtitle,
     alternates: {
       canonical: localizedPath("pricing", locale),
-      languages: { fr: localizedPath("pricing", "fr"), ar: localizedPath("pricing", "ar"), "x-default": localizedPath("pricing", locale) },
+      languages: {
+        fr: localizedPath("pricing", "fr"),
+        ar: localizedPath("pricing", "ar"),
+        "x-default": localizedPath("pricing", locale),
+      },
     },
   };
 }
-
-import { LeadModal } from "@/components/clinic/lead-modal";
-import { ClinicRoiCalculator } from "@/components/landing/clinic-roi-calculator";
-
-type Plan = {
-  name: string;
-  price: string;
-  period: string;
-  features: string[];
-  cta: string;
-  href: string;
-  leadType: "clinic-claim" | "app-demo" | "website-quote";
-  badge?: string;
-};
 
 export default async function PricingPage({
   params,
@@ -57,35 +49,50 @@ export default async function PricingPage({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
+  const plans = await getResolvedPricingPlans(locale, dict);
 
-  const plans: Plan[] = [
+  const includedFeatures = [
     {
-      name: dict.pricingTeaser.free.name,
-      price: dict.pricingTeaser.free.price,
-      period: dict.pricingTeaser.free.period,
-      features: dict.pricingTeaser.free.features,
-      cta: dict.pricingTeaser.free.cta,
-      href: localizedPath("forClinics", locale),
-      leadType: "clinic-claim",
+      title: locale === "ar" ? "تطبيق سحابي متكامل" : "Application dentaire Cloud",
+      desc:
+        locale === "ar"
+          ? "إمكانية الوصول من أي جهاز بدون تثبيت معقد"
+          : "Accessible partout sans installation matérielle lourde",
     },
     {
-      name: dict.pricingTeaser.pro.name,
-      price: dict.pricingTeaser.pro.price,
-      period: dict.pricingTeaser.pro.period,
-      features: dict.pricingTeaser.pro.features,
-      cta: dict.pricingTeaser.pro.cta,
-      href: localizedPath("app", locale),
-      leadType: "app-demo",
-      badge: dict.pricingTeaser.pro.badge,
+      title: locale === "ar" ? "استضافة واسم نطاق" : "Hébergement serveur & domaine",
+      desc:
+        locale === "ar"
+          ? "سيرفرات آمنة مع اسم نطاق رسمي"
+          : "Serveurs hautement disponibles et nom de domaine dédié",
     },
     {
-      name: dict.pricingTeaser.website.name,
-      price: dict.pricingTeaser.website.price,
-      period: dict.pricingTeaser.website.period,
-      features: dict.pricingTeaser.website.features,
-      cta: dict.pricingTeaser.website.cta,
-      href: localizedPath("website", locale),
-      leadType: "website-quote",
+      title: locale === "ar" ? "نسخ احتياطي دوري" : "Sauvegardes automatisées",
+      desc:
+        locale === "ar"
+          ? "حماية كاملة لملفات المرضى والتاريخ الطبي"
+          : "Sauvegardes chiffrées régulières de vos données de santé",
+    },
+    {
+      title: locale === "ar" ? "تحديثات مستمرة" : "Mises à jour incluses",
+      desc:
+        locale === "ar"
+          ? "ميزات وتحسينات جديدة بشكل تلقائي"
+          : "Nouvelles fonctionnalités et conformité réglementaire",
+    },
+    {
+      title: locale === "ar" ? "دعم فني وتدريب" : "Support technique réactif",
+      desc:
+        locale === "ar"
+          ? "مساعدة فريق الخبراء لتأهيل طاقم العيادة"
+          : "Assistance et accompagnement de votre équipe au quotidien",
+    },
+    {
+      title: locale === "ar" ? "إشعارات WhatsApp" : "Rappels WhatsApp automatiques",
+      desc:
+        locale === "ar"
+          ? "تأكيد المواعيد وتقليل نسبة الغياب"
+          : "Envoi automatisé des rappels pour réduire l'absentéisme",
     },
   ];
 
@@ -94,7 +101,8 @@ export default async function PricingPage({
       <StructuredData
         data={graph(
           websiteSchema(locale),
-          faqSchema(dict.faqSection.items.map((item) => ({ question: item.question, answer: item.answer })))
+          faqSchema(dict.faqSection.items.map((item) => ({ question: item.question, answer: item.answer }))),
+          offerCatalogSchema(plans, locale)
         )}
       />
       <PageHero
@@ -106,59 +114,53 @@ export default async function PricingPage({
 
       <Section>
         <Container>
-          <div className="grid gap-8 lg:grid-cols-3">
-            {plans.map((plan, i) => (
-              <article
-                key={plan.name}
-                className={cn(
-                  "relative flex h-full flex-col rounded-2xl border p-8 transition-all duration-300",
-                  i === 1
-                    ? "border-primary/50 bg-gradient-to-b from-primary-soft/40 via-surface to-surface shadow-lift scale-105"
-                    : "border-border/80 bg-surface shadow-soft hover:border-primary/30 hover:shadow-card"
-                )}
-              >
-                {plan.badge ? (
-                  <div className="absolute -top-3.5 start-1/2 -translate-x-1/2 rtl:translate-x-1/2">
-                    <span className="inline-flex items-center gap-1.5 rounded-pill bg-primary px-4 py-1 text-xs font-extrabold text-white shadow-md">
-                      <span>{plan.badge}</span>
-                    </span>
+          {/* Setup Fee Banner */}
+          <div className="mb-12 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary-soft/50 via-surface to-primary-soft/50 p-6 sm:p-8 text-center shadow-soft">
+            <span className="inline-flex rounded-pill bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+              {locale === "ar" ? "الهيكل التجاري" : "Structure commerciale"}
+            </span>
+            <p className="mt-3 text-2xl sm:text-3xl font-black text-foreground">
+              {locale === "ar"
+                ? "رسوم التثبيت: 4 000 درهم / عيادة"
+                : "Frais d'installation : 4 000 MAD / cabinet"}
+            </p>
+            <p className="mt-2 text-sm sm:text-base font-medium text-muted">
+              {locale === "ar"
+                ? "ثم اشتراك شهري يتضمن: Cloud + البرنامج + الدعم الفني + المستخدمين + WhatsApp"
+                : "Puis un abonnement composé de : Cloud + logiciel + support + utilisateurs + WhatsApp"}
+            </p>
+          </div>
+
+          <PricingPlans plans={plans} locale={locale} headingLevel="h2" showCrownBadge />
+
+          {/* Included in Every Plan */}
+          <div className="mt-16 rounded-2xl border border-border/80 bg-surface p-8 shadow-soft">
+            <div className="max-w-2xl">
+              <h3 className="text-xl font-extrabold text-foreground">
+                {locale === "ar" ? "ما هو مدمج في كل اشتراك" : "Ce qui est inclus dans chaque abonnement"}
+              </h3>
+              <p className="mt-1 text-sm text-muted">
+                {locale === "ar"
+                  ? "جميع الباقات تستفيد من بنية تحتية سحابية متكاملة ودعم تقني مستمر."
+                  : "Chaque formule comprend l'ensemble des services indispensables au bon fonctionnement de votre cabinet :"}
+              </p>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {includedFeatures.map((item) => (
+                <div
+                  key={item.title}
+                  className="flex items-start gap-3 rounded-xl border border-border/60 bg-surface-subtle/50 p-4 transition-colors hover:border-primary/30"
+                >
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent mt-0.5">
+                    <Check className="h-4 w-4" strokeWidth={3} aria-hidden />
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-bold text-foreground">{item.title}</h4>
+                    <p className="mt-0.5 text-xs text-muted leading-relaxed">{item.desc}</p>
                   </div>
-                ) : null}
-                <h2 className="text-xl font-extrabold text-foreground">{plan.name}</h2>
-                <p className="mt-4 flex items-baseline gap-2">
-                  <span className="text-4xl font-black tracking-tight text-primary">{plan.price}</span>
-                  <span className="text-xs font-medium text-muted">{plan.period}</span>
-                </p>
-                <ul className="mt-8 flex-1 space-y-3.5 border-t border-border/60 pt-6">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-xs sm:text-sm text-foreground">
-                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
-                        <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden />
-                      </span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8">
-                  <LeadModal
-                    type={plan.leadType}
-                    locale={locale}
-                    trigger={
-                      <button
-                        className={cn(
-                          "w-full cursor-pointer h-12 rounded-pill font-bold text-sm shadow-sm transition-all hover:scale-[1.02]",
-                          i === 1
-                            ? "bg-primary text-white hover:bg-primary-dark hover:shadow-lift"
-                            : "bg-primary-soft text-primary-dark hover:bg-primary hover:text-white"
-                        )}
-                      >
-                        {plan.cta}
-                      </button>
-                    }
-                  />
                 </div>
-              </article>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Calculator in Tarifs */}

@@ -13,9 +13,9 @@ SHELL := /bin/bash
 
 REGISTRY ?= registry.hakiware.com
 IMAGE    ?= dentora
-NAMESPACE ?= $(shell git config --get user.email 2>/dev/null | sed 's/@.*//' || echo dentora)
-FULL_IMAGE ?= $(REGISTRY)/$(NAMESPACE)/$(IMAGE)
+FULL_IMAGE ?= $(REGISTRY)/$(IMAGE)
 TAG      ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
+PLATFORM ?= linux/amd64
 
 # The route tree prerenders from PostgreSQL, so the build needs a reachable
 # URL. From inside a build container the host is host.docker.internal; override
@@ -48,6 +48,7 @@ lint:
 ## image: build the container image for the registry
 image:
 	docker build \
+		--platform $(PLATFORM) \
 		--build-arg DATABASE_URL="$(BUILD_DATABASE_URL)" \
 		--build-arg NEXT_PUBLIC_SITE_URL="$(BUILD_SITE_URL)" \
 		-t "$(FULL_IMAGE):$(TAG)" \
