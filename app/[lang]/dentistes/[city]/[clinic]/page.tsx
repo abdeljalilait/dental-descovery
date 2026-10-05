@@ -117,12 +117,12 @@ export default async function ClinicPage({
           </span>
           {clinic.verified ? (
             <span className="inline-flex items-center gap-1.5 rounded-pill bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
-              <VerifiedBadge locale={locale} className="!bg-transparent !text-white !p-0" />
+              <VerifiedBadge locale={locale} className="!bg-transparent !text-white !p-0 !border-none !shadow-none" />
             </span>
           ) : null}
           {clinic.usesApp ? (
-            <span className="inline-flex items-center rounded-pill bg-white/10 px-4 py-2 backdrop-blur-sm">
-              <OnlineBookingBadge locale={locale} className="!bg-transparent !text-white !p-0" />
+            <span className="inline-flex items-center rounded-pill bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-sm">
+              <OnlineBookingBadge locale={locale} className="!bg-transparent !text-white !p-0 !border-none !shadow-none" />
             </span>
           ) : null}
         </div>
@@ -169,7 +169,7 @@ export default async function ClinicPage({
                 </ul>
                 <p className="mt-4 flex items-center gap-1.5 text-xs text-muted">
                   <Clock className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
-                  {dict.common.lastSynced} {clinic.lastSyncedAt} — {dict.common.dataAttribution}
+                  {dict.common.lastSynced} {new Date(clinic.lastSyncedAt).toLocaleDateString(locale === "ar" ? "ar-MA" : "fr-MA")} — {dict.common.dataAttribution}
                 </p>
               </div>
             </div>
