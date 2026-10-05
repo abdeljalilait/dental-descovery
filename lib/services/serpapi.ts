@@ -304,25 +304,22 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
       // Match in descending order of confidence: the Google place id, then the
       // exact slug, then the name — where the name match only counts when a
       // phone or address confirms it is the same practice.
-      const byPlaceId = clinic.googlePlaceId
-        ? await prisma.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
-        : null;
-      const bySlug = byPlaceId
-        ? null
-        : await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first();
-      // Deliberately no city+phone lookup. A group practice publishes one
-      // switchboard number that Google attaches to several distinct place
-      // entries, one per practitioner: 11 pairs in production are unrelated
-      // clinics or separate dentists sharing a line. Matching on phone alone
-      // would overwrite one clinic's details with another's, and since
-      // (citySlug, phone) is not unique the lookup would pick an arbitrary row.
-      // The slug already covers the id-less case, because it embeds the
-      // deterministic name/city/address hash.
-      const existing =
-        byPlaceId ||
-        bySlug ||
-        (await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all())
-          .find((row) => isSameClinicAs(clinic, row));
+      //
+      // Once a clinic acquires a real Google place_id, no other keyword run may
+      // attach its results to a different row: we must look it up globally by
+      // place_id first. That re-homes the case where an earlier keyword matched
+      // the row by slug/fuzzy match before the place_id was known.
+      let existing = null;
+      if (clinic.googlePlaceId) {
+        existing = await prisma.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first();
+      }
+      if (!existing) {
+        existing = await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first();
+      }
+      if (!existing) {
+        const candidates = await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all();
+        existing = candidates.find((row) => isSameClinicAs(clinic, row)) ?? null;
+      }
 
       const slugToUse = existing?.slug || clinic.slug;
 
@@ -341,8 +338,11 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
           phoneHref: clinic.phoneHref ?? existing?.phoneHref,
           whatsapp: clinic.whatsapp ?? existing?.whatsapp,
           website: clinic.website ?? existing?.website,
-          rating: clinic.rating,
-          reviewCount: clinic.reviewCount,
+          rating: clinic.rating ?? existing?.rating ?? null,
+          reviewCount: Math.max(
+            Number(existing?.reviewCount ?? 0),
+            Number(clinic.reviewCount ?? 0),
+          ),
           verified: clinic.verified || Boolean(existing?.verified),
           descriptionFr: clinic.description.fr,
           descriptionAr: clinic.description.ar,

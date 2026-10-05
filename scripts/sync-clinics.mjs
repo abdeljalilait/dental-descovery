@@ -115,18 +115,17 @@ async function saveToDatabase(clinics) {
       // phone or address confirms the same practice. There is deliberately no
       // city + phone lookup: one switchboard number covers several distinct
       // place entries at a group practice, so it would clobber a sibling clinic.
-      const byPlaceId = clinic.googlePlaceId
-        ? await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
-        : null;
-      const bySlug = byPlaceId
-        ? null
-        : await db.orm.public.Clinic.where({ slug: clinic.slug }).first();
-      const existing =
-        byPlaceId ||
-        bySlug ||
-        (await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all()).find(
-          (row) => isSameClinicAs(clinic, row),
-        );
+      let existing = null;
+      if (clinic.googlePlaceId) {
+        existing = await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first();
+      }
+      if (!existing) {
+        existing = await db.orm.public.Clinic.where({ slug: clinic.slug }).first();
+      }
+      if (!existing) {
+        const candidates = await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all();
+        existing = candidates.find((row) => isSameClinicAs(clinic, row)) ?? null;
+      }
 
       const slugToUse = existing?.slug || clinic.slug;
 
@@ -145,8 +144,8 @@ async function saveToDatabase(clinics) {
           phoneHref: clinic.phoneHref ?? existing?.phoneHref,
           whatsapp: clinic.whatsapp ?? existing?.whatsapp,
           website: clinic.website ?? existing?.website,
-          rating: clinic.rating,
-          reviewCount: clinic.reviewCount,
+          rating: clinic.rating ?? existing?.rating ?? null,
+          reviewCount: Math.max(Number(existing?.reviewCount ?? 0), Number(clinic.reviewCount ?? 0)),
           verified: clinic.verified || Boolean(existing?.verified),
           descriptionFr: clinic.description.fr,
           descriptionAr: clinic.description.ar,
