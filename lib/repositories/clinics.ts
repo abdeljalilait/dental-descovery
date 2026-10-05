@@ -5,10 +5,10 @@ import type { ResultType } from "@prisma/orm-postgres/components/runtime";
 import { mapSpecialtyRow } from "@/lib/repositories/specialties";
 
 /**
- * The database is the single source of truth for clinics. These queries have no
- * static-seed fallback: `lib/data/clinics.ts` exists only to bootstrap the
- * database via `prisma/seed.mjs`, so a query failure must surface rather than
- * silently serve 17 stale demo rows.
+ * The database is the single source of truth for clinics. Clinics are never
+ * seeded and have no static fallback: they exist only in PostgreSQL and only
+ * ever arrive via the SerpApi sync, so a query failure must surface rather than
+ * silently serve stale rows.
  */
 
 /**

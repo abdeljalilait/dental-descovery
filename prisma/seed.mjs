@@ -2,7 +2,6 @@ import { db } from "../src/prisma/db.ts";
 import { toInstant } from "../src/prisma/codecs.ts";
 import { cities } from "../lib/data/cities.ts";
 import { specialties } from "../lib/data/specialties.ts";
-import { clinics } from "../lib/data/clinics.ts";
 import { blogPosts } from "../lib/data/blog.ts";
 
 async function main() {
@@ -66,92 +65,7 @@ async function main() {
     });
   }
 
-  // 3. Seed Clinics & Relations
-  console.log(`Inserting ${clinics.length} clinics...`);
-  for (const clinic of clinics) {
-    // `lastSyncedAt` is a timestamptz on the temporal codec, which rejects a
-    // JavaScript `Date` and encodes `Temporal.Instant` instead.
-    const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
-
-    const upsertedClinic = await db.orm.public.Clinic.upsert({
-      conflictOn: { slug: clinic.slug },
-      update: {
-        // Most seed rows have no Google place id. Writing null over a row that a
-        // sync has already enriched with a real one would discard it, so a null
-        // seed value leaves the existing column untouched.
-        ...(clinic.googlePlaceId ? { googlePlaceId: clinic.googlePlaceId } : {}),
-        name: clinic.name,
-        nameAr: clinic.nameAr,
-        citySlug: clinic.citySlug,
-        neighborhoodFr: clinic.neighborhood.fr,
-        neighborhoodAr: clinic.neighborhood.ar,
-        addressFr: clinic.address.fr,
-        addressAr: clinic.address.ar,
-        phone: clinic.phone,
-        phoneHref: clinic.phoneHref,
-        whatsapp: clinic.whatsapp,
-        website: clinic.website,
-        rating: clinic.rating,
-        reviewCount: clinic.reviewCount,
-        verified: clinic.verified,
-        claimed: clinic.claimed,
-        usesApp: clinic.usesApp,
-        descriptionFr: clinic.description.fr,
-        descriptionAr: clinic.description.ar,
-        lat: clinic.lat,
-        lng: clinic.lng,
-        hours: clinic.hours,
-        lastSyncedAt,
-      },
-      create: {
-        slug: clinic.slug,
-        googlePlaceId: clinic.googlePlaceId ?? null,
-        name: clinic.name,
-        nameAr: clinic.nameAr,
-        citySlug: clinic.citySlug,
-        neighborhoodFr: clinic.neighborhood.fr,
-        neighborhoodAr: clinic.neighborhood.ar,
-        addressFr: clinic.address.fr,
-        addressAr: clinic.address.ar,
-        phone: clinic.phone,
-        phoneHref: clinic.phoneHref,
-        whatsapp: clinic.whatsapp,
-        website: clinic.website,
-        rating: clinic.rating,
-        reviewCount: clinic.reviewCount,
-        verified: clinic.verified,
-        claimed: clinic.claimed,
-        usesApp: clinic.usesApp,
-        descriptionFr: clinic.description.fr,
-        descriptionAr: clinic.description.ar,
-        lat: clinic.lat,
-        lng: clinic.lng,
-        hours: clinic.hours,
-        lastSyncedAt,
-      },
-    });
-
-    // Associate specialties
-    for (const specSlug of clinic.specialtySlugs) {
-      const spec = await db.orm.public.Specialty.where({ slug: specSlug }).first();
-      if (spec) {
-        await db.orm.public.ClinicSpecialty.upsert({
-          conflictOn: {
-            clinicId: upsertedClinic.id,
-            specialtyId: spec.id,
-          },
-          update: {},
-          create: {
-            clinicId: upsertedClinic.id,
-            specialtyId: spec.id,
-          },
-        });
-      }
-    }
-  }
-
-
-  // 4. Seed Blog Posts
+  // 3. Seed Blog Posts
   // Published from the start: these are the launch articles that were previously
   // served from the static seed file, so the blog must not go empty. `publishedAt`
   // is a timestamptz on the temporal codec, hence `toInstant` rather than a Date.
@@ -180,7 +94,7 @@ async function main() {
     });
   }
 
-  // 5. Seed Pricing Plans (Dental App subscription tiers)
+  // 4. Seed Pricing Plans (Dental App subscription tiers)
   // Insert-only: upsert with update: {} ensures re-seeding never clobbers operator edits.
   const pricingPlans = [
     {

@@ -110,7 +110,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 │   ├── seo/                              # StructuredData component (JSON-LD)
 │   └── ui/                               # Radix UI wrappers (accordion, dialog, tabs, tooltip, popover)
 ├── lib/
-│   ├── data/                             # Seed datasets (clinics.ts, cities.ts, specialties.ts, blog.ts)
+│   ├── data/                             # Seed datasets (cities.ts, specialties.ts, blog.ts)
 │   ├── i18n/                             # i18n config, loader, and JSON dictionaries
 │   ├── routes.ts                         # Centralized route helper functions
 │   ├── seo/schema.ts                     # Schema.org JSON-LD graph generators
@@ -150,7 +150,8 @@ npm run sync:clinics -- --dry-run
 # Database operations with Prisma
 npm run db:generate    # Generate Prisma client
 npm run db:push        # Push schema changes to PostgreSQL
-npm run db:seed        # Seed PostgreSQL with Moroccan cities, specialties, and clinics
+npm run db:seed        # Seed PostgreSQL with Moroccan cities, specialties, blog posts, and pricing plans
+                        # Clinics are NOT seeded; they come only from the SerpApi sync.
 
 # Container image for registry.hakiware.com (typecheck + lint + docker build)
 make all
@@ -176,7 +177,7 @@ npm run sync:clinics -- --dry-run
 - **Models**: `City`, `Specialty`, `Clinic`, `ClinicSpecialty`, `Lead`, `ClinicClaim`,
   `ClinicOtp`, `ClinicOutreach`, `JobRun`, `BlogPost`, `PageSeo`, `PageBlock`.
 - **Client Singleton**: `lib/prisma.ts` with connection caching.
-- **Repository Pattern & Resilience**: `lib/repositories/clinics.ts` queries Prisma when `DATABASE_URL` is set, with seamless fallback to static seed data if offline or during local development.
+- **Repository Pattern & Resilience**: `lib/repositories/clinics.ts` queries Prisma. There is no static-seed fallback: clinics exist only in PostgreSQL and only ever arrive via the SerpApi sync, so a query failure surfaces rather than serving stale rows.
 - **Lead Persistence**: `app/api/leads/route.ts` saves leads to Prisma `Lead` table.
 
 ---
