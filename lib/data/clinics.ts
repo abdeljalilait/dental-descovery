@@ -47,7 +47,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "cabinet-dentaire-tanger-center",
-    googlePlaceId: "ChIJxxxxxxxx-tanger-002",
+    googlePlaceId: null,
     name: "Cabinet Dentaire Tanger Centre",
     nameAr: "عيادة طنجة المركز لطب الأسنان",
     citySlug: "tanger",
@@ -71,7 +71,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "smile-clinic-casablanca-maarif",
-    googlePlaceId: "ChIJxxxxxxxx-casa-001",
+    googlePlaceId: null,
     name: "Smile Clinic Casablanca",
     nameAr: "عيادة سمايل كلينيك الدار البيضاء",
     citySlug: "casablanca",
@@ -95,7 +95,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "cab-dentaire-gauthier",
-    googlePlaceId: "ChIJxxxxxxxx-casa-002",
+    googlePlaceId: null,
     name: "Cabinet Dentaire Gauthier",
     nameAr: "عيادة غوتييه لطب الأسنان",
     citySlug: "casablanca",
@@ -120,7 +120,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "dental-care-californie",
-    googlePlaceId: "ChIJxxxxxxxx-casa-003",
+    googlePlaceId: null,
     name: "Dental Care Californie",
     nameAr: "دينتال كير كاليفورنيا",
     citySlug: "casablanca",
@@ -145,7 +145,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "clinique-dentaire-agdal-rabat",
-    googlePlaceId: "ChIJxxxxxxxx-rabat-001",
+    googlePlaceId: null,
     name: "Clinique Dentaire Agdal",
     nameAr: "عيادة أكدال لطب الأسنان",
     citySlug: "rabat",
@@ -169,7 +169,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "cabinet-dentiste-souissi",
-    googlePlaceId: "ChIJxxxxxxxx-rabat-002",
+    googlePlaceId: null,
     name: "Cabinet Dentiste Souissi",
     nameAr: "عيادة السويسي لطب الأسنان",
     citySlug: "rabat",
@@ -194,7 +194,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "marrakech-dental-studio",
-    googlePlaceId: "ChIJxxxxxxxx-rak-001",
+    googlePlaceId: null,
     name: "Marrakech Dental Studio",
     nameAr: "مراكش دنتال ستوديو",
     citySlug: "marrakech",
@@ -218,7 +218,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "cabinet-dentaire-hivernage",
-    googlePlaceId: "ChIJxxxxxxxx-rak-002",
+    googlePlaceId: null,
     name: "Cabinet Dentaire Hivernage",
     nameAr: "عيادة الحي الشتوي لطب الأسنان",
     citySlug: "marrakech",
@@ -243,7 +243,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "fes-dental-care",
-    googlePlaceId: "ChIJxxxxxxxx-fes-001",
+    googlePlaceId: null,
     name: "Fès Dental Care",
     nameAr: "فاس دنتال كير",
     citySlug: "fes",
@@ -267,7 +267,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "cabinet-dentaire-atlas-fes",
-    googlePlaceId: "ChIJxxxxxxxx-fes-002",
+    googlePlaceId: null,
     name: "Cabinet Dentaire Atlas",
     nameAr: "عيادة أطلس لطب الأسنان",
     citySlug: "fes",
@@ -292,7 +292,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "agadir-dental-clinic",
-    googlePlaceId: "ChIJxxxxxxxx-agd-001",
+    googlePlaceId: null,
     name: "Agadir Dental Clinic",
     nameAr: "عيادة أكادير لطب الأسنان",
     citySlug: "agadir",
@@ -316,7 +316,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "cabinet-dentaire-talborjt",
-    googlePlaceId: "ChIJxxxxxxxx-agd-002",
+    googlePlaceId: null,
     name: "Cabinet Dentaire Talborjt",
     nameAr: "عيادة تالبرجت لطب الأسنان",
     citySlug: "agadir",
@@ -341,7 +341,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "oujda-dental-center",
-    googlePlaceId: "ChIJxxxxxxxx-ojd-001",
+    googlePlaceId: null,
     name: "Oujda Dental Center",
     nameAr: "مركز وجدة لطب الأسنان",
     citySlug: "oujda",
@@ -365,7 +365,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "kenitra-dentaire-familia",
-    googlePlaceId: "ChIJxxxxxxxx-ken-001",
+    googlePlaceId: null,
     name: "Kenitra Dentaire Familia",
     nameAr: "عيادة القنيطرة العائلية",
     citySlug: "kenitra",
@@ -390,7 +390,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "tetouan-cabinet-dentaire-modern",
-    googlePlaceId: "ChIJxxxxxxxx-tet-001",
+    googlePlaceId: null,
     name: "Tétouan Cabinet Dentaire Modern",
     nameAr: "عيادة تطوان الحديثة",
     citySlug: "tetouan",
@@ -415,7 +415,7 @@ export const clinics: SeedClinic[] = [
   },
   {
     slug: "safi-cabinet-dentaire-atlas",
-    googlePlaceId: "ChIJxxxxxxxx-safi-001",
+    googlePlaceId: null,
     name: "Safi Cabinet Dentaire Atlas",
     nameAr: "عيادة آسفي أطلس لطب الأسنان",
     citySlug: "safi",

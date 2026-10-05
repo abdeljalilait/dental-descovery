@@ -1,8 +1,20 @@
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { JobProgress, type JobRunView } from "@/components/admin/job-progress";
-import { startCampaignAction, startSyncAction } from "@/app/admin/jobs-actions";
+import {
+  KeywordPicker,
+  type KeywordGroup,
+  type KeywordPickerAccount,
+} from "@/components/admin/keyword-picker";
+import {
+  clearFinishedJobRunsAction,
+  deleteJobRunAction,
+  startCampaignAction,
+  startSyncAction,
+} from "@/app/admin/jobs-actions";
 import { getCampaignTemplatesDb, type CampaignTemplate } from "@/lib/campaign/templates";
 import { cities } from "@/lib/data/cities";
+import { getSerpApiAccountInfo } from "@/lib/services/serpapi";
+import { DENTAL_KEYWORD_GROUPS } from "@/lib/services/serpapi-core.mjs";
 import Link from "next/link";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
@@ -59,6 +71,12 @@ export default async function AdminJobsPage() {
   const delivery = await getCampaignDeliverySummaryDb();
   const templates = await getCampaignTemplatesDb();
 
+  // Free (0 credits) quota check so the keyword picker can price a run before
+  // it is started. Null when the key is absent or invalid.
+  const serpApiAccount = await getSerpApiAccountInfo(process.env.SERPAPI_API_KEY);
+
+  const hasFinishedRuns = runs.some((run) => run.status !== "RUNNING");
+
   return (
     <div className="space-y-10">
       <AdminPageHeader
@@ -84,10 +102,10 @@ export default async function AdminJobsPage() {
       <section className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="text-lg font-semibold text-primary">SerpApi clinic sync</h2>
         <p className="mt-1 text-sm text-muted">
-          One SerpApi credit per search. Cap the run below your monthly budget; a full sweep of the
-          10 target cities costs 10 searches.
+          One SerpApi credit per search, so a run costs one credit per keyword for each city it
+          touches. The estimate below updates as you pick.
         </p>
-        <SyncForm />
+        <SyncForm groups={DENTAL_KEYWORD_GROUPS} account={serpApiAccount} />
       </section>
 
       <section className="rounded-2xl border border-border bg-surface p-6">
@@ -111,16 +129,45 @@ export default async function AdminJobsPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-muted">Recent runs</h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-muted">Recent runs</h2>
+          {hasFinishedRuns ? (
+            <form action={clearFinishedJobRunsAction}>
+              <button
+                type="submit"
+                className="rounded-pill border border-border px-3 py-1 text-xs font-semibold text-muted transition-colors hover:border-red-300 hover:text-red-600"
+              >
+                Clear finished
+              </button>
+            </form>
+          ) : null}
+        </div>
         {runs.length === 0 ? (
           <p className="text-sm text-muted">No runs yet.</p>
         ) : (
           <div className="space-y-3">
             {runs.map((run) => (
-              <JobProgress key={run.id} initialRun={toView(run)} />
+              <div key={run.id} className="space-y-1">
+                <JobProgress initialRun={toView(run)} />
+                {run.status === "RUNNING" ? null : (
+                  <form action={deleteJobRunAction} className="flex justify-end">
+                    <input type="hidden" name="id" value={run.id} />
+                    <button
+                      type="submit"
+                      className="rounded-pill border border-border px-2.5 py-1 text-xs font-semibold text-muted transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                )}
+              </div>
             ))}
           </div>
         )}
+        <p className="mt-4 text-xs text-muted">
+          Deleting a run only clears its history. Clinics, leads and outreach records are never
+          touched. A run that is still executing cannot be deleted.
+        </p>
       </section>
     </div>
   );
@@ -227,46 +274,16 @@ function CampaignForm({ templates }: { templates: CampaignTemplate[] }) {
   );
 }
 
-function SyncForm() {
+function SyncForm({
+  groups,
+  account,
+}: {
+  groups: KeywordGroup[];
+  account: KeywordPickerAccount;
+}) {
   return (
     <form action={startSyncAction} className="mt-4 space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Target</span>
-          <select name="city" className="w-full rounded-xl border border-border bg-background px-3 py-2" defaultValue="">
-            <option value="">All Moroccan cities (15)</option>
-            {cities.map((city) => (
-              <option key={city.slug} value={city.slug}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Keywords mode</span>
-          <select name="keywordMode" className="w-full rounded-xl border border-border bg-background px-3 py-2" defaultValue="primary">
-            <option value="primary">Primary only (1 search/city — recommended)</option>
-            <option value="all">Deep sync (all 7 specialties)</option>
-          </select>
-        </label>
-
-        <label className="block text-sm">
-          <span className="mb-1 block font-medium">Max searches</span>
-          <input
-            name="maxSearches"
-            type="number"
-            min={1}
-            max={250}
-            defaultValue={15}
-            className="w-full rounded-xl border border-border bg-background px-3 py-2"
-          />
-        </label>
-      </div>
-
-      <p className="text-xs text-muted">
-        Tip: <strong>Primary only</strong> consumes 1 SerpApi credit per city, keeping total monthly spend well below the 250 free quota.
-      </p>
+      <KeywordPicker groups={groups} cities={cities} account={account} />
 
       <SubmitButton
         loadingText="Démarrage de la synchronisation..."

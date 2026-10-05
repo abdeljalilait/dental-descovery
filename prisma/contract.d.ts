@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'3dd33fc63468dba59891ab6945f0ae7de9adedabab6864f5a4c67d69a49feb99'>;
+  StorageHashBase<'e82990736a100beb814932b5e10fcab20561ff082b74022d61f93b103604dbcc'>;
 export type ExecutionHash =
   ExecutionHashBase<'22eb9fcfc80d2f97866a5557352f5b9c660098582506d995f0b2646224f000ee'>;
 export type ProfileHash =
@@ -304,7 +304,7 @@ export type FieldOutputTypes = {
       readonly descriptionFr: CodecTypes['pg/text@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'] | null;
       readonly emailSource: CodecTypes['pg/text@1']['output'] | null;
-      readonly googlePlaceId: CodecTypes['pg/text@1']['output'];
+      readonly googlePlaceId: CodecTypes['pg/text@1']['output'] | null;
       readonly hours: CodecTypes['pg/json@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly lastSyncedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -545,7 +545,7 @@ export type FieldInputTypes = {
       readonly descriptionFr: CodecTypes['pg/text@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'] | null;
       readonly emailSource: CodecTypes['pg/text@1']['input'] | null;
-      readonly googlePlaceId: CodecTypes['pg/text@1']['input'];
+      readonly googlePlaceId: CodecTypes['pg/text@1']['input'] | null;
       readonly hours: CodecTypes['pg/json@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly lastSyncedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -827,7 +827,7 @@ export type StorageColumnTypes = {
       readonly descriptionFr: CodecTypes['pg/text@1']['output'];
       readonly email: CodecTypes['pg/text@1']['output'] | null;
       readonly emailSource: CodecTypes['pg/text@1']['output'] | null;
-      readonly googlePlaceId: CodecTypes['pg/text@1']['output'];
+      readonly googlePlaceId: CodecTypes['pg/text@1']['output'] | null;
       readonly hours: CodecTypes['pg/json@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly lastSyncedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1068,7 +1068,7 @@ export type StorageColumnInputTypes = {
       readonly descriptionFr: CodecTypes['pg/text@1']['input'];
       readonly email: CodecTypes['pg/text@1']['input'] | null;
       readonly emailSource: CodecTypes['pg/text@1']['input'] | null;
-      readonly googlePlaceId: CodecTypes['pg/text@1']['input'];
+      readonly googlePlaceId: CodecTypes['pg/text@1']['input'] | null;
       readonly hours: CodecTypes['pg/json@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly lastSyncedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1270,7 +1270,7 @@ export namespace Models {
     descriptionFr: CodecTypes['pg/text@1']['output'];
     email: CodecTypes['pg/text@1']['output'] | null;
     emailSource: CodecTypes['pg/text@1']['output'] | null;
-    googlePlaceId: CodecTypes['pg/text@1']['output'];
+    googlePlaceId: CodecTypes['pg/text@1']['output'] | null;
     hours: CodecTypes['pg/json@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     lastSyncedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2139,7 +2139,7 @@ type ContractBase = Omit<
                 readonly googlePlaceId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly hours: {
                   readonly nativeType: 'json';
@@ -2258,6 +2258,7 @@ type ContractBase = Omit<
               uniques: readonly [
                 { readonly columns: readonly ['slug'] },
                 { readonly columns: readonly ['googlePlaceId'] },
+                { readonly columns: readonly ['citySlug', 'phone'] },
               ];
               indexes: readonly [
                 {
@@ -3369,7 +3370,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly googlePlaceId: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly hours: {

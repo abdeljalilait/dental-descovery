@@ -43,7 +43,10 @@ function mapClinicRow(row: ClinicRow): Clinic {
 
   return {
     slug: row.slug,
-    googlePlaceId: row.googlePlaceId,
+    // Seed and manually imported clinics have no Google place id. They fall back
+    // to a slug-derived placeholder, matching the `manual:` convention used by
+    // the CSV importer, so the domain type stays a non-empty string.
+    googlePlaceId: row.googlePlaceId ?? `local:${row.slug}`,
     name: row.name,
     nameAr: row.nameAr,
     citySlug: row.citySlug,

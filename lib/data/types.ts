@@ -22,8 +22,15 @@ export interface Specialty {
   icon: string;
 }
 
-/** Hand-written seed rows: specialties are resolved from slugs at read time. */
-export type SeedClinic = Omit<Clinic, "specialties">;
+/**
+ * Hand-written seed rows: specialties are resolved from slugs at read time.
+ *
+ * `googlePlaceId` is nullable because a hand-written clinic has never been seen
+ * by Google. Only the one seed row carrying a real place id has a value.
+ */
+export type SeedClinic = Omit<Clinic, "specialties" | "googlePlaceId"> & {
+  googlePlaceId: string | null;
+};
 
 export interface ClinicHourRow {
   days: LocalizedText;

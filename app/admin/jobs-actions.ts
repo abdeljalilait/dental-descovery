@@ -12,8 +12,19 @@ import {
   hasRunningJobDb,
   type JobRunKind,
 } from "@/lib/repositories/job-runs";
+import { cities } from "@/lib/data/cities";
 import { sendCampaign } from "@/lib/services/campaign-sender";
 import { runClinicSync } from "@/lib/services/clinic-sync";
+import {
+  MONTHLY_SEARCH_BUDGET,
+  PRIMARY_DENTAL_KEYWORDS,
+  sanitizeKeywords,
+} from "@/lib/services/serpapi";
+import {
+  clearFinishedJobRunsDb,
+  deleteJobRunDb,
+  getJobRunDb,
+} from "@/lib/repositories/job-runs";
 
 /**
  * Admin-triggered batch jobs (WhatsApp campaign, SerpApi sync).
@@ -82,13 +93,20 @@ export async function startSyncAction(formData: FormData): Promise<void> {
   await requireAdmin();
 
   const city = String(formData.get("city") ?? "").trim() || undefined;
-  const keywordMode = String(formData.get("keywordMode") ?? "primary").trim();
-  const rawMaxSearches = Number(formData.get("maxSearches"));
-  const defaultMax = city ? 7 : 15;
-  const maxSearches = Math.max(1, Math.min(rawMaxSearches || defaultMax, 250));
 
-  const { DENTAL_KEYWORDS, PRIMARY_DENTAL_KEYWORDS } = await import("@/lib/services/serpapi");
-  const keywords = keywordMode === "all" ? DENTAL_KEYWORDS : PRIMARY_DENTAL_KEYWORDS;
+  // Keywords arrive as free-form form values and are interpolated into a billable
+  // search query, so they are whitelisted against the catalogue. An empty
+  // selection falls back to the single primary keyword.
+  const keywords = sanitizeKeywords(formData.getAll("keywords"));
+  const effectiveKeywords = keywords.length > 0 ? keywords : PRIMARY_DENTAL_KEYWORDS;
+
+  const cityCount = city ? 1 : cities.length;
+  const rawMaxSearches = Number(formData.get("maxSearches"));
+  // Leave the cap to the core runner when the operator did not set one, so the
+  // derived default matches this exact keyword and city selection.
+  const maxSearches = Number.isFinite(rawMaxSearches) && rawMaxSearches > 0
+    ? Math.min(Math.floor(rawMaxSearches), MONTHLY_SEARCH_BUDGET)
+    : Math.min(effectiveKeywords.length * cityCount, MONTHLY_SEARCH_BUDGET);
 
   if (await hasRunningJobDb("SERPAPI_SYNC")) {
     return redirect("/admin/jobs?error=running");
@@ -97,13 +115,17 @@ export async function startSyncAction(formData: FormData): Promise<void> {
   const jobRunId = await createJobRunDb({
     kind: "SERPAPI_SYNC" as JobRunKind,
     requestedBy: await requestedBy(),
-    params: { city: city ?? null, maxSearches, keywordMode },
-    message: `Starting sync (${city ? `City: ${city}` : "All cities"}, max ${maxSearches} searches)`,
+    params: {
+      city: city ?? null,
+      maxSearches,
+      keywords: effectiveKeywords,
+    },
+    message: `Starting sync (${city ? `City: ${city}` : `All ${cityCount} cities`}, ${effectiveKeywords.length} keywords, max ${maxSearches} searches)`,
   });
 
   after(async () => {
     try {
-      await runClinicSync({ city, maxSearches, keywords, jobRunId });
+      await runClinicSync({ city, maxSearches, keywords: effectiveKeywords, jobRunId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       await finishJobRunDb(jobRunId, {
@@ -116,4 +138,32 @@ export async function startSyncAction(formData: FormData): Promise<void> {
 
   revalidatePath("/admin/jobs");
   return redirect("/admin/jobs?started=sync");
+}
+
+/** Delete one run from the recent list. History only, never job state. */
+export async function deleteJobRunAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return;
+
+  // A run that is still executing owns real work, so it cannot be deleted out
+  // from under the operator while it is in flight.
+  const run = await getJobRunDb(id);
+  if (!run || run.status === "RUNNING") return;
+
+  await deleteJobRunDb(id);
+
+  revalidatePath("/admin/jobs");
+  return redirect("/admin/jobs");
+}
+
+/** Clear every finished run, keeping anything still in flight. */
+export async function clearFinishedJobRunsAction(): Promise<void> {
+  await requireAdmin();
+
+  await clearFinishedJobRunsDb();
+
+  revalidatePath("/admin/jobs");
+  return redirect("/admin/jobs");
 }

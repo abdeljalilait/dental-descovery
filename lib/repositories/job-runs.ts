@@ -133,6 +133,31 @@ export async function listJobRunsDb(limit = 20): Promise<JobRunRow[]> {
   return jobRuns().orderBy((run) => run.createdAt.desc()).limit(limit).all();
 }
 
+/**
+ * Delete one finished run.
+ *
+ * Refuses a RUNNING row: the runner is executing inside `after()` and holds only
+ * this id for progress updates, so deleting it mid-flight would leave the work
+ * running with nowhere to report.
+ */
+export async function deleteJobRunDb(id: string): Promise<boolean> {
+  const run = await getJobRunDb(id);
+  if (!run || run.status === "RUNNING") return false;
+  await jobRuns().where({ id }).delete();
+  return true;
+}
+
+/** Clear the history in one go, leaving any in-flight run reporting. */
+export async function clearFinishedJobRunsDb(): Promise<number> {
+  // The ORM `where` has no `in` operator, so the status test happens here rather
+  // than in SQL. `job_runs` only ever holds a console-sized number of rows.
+  const finished = (await jobRuns().all()).filter((run) => run.status !== "RUNNING");
+  for (const run of finished) {
+    await jobRuns().where({ id: run.id }).delete();
+  }
+  return finished.length;
+}
+
 export async function hasRunningJobDb(kind: JobRunKind): Promise<boolean> {
   const run = await jobRuns().where({ kind, status: "RUNNING" }).orderBy((row) => row.updatedAt.desc()).first();
   if (!run) return false;

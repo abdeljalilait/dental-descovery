@@ -36,7 +36,10 @@ model Specialty {
 model Clinic {
   id             String   @id @default(uuid())
   slug           String   @unique
-  googlePlaceId  String   @unique
+  // Nullable: seed rows and manually imported clinics have no Google place id.
+  // A unique index over many NULLs is still satisfied in Postgres, so relaxing
+  // NOT NULL does not weaken the dedupe guarantee for real SerpApi rows.
+  googlePlaceId  String?  @unique
   name           String
   nameAr         String
   citySlug       String
@@ -69,6 +72,10 @@ model Clinic {
 
   @@index([citySlug])
   @@index([rating])
+  // Hard backstop against the same practice being inserted twice under two
+  // different place ids. Postgres treats NULLs as distinct, so clinics without a
+  // phone are unaffected.
+  @@unique([citySlug, phone])
   @@map("clinics")
 }
 

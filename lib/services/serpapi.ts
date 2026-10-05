@@ -3,6 +3,10 @@ import type { City, Clinic } from "@/lib/data/types";
 import prisma from "@/lib/prisma";
 import { toInstant, toJson } from "@/src/prisma/codecs";
 import {
+  DENTAL_KEYWORD_GROUPS,
+  DENTAL_KEYWORD_LABELS,
+  DEFAULT_ZOOM,
+  MAX_CITY_RADIUS_KM,
   MONTHLY_SEARCH_BUDGET,
   PRIMARY_DENTAL_KEYWORDS,
   SearchBudget,
@@ -10,11 +14,14 @@ import {
   buildCityQueries,
   getSerpApiAccountInfo,
   inferSpecialties,
+  isSameClinicAs,
   mapSerpApiPlaceToClinic,
   normalizeMoroccanPhone,
   parseOperatingHours,
   parseRating,
   parseReviewCount,
+  resolveNameAr,
+  sanitizeKeywords,
   searchPlaces,
   slugify,
   syncCityWithKeywords as syncCityCore,
@@ -97,6 +104,8 @@ export interface SyncCityResult {
   searchesUsed: number;
   /** The queries actually sent (short if the budget cut the run short). */
   keywords?: string[];
+  /** Results dropped for sitting outside the city radius. */
+  outOfRadius?: number;
   error?: string;
 }
 
@@ -105,6 +114,8 @@ export interface SyncReport {
   totalCities: number;
   totalClinics: number;
   searchesUsed: number;
+  /** Results dropped for sitting outside the city radius. */
+  outOfRadius?: number;
   /** Monthly quota the run was allowed to spend. */
   searchBudget: number;
   searchesRemaining: number;
@@ -118,13 +129,20 @@ export {
   SearchBudgetExceededError,
   buildCityQueries,
   PRIMARY_DENTAL_KEYWORDS,
+  DENTAL_KEYWORD_GROUPS,
+  DENTAL_KEYWORD_LABELS,
+  DEFAULT_ZOOM,
+  MAX_CITY_RADIUS_KM,
   getSerpApiAccountInfo,
   inferSpecialties,
+  isSameClinicAs,
   mapSerpApiPlaceToClinic,
   normalizeMoroccanPhone,
   parseOperatingHours,
   parseRating,
   parseReviewCount,
+  resolveNameAr,
+  sanitizeKeywords,
   searchPlaces,
   slugify,
 };
@@ -283,22 +301,38 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
       const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
       const hours = toJson(clinic.hours);
 
-      // Match existing clinic by googlePlaceId, exact slug, or name in the same city
+      // Match in descending order of confidence: the Google place id, then the
+      // exact slug, then the name — where the name match only counts when a
+      // phone or address confirms it is the same practice.
+      const byPlaceId = clinic.googlePlaceId
+        ? await prisma.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
+        : null;
+      const bySlug = byPlaceId
+        ? null
+        : await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first();
+      // Same city plus same phone is the strongest signal Google can drift on:
+      // the same practice can come back under a different place id.
+      const byPhone =
+        byPlaceId || bySlug || !clinic.phone
+          ? null
+          : await prisma.orm.public.Clinic
+              .where({ citySlug: clinic.citySlug, phone: clinic.phone })
+              .first();
       const existing =
-        (clinic.googlePlaceId
-          ? await prisma.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
-          : null) ||
-        (await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first()) ||
-        (await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).first());
+        byPlaceId ||
+        bySlug ||
+        byPhone ||
+        (await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all())
+          .find((row) => isSameClinicAs(clinic, row));
 
       const slugToUse = existing?.slug || clinic.slug;
 
       const upserted = await prisma.orm.public.Clinic.upsert({
         conflictOn: { slug: slugToUse },
         update: {
-          googlePlaceId: clinic.googlePlaceId || existing?.googlePlaceId || clinic.googlePlaceId,
+          googlePlaceId: clinic.googlePlaceId ?? existing?.googlePlaceId ?? null,
           name: clinic.name,
-          nameAr: clinic.nameAr || existing?.nameAr || clinic.name,
+          nameAr: resolveNameAr(clinic.name, clinic.nameAr, existing?.nameAr),
           citySlug: clinic.citySlug,
           neighborhoodFr: clinic.neighborhood.fr,
           neighborhoodAr: clinic.neighborhood.ar,

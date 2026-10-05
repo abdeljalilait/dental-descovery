@@ -29,6 +29,9 @@ import {
   PRIMARY_DENTAL_KEYWORDS,
   SearchBudget,
   getSerpApiAccountInfo,
+  isSameClinicAs,
+  resolveNameAr,
+  sanitizeKeywords,
   syncAllCities,
 } from "../lib/services/serpapi-core.mjs";
 
@@ -58,16 +61,28 @@ const keywordArg = args.find((a) => a.startsWith("--keyword="))?.split("=")[1];
 const isAllKeywords = args.includes("--all-keywords") || keywordsArg === "all";
 const isQuick = args.includes("--quick") || args.includes("--primary");
 
-// Resolve keywords strategy
-let selectedKeywords = undefined;
+// Resolve the keyword strategy, then validate it against the catalogue so a
+// typo in a flag can never become a billable query.
+let requestedKeywords;
 if (keywordArg) {
-  selectedKeywords = [keywordArg.trim()];
+  requestedKeywords = [keywordArg.trim()];
 } else if (keywordsArg && keywordsArg !== "all") {
-  selectedKeywords = keywordsArg.split(",").map((k) => k.trim());
+  requestedKeywords = keywordsArg.split(",").map((k) => k.trim());
 } else if (isAllKeywords) {
-  selectedKeywords = DENTAL_KEYWORDS;
+  requestedKeywords = DENTAL_KEYWORDS;
 } else if (isQuick) {
-  selectedKeywords = PRIMARY_DENTAL_KEYWORDS;
+  requestedKeywords = PRIMARY_DENTAL_KEYWORDS;
+}
+
+const selectedKeywords =
+  requestedKeywords === undefined ? undefined : sanitizeKeywords(requestedKeywords);
+
+if (requestedKeywords !== undefined && selectedKeywords.length === 0) {
+  console.error(
+    `\x1b[31m[ERROR]\x1b[0m None of the requested keywords are in the catalogue.\n` +
+      `        Available: ${DENTAL_KEYWORDS.join(", ")}`,
+  );
+  process.exit(1);
 }
 
 // Calculate safe search budget to protect the 250/month free tier
@@ -95,22 +110,35 @@ async function saveToDatabase(clinics) {
       const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
       const hours = toJson(clinic.hours);
 
-      // Match existing clinic by googlePlaceId, exact slug, or name in the same city
+      // Match in descending order of confidence: the Google place id, then the
+      // exact slug, then city + phone, then the name — where the name match only
+      // counts when a phone or address confirms the same practice.
+      const byPlaceId = clinic.googlePlaceId
+        ? await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
+        : null;
+      const bySlug = byPlaceId
+        ? null
+        : await db.orm.public.Clinic.where({ slug: clinic.slug }).first();
+      const byPhone =
+        byPlaceId || bySlug || !clinic.phone
+          ? null
+          : await db.orm.public.Clinic.where({ citySlug: clinic.citySlug, phone: clinic.phone }).first();
       const existing =
-        (clinic.googlePlaceId
-          ? await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
-          : null) ||
-        (await db.orm.public.Clinic.where({ slug: clinic.slug }).first()) ||
-        (await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).first());
+        byPlaceId ||
+        bySlug ||
+        byPhone ||
+        (await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all()).find(
+          (row) => isSameClinicAs(clinic, row),
+        );
 
       const slugToUse = existing?.slug || clinic.slug;
 
       const upserted = await db.orm.public.Clinic.upsert({
         conflictOn: { slug: slugToUse },
         update: {
-          googlePlaceId: clinic.googlePlaceId || existing?.googlePlaceId || clinic.googlePlaceId,
+          googlePlaceId: clinic.googlePlaceId ?? existing?.googlePlaceId ?? null,
           name: clinic.name,
-          nameAr: clinic.nameAr || existing?.nameAr || clinic.name,
+          nameAr: resolveNameAr(clinic.name, clinic.nameAr, existing?.nameAr),
           citySlug: clinic.citySlug,
           neighborhoodFr: clinic.neighborhood.fr,
           neighborhoodAr: clinic.neighborhood.ar,

@@ -76,7 +76,10 @@ async function main() {
     const upsertedClinic = await db.orm.public.Clinic.upsert({
       conflictOn: { slug: clinic.slug },
       update: {
-        googlePlaceId: clinic.googlePlaceId,
+        // Most seed rows have no Google place id. Writing null over a row that a
+        // sync has already enriched with a real one would discard it, so a null
+        // seed value leaves the existing column untouched.
+        ...(clinic.googlePlaceId ? { googlePlaceId: clinic.googlePlaceId } : {}),
         name: clinic.name,
         nameAr: clinic.nameAr,
         citySlug: clinic.citySlug,
@@ -102,7 +105,7 @@ async function main() {
       },
       create: {
         slug: clinic.slug,
-        googlePlaceId: clinic.googlePlaceId,
+        googlePlaceId: clinic.googlePlaceId ?? null,
         name: clinic.name,
         nameAr: clinic.nameAr,
         citySlug: clinic.citySlug,

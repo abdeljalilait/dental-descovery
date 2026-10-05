@@ -78,7 +78,7 @@ export function clinicsToCsv(rows: AdminClinicRow[]): string {
 
     const cells: Record<ClinicCsvColumn, string> = {
       slug: row.slug,
-      googlePlaceId: row.googlePlaceId,
+      googlePlaceId: row.googlePlaceId ?? "",
       name: row.name,
       nameAr: row.nameAr,
       citySlug: row.citySlug,

@@ -557,7 +557,7 @@
                 }
               },
               "googlePlaceId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -3205,7 +3205,7 @@
                 "googlePlaceId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "hours": {
                   "codecId": "pg/json@1",
@@ -3374,6 +3374,12 @@
                 {
                   "columns": [
                     "googlePlaceId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "citySlug",
+                    "phone"
                   ]
                 }
               ]
@@ -4248,7 +4254,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "3dd33fc63468dba59891ab6945f0ae7de9adedabab6864f5a4c67d69a49feb99"
+    "storageHash": "e82990736a100beb814932b5e10fcab20561ff082b74022d61f93b103604dbcc"
   },
   "execution": {
     "executionHash": "22eb9fcfc80d2f97866a5557352f5b9c660098582506d995f0b2646224f000ee",
