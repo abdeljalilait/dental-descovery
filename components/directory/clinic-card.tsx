@@ -52,18 +52,18 @@ export async function ClinicCard({
       </Link>
 
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-3">
-          <Link href={href} className="min-w-0">
-            <h3 className="truncate text-base sm:text-lg font-black leading-snug text-foreground transition-colors group-hover:text-primary">
-              {locale === "ar" ? clinic.nameAr : clinic.name}
-            </h3>
-          </Link>
+        <Link href={href} className="block">
+          <h3 className="line-clamp-2 text-base sm:text-lg font-black leading-snug text-foreground transition-colors group-hover:text-primary">
+            {locale === "ar" ? clinic.nameAr : clinic.name}
+          </h3>
+        </Link>
+
+        <div className="mt-2 flex items-center">
           <RatingValue
             rating={clinic.rating}
             reviewCount={clinic.reviewCount}
             source={dict.ratingSource}
             size={13}
-            className="shrink-0 pt-0.5"
           />
         </div>
 
