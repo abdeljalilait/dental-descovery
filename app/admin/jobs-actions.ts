@@ -64,9 +64,11 @@ export async function startCampaignAction(formData: FormData): Promise<void> {
     try {
       await sendCampaign({ templateKey, city, claimedStatus, dryRun, force, maxPerRun, jobRunId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       await finishJobRunDb(jobRunId, {
         status: "FAILED",
-        message: error instanceof Error ? error.message : String(error),
+        message: errMsg,
+        errors: [errMsg],
       });
     }
   });
@@ -97,9 +99,11 @@ export async function startSyncAction(formData: FormData): Promise<void> {
     try {
       await runClinicSync({ city, maxSearches, jobRunId });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       await finishJobRunDb(jobRunId, {
         status: "FAILED",
-        message: error instanceof Error ? error.message : String(error),
+        message: errMsg,
+        errors: [errMsg],
       });
     }
   });

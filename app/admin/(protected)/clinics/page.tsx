@@ -7,8 +7,7 @@ import {
   listAdminClinicsDb,
   type AdminClinicRow,
 } from "@/lib/repositories/admin-clinics";
-import { getJobRunDb } from "@/lib/repositories/job-runs";
-import { listJobRunsDb } from "@/lib/repositories/job-runs";
+import { getJobRunDb, listJobRunsDb, parseJobErrors } from "@/lib/repositories/job-runs";
 import { ClinicImportForm } from "@/components/admin/clinic-import-form";
 import { SendTemplateControl } from "@/components/admin/send-template-control";
 import { ToggleFlagButton } from "@/components/admin/toggle-flag-button";
@@ -203,6 +202,7 @@ async function toView(run: Awaited<ReturnType<typeof getJobRunDb>> & object): Pr
     failed: run.failed ?? 0,
     skipped: run.skipped ?? 0,
     message: run.message,
+    errors: parseJobErrors(run.errors),
     finishedAt: run.finishedAt ? String(run.finishedAt) : null,
   };
 }

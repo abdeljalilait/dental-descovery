@@ -1289,6 +1289,13 @@
                   "kind": "scalar"
                 }
               },
+              "errors": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/json@1",
+                  "kind": "scalar"
+                }
+              },
               "failed": {
                 "nullable": false,
                 "type": {
@@ -1386,6 +1393,9 @@
               "fields": {
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "errors": {
+                  "column": "errors"
                 },
                 "failed": {
                   "column": "failed"
@@ -3379,6 +3389,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "errors": {
+                  "codecId": "pg/json@1",
+                  "nativeType": "json",
+                  "nullable": true
+                },
                 "failed": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -4233,7 +4248,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "eca21c9fe4e303dd3d5b6dcb792cdf37580a9fdb5292bf09e373f3fef176bbff"
+    "storageHash": "3dd33fc63468dba59891ab6945f0ae7de9adedabab6864f5a4c67d69a49feb99"
   },
   "execution": {
     "executionHash": "22eb9fcfc80d2f97866a5557352f5b9c660098582506d995f0b2646224f000ee",

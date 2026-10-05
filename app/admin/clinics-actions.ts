@@ -136,9 +136,11 @@ export async function sendClinicTemplateAction(formData: FormData): Promise<void
         jobRunId,
       });
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
       await finishJobRunDb(jobRunId, {
         status: "FAILED",
-        message: error instanceof Error ? error.message : String(error),
+        message: errMsg,
+        errors: [errMsg],
       });
     }
   });

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
-import { getJobRunDb } from "@/lib/repositories/job-runs";
+import { getJobRunDb, parseJobErrors } from "@/lib/repositories/job-runs";
 
 /**
  * Live progress for one admin-triggered run.
@@ -23,6 +23,8 @@ export async function GET(
     return NextResponse.json({ error: "Unknown run" }, { status: 404 });
   }
 
+  const errors = parseJobErrors(run.errors);
+
   return NextResponse.json({
     id: run.id,
     kind: run.kind,
@@ -33,6 +35,7 @@ export async function GET(
     failed: run.failed,
     skipped: run.skipped,
     message: run.message,
+    errors,
     createdAt: String(run.createdAt ?? ""),
     finishedAt: run.finishedAt ? String(run.finishedAt) : null,
   });

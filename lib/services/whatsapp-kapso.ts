@@ -1,6 +1,7 @@
 import { WhatsAppClient } from "@kapso/whatsapp-cloud-api";
 import { toWhatsApp } from "@/lib/utils/phone";
 import { normalizeVariableName, isValidVariableName } from "@/lib/campaign/variables";
+import { resolveKapsoAccount, normalizeKapsoBaseUrl } from "@/lib/services/kapso";
 
 export interface KapsoVariableParam {
   type?: "text";
@@ -11,15 +12,17 @@ export interface KapsoVariableParam {
 export interface KapsoSendOptions {
   /** Raw Moroccan number in any format; normalised to E.164 before sending. */
   to: string;
-  /** Template name as approved in the Kapso dashboard. */
+  /** Template name as approved in the Kapso dashboard / Meta. */
   template: string;
-  /** Template language code, e.g. `fr` or `ar`. */
+  /** Template language code, e.g. `fr`, `ar`, `fr_FR`. */
   language: string;
   /**
    * Body placeholders in template order or with parameter names.
    * Parameter names are normalized to lowercase snake_case (^[a-z0-9_]+$) for Meta compliance.
    */
   variables: (string | KapsoVariableParam)[];
+  /** Optional specific Kapso account ID from the database */
+  accountId?: string;
 }
 
 export interface KapsoSendResult {
@@ -48,20 +51,23 @@ export function getKapsoConfig(): KapsoConfig {
 /**
  * Send an approved WhatsApp template through Kapso.
  *
- * The SDK mirrors Meta's Cloud API, so the payload stays portable: only the
- * `baseUrl`/`kapsoApiKey` pair changes between Kapso and Meta directly.
+ * Resolves credentials from the DB-backed KapsoAccount (or falls back to env).
  */
 export async function sendWhatsAppViaKapso(opts: KapsoSendOptions): Promise<KapsoSendResult> {
-  const cfg = getKapsoConfig();
+  const account = await resolveKapsoAccount(opts.accountId);
+  const baseUrl = account ? normalizeKapsoBaseUrl(account.baseUrl) : normalizeKapsoBaseUrl(process.env.KAPSO_BASE_URL);
+  const apiKey = account?.apiKey || process.env.KAPSO_API_KEY;
+  const phoneNumberId = account?.phoneNumberId || process.env.KAPSO_PHONE_NUMBER_ID;
+
   const wa = toWhatsApp(opts.to);
 
   if (!wa.dialable) return { ok: false, error: "Invalid or non-dialable WhatsApp number" };
-  if (!cfg.apiKey) return { ok: false, error: "KAPSO_API_KEY is not configured" };
-  if (!cfg.phoneNumberId) return { ok: false, error: "KAPSO_PHONE_NUMBER_ID is not configured" };
+  if (!apiKey) return { ok: false, error: "Kapso API key is not configured" };
+  if (!phoneNumberId) return { ok: false, error: "Kapso Phone Number ID is not configured" };
 
   const client = new WhatsAppClient({
-    baseUrl: cfg.baseUrl,
-    kapsoApiKey: cfg.apiKey,
+    baseUrl,
+    kapsoApiKey: apiKey,
   });
 
   const formattedParams = opts.variables.map((item) => {
@@ -83,7 +89,7 @@ export async function sendWhatsAppViaKapso(opts: KapsoSendOptions): Promise<Kaps
 
   try {
     const response = await client.messages.sendTemplate({
-      phoneNumberId: cfg.phoneNumberId,
+      phoneNumberId,
       to: wa.e164.replace("+", ""),
       template: {
         name: opts.template,

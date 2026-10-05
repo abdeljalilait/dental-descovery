@@ -5,6 +5,7 @@ import { toInstant, type InstantInput } from "@/src/prisma/codecs";
 import {
   type JobRunCounters,
   type JobRunProgress,
+  type JobRunStatus,
   updateJobRunProgressDb,
 } from "@/lib/repositories/job-runs";
 import { toWhatsApp } from "@/lib/utils/phone";
@@ -138,11 +139,15 @@ export async function previewCampaign(
   },
 ): Promise<CampaignPreview> {
   const template = await getTemplateByKey(options.templateKey);
-  if (!template) throw new Error(`Template not found: ${options.templateKey}`);
+  if (!template) {
+    throw new Error(`Template not found: "${options.templateKey}". Please sync your approved WhatsApp templates in /admin/kapso.`);
+  }
+
+  const metaTemplateName = template.templateName || template.name;
 
   const { candidates, optedOut, totalNoWhatsapp, totalAlready } = await loadCandidates(
     options.city,
-    template.key,
+    metaTemplateName,
     undefined,
     options.claimedStatus,
   );
@@ -219,18 +224,22 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
   const force = options.force ?? false;
   const maxPerRun = options.maxPerRun ?? Number(process.env.CAMPAIGN_MAX_PER_RUN ?? 50);
   const delayMs = options.delayMs ?? Number(process.env.CAMPAIGN_DELAY_MS ?? 2000);
-  const templateKey = options.templateKey ?? process.env.CAMPAIGN_TEMPLATE_KEY;
+  const templateKey = options.templateKey;
 
   if (!templateKey) {
-    throw new Error("No template selected or configured for campaign");
+    throw new Error("No template selected. Please sync and select an approved template from Kapso.");
   }
 
   const template = await getTemplateByKey(templateKey);
-  if (!template) throw new Error(`Template not found: ${templateKey}`);
+  if (!template) {
+    throw new Error(`Template not found: "${templateKey}". Please sync your approved WhatsApp templates in /admin/kapso.`);
+  }
+
+  const metaTemplateName = template.templateName || template.name;
 
   const { candidates, optedOut } = await loadCandidates(
     options.city,
-    template.key,
+    metaTemplateName,
     options.clinicSlugs,
     options.claimedStatus,
   );
@@ -250,7 +259,7 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
 
   await report(options.jobRunId, {
     ...counters,
-    message: dryRun ? "Dry run: nothing is sent to Kapso" : `Sending template ${template.key}`,
+    message: dryRun ? "Dry run: nothing is sent to Kapso" : `Sending template ${template.name}`,
   });
 
   for (const candidate of selected) {
@@ -272,29 +281,32 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
 
     const res = await sendWhatsAppViaKapso({
       to: candidate.e164,
-      template: template.key,
-      language: template.locale === "ar" ? "ar" : "fr",
+      template: metaTemplateName,
+      language: template.locale,
       variables: parameters,
+      accountId: template.accountId,
     });
 
     if (res.ok) {
       counters.succeeded++;
       try {
-        await upsertOutreach(candidate.id, template.key, {
+        await upsertOutreach(candidate.id, metaTemplateName, {
           status: "SENT",
           providerMessageId: res.messageId,
           sentAt: toInstant(new Date()),
         });
       } catch (error) {
-        errors.push(`${candidate.slug}: ${error instanceof Error ? error.message : String(error)}`);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        errors.push(`${candidate.name} (${candidate.slug}): ${errorMsg}`);
       }
     } else {
       counters.failed++;
-      errors.push(`${candidate.slug}: ${res.error ?? "unknown error"}`);
+      const errorMsg = res.error ?? "unknown error";
+      errors.push(`${candidate.name} (${candidate.slug}): ${errorMsg}`);
       try {
-        await upsertOutreach(candidate.id, template.key, {
+        await upsertOutreach(candidate.id, metaTemplateName, {
           status: "FAILED",
-          note: res.error ?? "send failed",
+          note: errorMsg,
           failedAt: toInstant(new Date()),
         });
       } catch {
@@ -303,7 +315,10 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
     }
 
     counters.processed++;
-    await report(options.jobRunId, { ...counters });
+    await report(options.jobRunId, {
+      ...counters,
+      errors: errors.length > 0 ? errors : undefined,
+    });
 
     if (delayMs > 0) await sleep(delayMs);
   }
@@ -314,11 +329,16 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
     errors,
   };
 
+  const status: JobRunStatus =
+    counters.total > 0 && counters.failed === counters.total ? "FAILED" : "COMPLETED";
+
   await report(options.jobRunId, {
     ...counters,
+    status,
     message: dryRun
       ? `Dry run finished: ${counters.total} prospective clinics inspected`
       : `Send complete: ${counters.succeeded} sent, ${counters.failed} failed`,
+    errors: errors.length > 0 ? errors : undefined,
   });
 
   return result;
@@ -364,6 +384,10 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
     maxSearches,
   });
 
+  const syncErrors = report_.details
+    .filter((city) => Boolean(city.error))
+    .map((city) => `${city.cityName || city.citySlug}: ${city.error}`);
+
   const counters: JobRunCounters = {
     total: report_.totalCities,
     processed: report_.details.length,
@@ -372,10 +396,14 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
     skipped: 0,
   };
 
+  const status: JobRunStatus =
+    counters.total > 0 && counters.failed === counters.total ? "FAILED" : "COMPLETED";
+
   await report(options.jobRunId, {
     ...counters,
-    status: "COMPLETED",
+    status,
     message: `${report_.totalClinics} clinics from ${report_.searchesUsed} searches`,
+    errors: syncErrors.length > 0 ? syncErrors : undefined,
   });
 
   return { ...counters, searchesUsed: report_.searchesUsed, cities: report_.details.map((c) => c.citySlug) };

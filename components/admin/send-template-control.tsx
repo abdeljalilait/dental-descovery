@@ -52,7 +52,7 @@ export function SendTemplateControl({
   return (
     <form action={sendClinicTemplateAction} className="w-64 space-y-2 rounded-xl border border-border bg-background p-3">
       <input type="hidden" name="slug" value={slug} />
-      <input type="hidden" name="templateKey" value={templateKey} />
+      <input type="hidden" name="templateKey" value={templateKey || templates[0]?.key || ""} />
       <input type="hidden" name="mode" value={mode} />
       {confirmLive ? <input type="hidden" name="confirmLive" value="yes" /> : null}
 
@@ -73,7 +73,7 @@ export function SendTemplateControl({
         >
           {templates.map((template) => (
             <option key={template.key} value={template.key}>
-              {template.name} ({template.key})
+              {template.name}
             </option>
           ))}
         </select>

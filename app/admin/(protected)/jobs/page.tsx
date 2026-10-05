@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import {
   getCampaignDeliverySummaryDb,
   listJobRunsDb,
+  parseJobErrors,
   reapStaleJobRunsDb,
 } from "@/lib/repositories/job-runs";
 
@@ -31,6 +32,7 @@ function toView(run: {
   failed: number;
   skipped: number;
   message: string | null;
+  errors?: unknown;
   finishedAt: unknown;
 }): JobRunView {
   return {
@@ -43,6 +45,7 @@ function toView(run: {
     failed: run.failed ?? 0,
     skipped: run.skipped ?? 0,
     message: run.message,
+    errors: parseJobErrors(run.errors),
     finishedAt: run.finishedAt ? String(run.finishedAt) : null,
   };
 }
@@ -154,7 +157,7 @@ function CampaignForm({ templates }: { templates: CampaignTemplate[] }) {
           >
             {templates.map((template) => (
               <option key={template.id} value={template.key}>
-                {template.name} ({template.key}) [{template.locale.toUpperCase()}]
+                {template.name}
               </option>
             ))}
           </select>

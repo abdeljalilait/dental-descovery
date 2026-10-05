@@ -19,6 +19,7 @@ export interface CampaignTemplate {
   channel: "WHATSAPP";
   locale: "fr" | "ar" | string;
   name: string;
+  templateName: string;
   body: string;
   variables: string[];
   status: string;
@@ -28,10 +29,11 @@ export interface CampaignTemplate {
 export function toCampaignTemplate(row: WhatsAppTemplateRow): CampaignTemplate {
   return {
     id: row.id,
-    key: row.name,
+    key: row.id,
     channel: "WHATSAPP",
     locale: row.language,
     name: `${row.name} (${row.language.toUpperCase()})`,
+    templateName: row.name,
     body: row.bodyText,
     variables: row.variables,
     status: row.status,
@@ -55,11 +57,12 @@ export async function getCampaignTemplatesDb(accountId?: string): Promise<Campai
  * Finds a template by its database ID or Meta template name.
  */
 export async function getTemplateByKey(keyOrId: string): Promise<CampaignTemplate | undefined> {
+  if (!keyOrId) return undefined;
   const byId = await getWhatsAppTemplateByIdDb(keyOrId);
   if (byId) return toCampaignTemplate(byId);
 
   const all = await getWhatsAppTemplatesDb();
-  const byName = all.find((t) => t.name === keyOrId || t.id === keyOrId);
+  const byName = all.find((t) => t.id === keyOrId || t.name === keyOrId);
   return byName ? toCampaignTemplate(byName) : undefined;
 }
 

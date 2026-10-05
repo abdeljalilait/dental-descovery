@@ -135,6 +135,7 @@ model JobRun {
   status      String    @default("RUNNING") // RUNNING, COMPLETED, FAILED
   requestedBy String?
   params      Json?
+  errors      Json?
   total       Int       @default(0)
   processed   Int       @default(0)
   succeeded   Int       @default(0)

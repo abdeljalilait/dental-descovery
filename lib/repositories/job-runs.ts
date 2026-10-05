@@ -20,6 +20,25 @@ type JobRunRow = ResultType<ReturnType<typeof jobRuns>>;
 
 export type { JobRunRow };
 
+export function parseJobErrors(raw: unknown): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.map((e) => (typeof e === "string" ? e : JSON.stringify(e)));
+  }
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map((e) => (typeof e === "string" ? e : JSON.stringify(e)));
+      }
+      return [raw];
+    } catch {
+      return [raw];
+    }
+  }
+  return [];
+}
+
 export interface CreateJobRunInput {
   kind: JobRunKind;
   requestedBy?: string;
@@ -53,6 +72,8 @@ export interface JobRunProgress extends JobRunCounters {
   message?: string;
   /** Terminal runs get a status and a finish timestamp. */
   status?: JobRunStatus;
+  /** Error messages or failure details. */
+  errors?: string[];
 }
 
 /**
@@ -85,17 +106,23 @@ export async function updateJobRunProgressDb(id: string, progress: JobRunProgres
       status: progress.status,
       // Omitted on intermediate ticks, so the newest message is never wiped.
       message: progress.message,
+      errors: progress.errors !== undefined ? progress.errors : undefined,
     });
 }
 
 /** Close a run out as failed/completed after the runner threw or finished. */
 export async function finishJobRunDb(
   id: string,
-  result: { status: JobRunStatus; message: string },
+  result: { status: JobRunStatus; message: string; errors?: string[] },
 ): Promise<void> {
   await jobRuns()
     .where({ id })
-    .update({ status: result.status, message: result.message, finishedAt: toInstant(new Date()) });
+    .update({
+      status: result.status,
+      message: result.message,
+      finishedAt: toInstant(new Date()),
+      errors: result.errors !== undefined ? result.errors : undefined,
+    });
 }
 
 export async function getJobRunDb(id: string): Promise<JobRunRow | null> {
