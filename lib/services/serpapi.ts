@@ -1,10 +1,12 @@
 import { cities, getCity } from "@/lib/data/cities";
 import type { City, Clinic } from "@/lib/data/types";
 import prisma from "@/lib/prisma";
+import { and, or } from "@prisma/orm-postgres/orm-client";
 import { toInstant, toJson } from "@/src/prisma/codecs";
 import {
   DENTAL_KEYWORD_GROUPS,
   DENTAL_KEYWORD_LABELS,
+  DEFAULT_MAX_PAGES,
   DEFAULT_ZOOM,
   MAX_CITY_RADIUS_KM,
   MONTHLY_SEARCH_BUDGET,
@@ -12,14 +14,19 @@ import {
   SearchBudget,
   SearchBudgetExceededError,
   buildCityQueries,
+  extractDistinctiveTokens,
+  getNextPageUrl,
   getSerpApiAccountInfo,
+  haveCompatibleNames,
   inferSpecialties,
   isSameClinicAs,
   mapSerpApiPlaceToClinic,
   normalizeMoroccanPhone,
+  normalizeWebsiteDomain,
   parseOperatingHours,
   parseRating,
   parseReviewCount,
+  phoneDigits,
   resolveNameAr,
   sanitizeKeywords,
   searchPlaces,
@@ -70,6 +77,7 @@ export interface SerpApiPlace {
 
 export interface SerpApiPagination {
   next?: string;
+  next_page_token?: string;
 }
 
 export interface SerpApiResponse {
@@ -124,6 +132,7 @@ export interface SyncReport {
 
 // Re-exported so the Next.js layer and the Node scripts share one implementation.
 export {
+  DEFAULT_MAX_PAGES,
   MONTHLY_SEARCH_BUDGET,
   SearchBudget,
   SearchBudgetExceededError,
@@ -133,11 +142,15 @@ export {
   DENTAL_KEYWORD_LABELS,
   DEFAULT_ZOOM,
   MAX_CITY_RADIUS_KM,
+  extractDistinctiveTokens,
+  getNextPageUrl,
   getSerpApiAccountInfo,
+  haveCompatibleNames,
   inferSpecialties,
   isSameClinicAs,
   mapSerpApiPlaceToClinic,
   normalizeMoroccanPhone,
+  normalizeWebsiteDomain,
   parseOperatingHours,
   parseRating,
   parseReviewCount,
@@ -154,7 +167,7 @@ export { DENTAL_KEYWORDS, HOURLY_SEARCH_LIMIT } from "@/lib/services/serpapi-cor
 export async function fetchClinicsForCity(
   citySlug: string,
   apiKey?: string,
-  options?: { query?: string; zoom?: number },
+  options?: { query?: string; zoom?: number; maxPages?: number },
 ): Promise<SyncCityResult> {
   const key = apiKey || process.env.SERPAPI_API_KEY;
   const city = getCity(citySlug);
@@ -226,6 +239,7 @@ export async function syncCityWithKeywords(
     keywords?: string[];
     delayMs?: number;
     zoom?: number;
+    maxPages?: number;
   },
 ): Promise<SyncCityResult> {
   const key = apiKey || process.env.SERPAPI_API_KEY;
@@ -267,6 +281,7 @@ export async function syncAllCities(options?: {
   keywords?: string[];
   budget?: SearchBudget;
   maxSearches?: number;
+  maxPages?: number;
 }): Promise<SyncReport> {
   const key = options?.apiKey || process.env.SERPAPI_API_KEY;
   const targetCities: City[] = options?.cityFilter
@@ -285,6 +300,7 @@ export async function syncAllCities(options?: {
     budget,
     ...(options?.keywords ? { keywords: options.keywords } : {}),
     ...(options?.delayMs !== undefined ? { delayMs: options.delayMs } : {}),
+    ...(options?.maxPages !== undefined ? { maxPages: options.maxPages } : {}),
   })) as SyncReport;
 }
 
@@ -294,6 +310,7 @@ export async function syncAllCities(options?: {
 export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ count: number }> {
   if (!process.env.DATABASE_URL) return { count: 0 };
   let count = 0;
+
   for (const clinic of clinics) {
     try {
       // `lastSyncedAt` is a timestamptz mapped to the temporal codec, which
@@ -301,14 +318,11 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
       const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
       const hours = toJson(clinic.hours);
 
-      // Match in descending order of confidence: the Google place id, then the
-      // exact slug, then the name — where the name match only counts when a
-      // phone or address confirms it is the same practice.
-      //
-      // Once a clinic acquires a real Google place_id, no other keyword run may
-      // attach its results to a different row: we must look it up globally by
-      // place_id first. That re-homes the case where an earlier keyword matched
-      // the row by slug/fuzzy match before the place_id was known.
+      // Match in descending order of confidence:
+      // 1. Google place id (unique global identifier)
+      // 2. Exact slug
+      // 3. Postgres ILIKE search (matching phone, website domain, distinctive tokens, or name in same city),
+      //    followed by strict exact verification (isSameClinicAs) to ensure 100% accuracy.
       let existing = null;
       if (clinic.googlePlaceId) {
         existing = await prisma.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first();
@@ -317,7 +331,46 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
         existing = await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first();
       }
       if (!existing) {
-        const candidates = await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all();
+        // Step 1: Query Postgres with ILIKE conditions scoped to the city
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const orConditions: Array<(c: any) => any> = [];
+
+        const phone = phoneDigits(clinic.phone);
+        if (phone && phone.length >= 8) {
+          const phonePattern = `%${phone}%`;
+          orConditions.push((c) => c.phone.ilike(phonePattern));
+          orConditions.push((c) => c.phoneHref.ilike(phonePattern));
+          orConditions.push((c) => c.whatsapp.ilike(phonePattern));
+        }
+
+        const domain = normalizeWebsiteDomain(clinic.website);
+        if (domain && domain.length >= 4) {
+          orConditions.push((c) => c.website.ilike(`%${domain}%`));
+        }
+
+        const tokens = extractDistinctiveTokens(clinic.name);
+        for (const token of tokens.slice(0, 3)) {
+          if (token.length >= 3) {
+            orConditions.push((c) => c.name.ilike(`%${token}%`));
+            orConditions.push((c) => c.slug.ilike(`%${token}%`));
+          }
+        }
+
+        if (clinic.name) {
+          orConditions.push((c) => c.name.ilike(clinic.name));
+        }
+
+        const candidates = await prisma.orm.public.Clinic.where((c) => {
+          if (orConditions.length === 0) {
+            return c.citySlug.eq(clinic.citySlug);
+          }
+          return and(
+            c.citySlug.eq(clinic.citySlug),
+            or(...orConditions.map((fn) => fn(c))),
+          );
+        }).all();
+
+        // Step 2: Strict exact verification against candidate rows to ensure 100% accurate update
         existing = candidates.find((row) => isSameClinicAs(clinic, row)) ?? null;
       }
 

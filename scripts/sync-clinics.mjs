@@ -28,8 +28,11 @@ import {
   MONTHLY_SEARCH_BUDGET,
   PRIMARY_DENTAL_KEYWORDS,
   SearchBudget,
+  extractDistinctiveTokens,
   getSerpApiAccountInfo,
   isSameClinicAs,
+  normalizeWebsiteDomain,
+  phoneDigits,
   resolveNameAr,
   sanitizeKeywords,
   syncAllCities,
@@ -56,6 +59,7 @@ const args = process.argv.slice(2);
 const isDryRun = args.includes("--dry-run");
 const cityArg = args.find((a) => a.startsWith("--city="))?.split("=")[1]?.toLowerCase();
 const maxSearchesArg = args.find((a) => a.startsWith("--max-searches="))?.split("=")[1];
+const maxPagesArg = args.find((a) => a.startsWith("--max-pages="))?.split("=")[1];
 const keywordsArg = args.find((a) => a.startsWith("--keywords="))?.split("=")[1];
 const keywordArg = args.find((a) => a.startsWith("--keyword="))?.split("=")[1];
 const isAllKeywords = args.includes("--all-keywords") || keywordsArg === "all";
@@ -102,6 +106,7 @@ async function saveToDatabase(clinics) {
 
   const { db } = await import("../src/prisma/db.ts");
   const { toInstant, toJson } = await import("../src/prisma/codecs.ts");
+  const { and, or } = await import("@prisma/orm-postgres/orm-client");
 
   let count = 0;
 
@@ -110,11 +115,11 @@ async function saveToDatabase(clinics) {
       const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
       const hours = toJson(clinic.hours);
 
-      // Match in descending order of confidence: the Google place id, then the
-      // exact slug, then the name — where the name match only counts when a
-      // phone or address confirms the same practice. There is deliberately no
-      // city + phone lookup: one switchboard number covers several distinct
-      // place entries at a group practice, so it would clobber a sibling clinic.
+      // Match in descending order of confidence:
+      // 1. Google place id (unique global identifier)
+      // 2. Exact slug
+      // 3. Postgres ILIKE search (matching phone, website domain, distinctive tokens, or name in same city),
+      //    followed by strict exact verification (isSameClinicAs) to ensure 100% accuracy.
       let existing = null;
       if (clinic.googlePlaceId) {
         existing = await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first();
@@ -123,7 +128,45 @@ async function saveToDatabase(clinics) {
         existing = await db.orm.public.Clinic.where({ slug: clinic.slug }).first();
       }
       if (!existing) {
-        const candidates = await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).all();
+        // Step 1: Query Postgres with ILIKE conditions scoped to the city
+        const orConditions = [];
+
+        const phone = phoneDigits(clinic.phone);
+        if (phone && phone.length >= 8) {
+          const phonePattern = `%${phone}%`;
+          orConditions.push((c) => c.phone.ilike(phonePattern));
+          orConditions.push((c) => c.phoneHref.ilike(phonePattern));
+          orConditions.push((c) => c.whatsapp.ilike(phonePattern));
+        }
+
+        const domain = normalizeWebsiteDomain(clinic.website);
+        if (domain && domain.length >= 4) {
+          orConditions.push((c) => c.website.ilike(`%${domain}%`));
+        }
+
+        const tokens = extractDistinctiveTokens(clinic.name);
+        for (const token of tokens.slice(0, 3)) {
+          if (token.length >= 3) {
+            orConditions.push((c) => c.name.ilike(`%${token}%`));
+            orConditions.push((c) => c.slug.ilike(`%${token}%`));
+          }
+        }
+
+        if (clinic.name) {
+          orConditions.push((c) => c.name.ilike(clinic.name));
+        }
+
+        const candidates = await db.orm.public.Clinic.where((c) => {
+          if (orConditions.length === 0) {
+            return c.citySlug.eq(clinic.citySlug);
+          }
+          return and(
+            c.citySlug.eq(clinic.citySlug),
+            or(...orConditions.map((fn) => fn(c))),
+          );
+        }).all();
+
+        // Step 2: Strict exact verification against candidate rows to ensure 100% accurate update
         existing = candidates.find((row) => isSameClinicAs(clinic, row)) ?? null;
       }
 
@@ -238,8 +281,10 @@ async function run() {
   const report = await syncAllCities(targetCities, SERPAPI_KEY, {
     budget,
     keywords: selectedKeywords,
-    onQuery: ({ city, query, index, total }) => {
-      console.log(`\x1b[36m[SYNC]\x1b[0m [${index + 1}/${total}] ${city.name} — "${query}"`);
+    maxPages: maxPagesArg ? Number(maxPagesArg) : undefined,
+    onQuery: ({ city, query, index, total, page, maxPages }) => {
+      const pageInfo = maxPages > 1 ? ` (page ${page}/${maxPages})` : "";
+      console.log(`\x1b[36m[SYNC]\x1b[0m [${index + 1}/${total}] ${city.name} — "${query}"${pageInfo}`);
     },
     onCity: (result) => {
       const suffix = result.error ? ` \x1b[33m(${result.error.slice(0, 160)})\x1b[0m` : "";

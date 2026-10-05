@@ -10,6 +10,7 @@ import { syncAllCities, upsertClinicsToDatabase } from "@/lib/services/serpapi";
 export interface SyncRunOptions {
   city?: string;
   maxSearches?: number;
+  maxPages?: number;
   keywords?: string[];
   delayMs?: number;
   budget?: number;
@@ -54,6 +55,7 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
     cityFilter,
     delayMs,
     maxSearches,
+    maxPages: options.maxPages,
     keywords: options.keywords,
   });
 

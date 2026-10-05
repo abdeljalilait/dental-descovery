@@ -102,11 +102,13 @@ export async function startSyncAction(formData: FormData): Promise<void> {
 
   const cityCount = city ? 1 : cities.length;
   const rawMaxSearches = Number(formData.get("maxSearches"));
+  const rawMaxPages = Number(formData.get("maxPages"));
+  const maxPages = Number.isFinite(rawMaxPages) && rawMaxPages > 0 ? Math.floor(rawMaxPages) : undefined;
   // Leave the cap to the core runner when the operator did not set one, so the
   // derived default matches this exact keyword and city selection.
   const maxSearches = Number.isFinite(rawMaxSearches) && rawMaxSearches > 0
     ? Math.min(Math.floor(rawMaxSearches), MONTHLY_SEARCH_BUDGET)
-    : Math.min(effectiveKeywords.length * cityCount, MONTHLY_SEARCH_BUDGET);
+    : Math.min(effectiveKeywords.length * cityCount * (maxPages ?? 1), MONTHLY_SEARCH_BUDGET);
 
   if (await hasRunningJobDb("SERPAPI_SYNC")) {
     return redirect("/admin/jobs?error=running");
@@ -118,6 +120,7 @@ export async function startSyncAction(formData: FormData): Promise<void> {
     params: {
       city: city ?? null,
       maxSearches,
+      maxPages: maxPages ?? null,
       keywords: effectiveKeywords,
     },
     message: `Starting sync (${city ? `City: ${city}` : `All ${cityCount} cities`}, ${effectiveKeywords.length} keywords, max ${maxSearches} searches)`,
@@ -125,7 +128,7 @@ export async function startSyncAction(formData: FormData): Promise<void> {
 
   after(async () => {
     try {
-      await runClinicSync({ city, maxSearches, keywords: effectiveKeywords, jobRunId });
+      await runClinicSync({ city, maxSearches, maxPages, keywords: effectiveKeywords, jobRunId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       await finishJobRunDb(jobRunId, {

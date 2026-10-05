@@ -40,9 +40,10 @@ export function KeywordPicker({ groups, cities, account }: KeywordPickerProps) {
 
   const [selected, setSelected] = useState<string[]>(() => groups[0]?.keywords.slice(0, 1) ?? []);
   const [city, setCity] = useState<string>("");
+  const [maxPages, setMaxPages] = useState<number>(3);
 
   const cityCount = city ? 1 : cities.length;
-  const estimated = selected.length * cityCount;
+  const estimated = selected.length * cityCount * Math.max(1, maxPages || 1);
   const overBudget = account ? estimated > account.totalSearchesLeft : false;
 
   const toggle = (keyword: string) => {
@@ -124,7 +125,7 @@ export function KeywordPicker({ groups, cities, account }: KeywordPickerProps) {
         </fieldset>
       ))}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Target</span>
           <select
@@ -140,6 +141,19 @@ export function KeywordPicker({ groups, cities, account }: KeywordPickerProps) {
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="block text-sm">
+          <span className="mb-1 block font-medium">Max pages / keyword</span>
+          <input
+            name="maxPages"
+            type="number"
+            min={1}
+            max={10}
+            value={maxPages}
+            onChange={(event) => setMaxPages(Number(event.target.value) || 1)}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2"
+          />
         </label>
 
         <label className="block text-sm">
@@ -165,9 +179,9 @@ export function KeywordPicker({ groups, cities, account }: KeywordPickerProps) {
           <strong>
             {`${selected.length} keyword${selected.length === 1 ? "" : "s"} × ${cityCount} ${
               cityCount === 1 ? "city" : "cities"
-            }`}
+            }${maxPages > 1 ? ` × up to ${maxPages} pages` : ""}`}
           </strong>{" "}
-          = <strong>{estimated}</strong> SerpApi credit{estimated === 1 ? "" : "s"}
+          = <strong>≤ {estimated}</strong> SerpApi credit{estimated === 1 ? "" : "s"}
           {account ? (
             <>
               {" · "}
