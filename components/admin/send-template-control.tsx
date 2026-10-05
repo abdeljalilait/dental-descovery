@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { sendClinicTemplateAction } from "@/app/admin/clinics-actions";
-import { CAMPAIGN_TEMPLATES } from "@/lib/campaign/templates";
+import { SubmitButton } from "@/components/ui/submit-button";
+import Link from "next/link";
+
+export interface SendTemplateOption {
+  key: string;
+  name: string;
+  locale: string;
+  body?: string;
+}
 
 /**
  * Send an approved template to one clinic.
@@ -18,11 +26,13 @@ import { CAMPAIGN_TEMPLATES } from "@/lib/campaign/templates";
 export function SendTemplateControl({
   slug,
   whatsapp,
+  templates = [],
 }: {
   slug: string;
   whatsapp: string;
+  templates?: SendTemplateOption[];
 }) {
-  const [templateKey, setTemplateKey] = useState(CAMPAIGN_TEMPLATES[0]?.key ?? "");
+  const [templateKey, setTemplateKey] = useState(templates[0]?.key ?? "");
   const [mode, setMode] = useState<"dry" | "live">("dry");
   const [confirmLive, setConfirmLive] = useState(false);
   const [open, setOpen] = useState(false);
@@ -48,17 +58,26 @@ export function SendTemplateControl({
 
       <p className="font-mono text-xs text-muted">{whatsapp}</p>
 
-      <select
-        value={templateKey}
-        onChange={(event) => setTemplateKey(event.target.value)}
-        className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
-      >
-        {CAMPAIGN_TEMPLATES.map((template) => (
-          <option key={template.key} value={template.key}>
-            {template.name}
-          </option>
-        ))}
-      </select>
+      {templates.length === 0 ? (
+        <div className="rounded-lg bg-amber-50 p-2 text-xs text-amber-800">
+          No templates synced.{" "}
+          <Link href="/admin/kapso" className="font-semibold underline">
+            Sync in WhatsApp
+          </Link>
+        </div>
+      ) : (
+        <select
+          value={templateKey || templates[0]?.key}
+          onChange={(event) => setTemplateKey(event.target.value)}
+          className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
+        >
+          {templates.map((template) => (
+            <option key={template.key} value={template.key}>
+              {template.name} ({template.key})
+            </option>
+          ))}
+        </select>
+      )}
 
       <select
         value={mode}
@@ -81,13 +100,13 @@ export function SendTemplateControl({
       ) : null}
 
       <div className="flex items-center gap-2">
-        <button
-          type="submit"
-          disabled={mode === "live" && !confirmLive}
+        <SubmitButton
+          loadingText="Envoi en cours..."
+          disabled={(mode === "live" && !confirmLive) || templates.length === 0}
           className="rounded-pill bg-primary px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
         >
           Send
-        </button>
+        </SubmitButton>
         <button
           type="button"
           onClick={() => setOpen(false)}

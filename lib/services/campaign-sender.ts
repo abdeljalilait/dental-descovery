@@ -1,10 +1,7 @@
-import type { CampaignTemplate, TemplateVars } from "@/lib/campaign/templates";
 import { getTemplateByKey } from "@/lib/campaign/templates";
 import { cities } from "@/lib/data/cities";
-import { siteConfig } from "@/lib/site.config";
 import { db } from "@/src/prisma/db";
 import { toInstant, type InstantInput } from "@/src/prisma/codecs";
-import type { JobRunKind } from "@/lib/repositories/job-runs";
 import {
   type JobRunCounters,
   type JobRunProgress,
@@ -12,31 +9,25 @@ import {
 } from "@/lib/repositories/job-runs";
 import { toWhatsApp } from "@/lib/utils/phone";
 import { sendWhatsAppViaKapso } from "@/lib/services/whatsapp-kapso";
+import {
+  resolveClinicVariables,
+  renderTemplateBody,
+  buildMetaParameters,
+} from "@/lib/campaign/variables";
 
 /**
  * Batch runners started from `/admin/jobs`.
- *
- * Every runner is resumable and reports into a `job_runs` row, because the
- * admin UI polls those counters instead of holding the response open. Sends
- * stay bounded by `maxPerRun` so a run can never blow through the Meta/Kapso
- * throughput limit, and every clinic is written back immediately so a crashed
- * run still leaves accurate delivery state.
  */
-
 export interface CampaignSendOptions {
   dryRun?: boolean;
   city?: string;
   templateKey?: string;
+  claimedStatus?: "all" | "claimed" | "unclaimed";
   /** Re-send even if the clinic already has a SENT/DELIVERED/READ row. */
   force?: boolean;
   maxPerRun?: number;
   delayMs?: number;
-  /**
-   * Restrict the run to these clinic slugs.
-   *
-   * Used by the per-clinic "send template" action in `/admin/clinics`, where the
-   * operator picked one row instead of a whole segment.
-   */
+  /** Restrict the run to these clinic slugs. */
   clinicSlugs?: string[];
   /** Progress sink; absent in CLI usage. */
   jobRunId?: string;
@@ -66,26 +57,6 @@ function cityName(slug: string): string {
   return cities.find((city) => city.slug === slug)?.name ?? slug;
 }
 
-function profileUrlFor(citySlug: string, slug: string): string {
-  return `${siteConfig.url}/fr/dentistes/${citySlug}/${slug}`;
-}
-
-/**
- * Values in the exact order the approved template declares them, since the
- * Cloud API matches body parameters positionally.
- */
-function templateVariables(template: CampaignTemplate, vars: TemplateVars): string[] {
-  return template.variables.map((key) => vars[key]);
-}
-
-function renderBody(template: CampaignTemplate, vars: TemplateVars): string {
-  const lookup: Partial<Record<keyof TemplateVars, string>> = vars;
-  return template.body.replace(/\{\{(\w+)\}\}/g, (_, key: string) => {
-    const value = lookup[key as keyof TemplateVars];
-    return value ?? "";
-  });
-}
-
 interface Candidate {
   id: string;
   slug: string;
@@ -94,12 +65,14 @@ interface Candidate {
   whatsapp: string;
   e164: string;
   alreadyContacted: boolean;
+  claimed: boolean;
 }
 
 async function loadCandidates(
   city: string | undefined,
   templateKey: string,
   clinicSlugs?: string[],
+  claimedStatus?: "all" | "claimed" | "unclaimed",
 ): Promise<{
   candidates: Candidate[];
   optedOut: Set<string>;
@@ -118,8 +91,8 @@ async function loadCandidates(
   const pool = clinics.filter((clinic) => {
     if (clinicSlugs && !clinicSlugs.includes(clinic.slug)) return false;
     if (city && clinic.citySlug !== city) return false;
-    // An explicit slug list is a manual, per-clinic action: the prospect filter
-    // would silently drop a clinic the operator already knows about.
+    if (claimedStatus === "claimed" && !clinic.claimed) return false;
+    if (claimedStatus === "unclaimed" && clinic.claimed) return false;
     return clinicSlugs ? true : !clinic.usesApp;
   });
 
@@ -146,6 +119,7 @@ async function loadCandidates(
       whatsapp: clinic.whatsapp ?? "",
       e164: wa.e164,
       alreadyContacted,
+      claimed: clinic.claimed,
     });
   }
 
@@ -153,19 +127,24 @@ async function loadCandidates(
 }
 
 /**
- * Eligibility preview for the admin UI: how many clinics the campaign would
- * touch and a rendered sample, so the operator sees the real payload before
- * spending a single message.
+ * Eligibility preview for the admin UI.
  */
 export async function previewCampaign(
-  options: { city?: string; templateKey: string; limit?: number } ,
+  options: {
+    city?: string;
+    templateKey: string;
+    claimedStatus?: "all" | "claimed" | "unclaimed";
+    limit?: number;
+  },
 ): Promise<CampaignPreview> {
-  const template = getTemplateByKey(options.templateKey);
+  const template = await getTemplateByKey(options.templateKey);
   if (!template) throw new Error(`Template not found: ${options.templateKey}`);
 
   const { candidates, optedOut, totalNoWhatsapp, totalAlready } = await loadCandidates(
     options.city,
-    options.templateKey,
+    template.key,
+    undefined,
+    options.claimedStatus,
   );
 
   const eligible = candidates.filter((candidate) => !candidate.alreadyContacted && !optedOut.has(candidate.id));
@@ -178,12 +157,18 @@ export async function previewCampaign(
     optedOut: optedOut.size,
     noWhatsapp: totalNoWhatsapp,
     sample: eligible.slice(0, sampleLimit).map((candidate) => {
-      const vars: TemplateVars = {
+      const vars = resolveClinicVariables({
+        name: candidate.name,
+        citySlug: candidate.citySlug,
+        slug: candidate.slug,
+        whatsapp: candidate.whatsapp,
+      });
+      return {
         clinicName: candidate.name,
         cityName: cityName(candidate.citySlug),
-        profileUrl: profileUrlFor(candidate.citySlug, candidate.slug),
+        whatsapp: candidate.e164,
+        message: renderTemplateBody(template.body, vars, template.variables),
       };
-      return { ...vars, whatsapp: candidate.e164, message: renderBody(template, vars) };
     }),
   };
 }
@@ -203,8 +188,6 @@ async function upsertOutreach(
     failedAt?: InstantInput;
   },
 ): Promise<void> {
-  // Optional columns are omitted rather than nulled so a retry keeps the
-  // original send timestamp and message id.
   await db.orm.public.ClinicOutreach.upsert({
     conflictOn: { clinicId, channel: "WHATSAPP" },
     create: {
@@ -230,24 +213,26 @@ async function upsertOutreach(
 
 /**
  * Send the campaign, reporting progress into `jobRunId` as it goes.
- *
- * `sent` means WhatsApp accepted the message; the true "received" count comes
- * from the delivery webhook, which moves rows SENT -> DELIVERED -> READ.
  */
 export async function sendCampaign(options: CampaignSendOptions = {}): Promise<CampaignSendResult> {
   const dryRun = options.dryRun ?? process.env.CAMPAIGN_DRY_RUN !== "false";
   const force = options.force ?? false;
   const maxPerRun = options.maxPerRun ?? Number(process.env.CAMPAIGN_MAX_PER_RUN ?? 50);
   const delayMs = options.delayMs ?? Number(process.env.CAMPAIGN_DELAY_MS ?? 2000);
-  const templateKey = options.templateKey ?? process.env.CAMPAIGN_TEMPLATE_KEY ?? "dental-app-promo-fr";
+  const templateKey = options.templateKey ?? process.env.CAMPAIGN_TEMPLATE_KEY;
 
-  const template = getTemplateByKey(templateKey);
+  if (!templateKey) {
+    throw new Error("No template selected or configured for campaign");
+  }
+
+  const template = await getTemplateByKey(templateKey);
   if (!template) throw new Error(`Template not found: ${templateKey}`);
 
   const { candidates, optedOut } = await loadCandidates(
     options.city,
     template.key,
     options.clinicSlugs,
+    options.claimedStatus,
   );
   const eligible = candidates.filter(
     (candidate) => (force || !candidate.alreadyContacted) && !optedOut.has(candidate.id),
@@ -269,11 +254,12 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
   });
 
   for (const candidate of selected) {
-    const vars: TemplateVars = {
-      clinicName: candidate.name,
-      cityName: cityName(candidate.citySlug),
-      profileUrl: profileUrlFor(candidate.citySlug, candidate.slug),
-    };
+    const vars = resolveClinicVariables({
+      name: candidate.name,
+      citySlug: candidate.citySlug,
+      slug: candidate.slug,
+      whatsapp: candidate.whatsapp,
+    });
 
     if (dryRun) {
       counters.skipped++;
@@ -282,11 +268,13 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
       continue;
     }
 
+    const parameters = buildMetaParameters(template.variables, vars);
+
     const res = await sendWhatsAppViaKapso({
       to: candidate.e164,
       template: template.key,
       language: template.locale === "ar" ? "ar" : "fr",
-      variables: templateVariables(template, vars),
+      variables: parameters,
     });
 
     if (res.ok) {
@@ -310,8 +298,7 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
           failedAt: toInstant(new Date()),
         });
       } catch {
-        // A bookkeeping failure must not abort the batch; the run summary
-        // already carries the send error.
+        // Bookkeeping failure does not abort the batch
       }
     }
 
@@ -321,13 +308,20 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
     if (delayMs > 0) await sleep(delayMs);
   }
 
+  const result: CampaignSendResult = {
+    ...counters,
+    eligible: eligible.length,
+    errors,
+  };
+
   await report(options.jobRunId, {
     ...counters,
-    status: "COMPLETED",
-    message: `${dryRun ? "Dry run" : "Sent"}: ${counters.succeeded}/${counters.total} accepted, ${counters.failed} failed`,
+    message: dryRun
+      ? `Dry run finished: ${counters.total} prospective clinics inspected`
+      : `Send complete: ${counters.succeeded} sent, ${counters.failed} failed`,
   });
 
-  return { ...counters, eligible: eligible.length, errors };
+  return result;
 }
 
 export interface SyncRunOptions {
@@ -386,5 +380,3 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
 
   return { ...counters, searchesUsed: report_.searchesUsed, cities: report_.details.map((c) => c.citySlug) };
 }
-
-export type { JobRunKind };

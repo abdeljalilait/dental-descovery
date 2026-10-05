@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/admin/auth";
-import { CAMPAIGN_TEMPLATES } from "@/lib/campaign/templates";
+import { getTemplateByKey } from "@/lib/campaign/templates";
 import {
   createJobRunDb,
   finishJobRunDb,
@@ -32,10 +32,12 @@ export async function startCampaignAction(formData: FormData): Promise<void> {
   await requireAdmin();
 
   const templateKey = String(formData.get("templateKey") ?? "");
-  const template = CAMPAIGN_TEMPLATES.find((item) => item.key === templateKey);
+  const template = await getTemplateByKey(templateKey);
   if (!template) return redirect("/admin/jobs?error=template");
 
   const city = String(formData.get("city") ?? "").trim() || undefined;
+  const rawClaimed = String(formData.get("claimedStatus") ?? "all");
+  const claimedStatus = rawClaimed === "claimed" || rawClaimed === "unclaimed" ? rawClaimed : "all";
   const dryRun = formData.get("mode") !== "live";
   const force = formData.get("force") === "on";
   const maxPerRun = Math.max(1, Math.min(Number(formData.get("maxPerRun") ?? 50) || 50, 500));
@@ -54,13 +56,13 @@ export async function startCampaignAction(formData: FormData): Promise<void> {
   const jobRunId = await createJobRunDb({
     kind: "WHATSAPP_CAMPAIGN" as JobRunKind,
     requestedBy: await requestedBy(),
-    params: { templateKey, city: city ?? null, dryRun, force, maxPerRun },
+    params: { templateKey, city: city ?? null, claimedStatus, dryRun, force, maxPerRun },
     message: dryRun ? "Starting dry run" : `Starting live send (${templateKey})`,
   });
 
   after(async () => {
     try {
-      await sendCampaign({ templateKey, city, dryRun, force, maxPerRun, jobRunId });
+      await sendCampaign({ templateKey, city, claimedStatus, dryRun, force, maxPerRun, jobRunId });
     } catch (error) {
       await finishJobRunDb(jobRunId, {
         status: "FAILED",

@@ -12,6 +12,7 @@ import { listJobRunsDb } from "@/lib/repositories/job-runs";
 import { ClinicImportForm } from "@/components/admin/clinic-import-form";
 import { SendTemplateControl } from "@/components/admin/send-template-control";
 import { ToggleFlagButton } from "@/components/admin/toggle-flag-button";
+import { getCampaignTemplatesDb, type CampaignTemplate } from "@/lib/campaign/templates";
 
 /**
  * Every clinic, with the operator tools around it.
@@ -38,7 +39,7 @@ export default async function AdminClinicsPage({
     ? Number(params.perPage)
     : 25;
 
-  const [result, facets, runs] = await Promise.all([
+  const [result, facets, runs, templates] = await Promise.all([
     listAdminClinicsDb({
       query: params.q,
       city: params.city,
@@ -48,6 +49,7 @@ export default async function AdminClinicsPage({
     }),
     listAdminCityFacetsDb(),
     listJobRunsDb(5),
+    getCampaignTemplatesDb(),
   ]);
 
   const queryString = new URLSearchParams({
@@ -144,7 +146,7 @@ export default async function AdminClinicsPage({
           </thead>
           <tbody>
             {result.rows.map((clinic) => (
-              <ClinicRow key={clinic.id} clinic={clinic} />
+              <ClinicRow key={clinic.id} clinic={clinic} templates={templates} />
             ))}
             {result.rows.length === 0 ? (
               <tr>
@@ -205,7 +207,13 @@ async function toView(run: Awaited<ReturnType<typeof getJobRunDb>> & object): Pr
   };
 }
 
-function ClinicRow({ clinic }: { clinic: AdminClinicRow }) {
+function ClinicRow({
+  clinic,
+  templates,
+}: {
+  clinic: AdminClinicRow;
+  templates: CampaignTemplate[];
+}) {
   const whatsapp = clinic.whatsapp ?? "";
 
   return (
@@ -245,7 +253,7 @@ function ClinicRow({ clinic }: { clinic: AdminClinicRow }) {
       </td>
       <td className="p-3">
         {whatsapp ? (
-          <SendTemplateControl slug={clinic.slug} whatsapp={whatsapp} />
+          <SendTemplateControl slug={clinic.slug} whatsapp={whatsapp} templates={templates} />
         ) : (
           <span className="text-xs text-muted">No WhatsApp</span>
         )}

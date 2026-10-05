@@ -42,7 +42,10 @@ function isAuthorized(request: Request, url: URL): boolean {
   if (!secret) return false;
 
   const provided =
-    request.headers.get("x-kapso-signature") ?? url.searchParams.get("token") ?? "";
+    request.headers.get("x-kapso-signature") ??
+    url.searchParams.get("hub.verify_token") ??
+    url.searchParams.get("token") ??
+    "";
   const expected = secret;
 
   const a = Buffer.from(provided);

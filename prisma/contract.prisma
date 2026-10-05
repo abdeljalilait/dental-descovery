@@ -280,3 +280,46 @@ model PricingPlan {
   @@index([active, sortOrder])
   @@map("pricing_plans")
 }
+
+model KapsoAccount {
+  id                String             @id @default(uuid())
+  name              String
+  phoneNumberId     String
+  businessAccountId String?
+  apiKey            String
+  baseUrl           String             @default("https://app.kapso.ai/api/meta/")
+  status            String             @default("INACTIVE") // ACTIVE, INACTIVE, ERROR
+  isDefault         Boolean            @default(false)
+  lastTestedAt      DateTime?
+  testResult        Json?
+  lastSyncedAt      DateTime?
+  templates         WhatsAppTemplate[]
+  createdAt         DateTime           @default(now())
+  updatedAt         temporal.updatedAt()
+
+  @@map("kapso_accounts")
+}
+
+model WhatsAppTemplate {
+  id           String       @id @default(uuid())
+  accountId    String
+  account      KapsoAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  externalId   String?
+  name         String       // e.g. "dental_app_promo_fr"
+  language     String       // e.g. "fr", "ar"
+  category     String       @default("MARKETING") // MARKETING, UTILITY, AUTHENTICATION
+  status       String       @default("APPROVED") // APPROVED, PENDING, REJECTED, PAUSED
+  bodyText     String
+  headerText   String?
+  footerText   String?
+  variables    Json         // Array of variable names in order: ["clinic_name", "city_name", "profile_url"]
+  rawMeta      Json?
+  lastSyncedAt DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+  updatedAt    temporal.updatedAt()
+
+  @@unique([accountId, name, language])
+  @@index([status])
+  @@map("whatsapp_templates")
+}
+

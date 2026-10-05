@@ -1,11 +1,10 @@
+"use client";
+
 import { toggleClinicFlagAction } from "@/app/admin/clinics-actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 /**
- * Inline flag toggle for the clinic table.
- *
- * A plain form posting to a server action rather than a client component: the
- * table stays usable with JavaScript disabled, and the value shown always comes
- * from a render after the write, so the UI cannot drift from the database.
+ * Inline flag toggle for the clinic table with instant pending spinner.
  */
 export function ToggleFlagButton({
   slug,
@@ -23,8 +22,7 @@ export function ToggleFlagButton({
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="field" value={field} />
       <input type="hidden" name="value" value={value ? "false" : "true"} />
-      <button
-        type="submit"
+      <SubmitButton
         aria-pressed={value}
         title={`Mark as ${value ? `not ${label.toLowerCase()}` : label}`}
         className={
@@ -34,7 +32,7 @@ export function ToggleFlagButton({
         }
       >
         {label}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

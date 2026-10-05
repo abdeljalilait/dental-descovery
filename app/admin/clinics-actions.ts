@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin/auth";
-import { CAMPAIGN_TEMPLATES } from "@/lib/campaign/templates";
+import { getTemplateByKey } from "@/lib/campaign/templates";
 import { parseClinicsCsv, toImportRows } from "@/lib/clinic-csv";
 import {
   importClinicsDb,
@@ -103,7 +103,8 @@ export async function sendClinicTemplateAction(formData: FormData): Promise<void
   const live = String(formData.get("mode") ?? "dry") === "live";
 
   if (!slug) return;
-  if (!CAMPAIGN_TEMPLATES.some((template) => template.key === templateKey)) {
+  const template = await getTemplateByKey(templateKey);
+  if (!template) {
     throw new Error("Unknown template");
   }
 

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Manrope } from "next/font/google";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 import "../globals.css";
 
 /**
@@ -36,6 +38,9 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
   return (
     <html lang="fr" dir="ltr" data-scroll-behavior="smooth" className={manrope.variable}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         <div className="min-h-screen bg-background">{children}</div>
       </body>
     </html>

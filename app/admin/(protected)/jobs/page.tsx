@@ -1,8 +1,10 @@
 import { AdminPageHeader } from "@/components/admin/page-header";
 import { JobProgress, type JobRunView } from "@/components/admin/job-progress";
 import { startCampaignAction, startSyncAction } from "@/app/admin/jobs-actions";
-import { CAMPAIGN_TEMPLATES } from "@/lib/campaign/templates";
+import { getCampaignTemplatesDb, type CampaignTemplate } from "@/lib/campaign/templates";
 import { cities } from "@/lib/data/cities";
+import Link from "next/link";
+import { SubmitButton } from "@/components/ui/submit-button";
 import {
   getCampaignDeliverySummaryDb,
   listJobRunsDb,
@@ -52,6 +54,7 @@ export default async function AdminJobsPage() {
 
   const runs = await listJobRunsDb(12);
   const delivery = await getCampaignDeliverySummaryDb();
+  const templates = await getCampaignTemplatesDb();
 
   return (
     <div className="space-y-10">
@@ -72,7 +75,7 @@ export default async function AdminJobsPage() {
           Sends an approved template to clinics that are not on Dental App and have no WhatsApp opt-out.
           Dry run first: it reports exactly who would be contacted without spending a message.
         </p>
-        <CampaignForm />
+        <CampaignForm templates={templates} />
       </section>
 
       <section className="rounded-2xl border border-border bg-surface p-6">
@@ -120,20 +123,38 @@ export default async function AdminJobsPage() {
   );
 }
 
-function CampaignForm() {
+function CampaignForm({ templates }: { templates: CampaignTemplate[] }) {
+  const hasTemplates = templates.length > 0;
+
   return (
     <form action={startCampaignAction} className="mt-4 space-y-4">
+      {!hasTemplates ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold">No WhatsApp templates available</p>
+          <p className="mt-1">
+            You need to sync approved WhatsApp templates from your Kapso account before launching a campaign.
+          </p>
+          <Link
+            href="/admin/kapso"
+            className="mt-3 inline-block rounded-pill bg-primary px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+          >
+            Go to WhatsApp settings &rarr;
+          </Link>
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="mb-1 block font-medium">Template</span>
           <select
             name="templateKey"
-            className="w-full rounded-xl border border-border bg-background px-3 py-2"
-            defaultValue={CAMPAIGN_TEMPLATES[0]?.key}
+            disabled={!hasTemplates}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 disabled:opacity-50"
+            defaultValue={templates[0]?.key}
           >
-            {CAMPAIGN_TEMPLATES.map((template) => (
-              <option key={template.key} value={template.key}>
-                {template.name} ({template.key})
+            {templates.map((template) => (
+              <option key={template.id} value={template.key}>
+                {template.name} ({template.key}) [{template.locale.toUpperCase()}]
               </option>
             ))}
           </select>
@@ -148,6 +169,15 @@ function CampaignForm() {
                 {city.name}
               </option>
             ))}
+          </select>
+        </label>
+
+        <label className="block text-sm">
+          <span className="mb-1 block font-medium">Claim status filter</span>
+          <select name="claimedStatus" className="w-full rounded-xl border border-border bg-background px-3 py-2" defaultValue="all">
+            <option value="all">All clinics</option>
+            <option value="claimed">Claimed clinics only</option>
+            <option value="unclaimed">Unclaimed clinics only</option>
           </select>
         </label>
 
@@ -183,12 +213,13 @@ function CampaignForm() {
         </label>
       </div>
 
-      <button
-        type="submit"
-        className="rounded-pill bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
+      <SubmitButton
+        loadingText="Démarrage de la campagne..."
+        disabled={!hasTemplates}
+        className="rounded-pill bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
       >
         Start campaign
-      </button>
+      </SubmitButton>
     </form>
   );
 }
@@ -222,12 +253,12 @@ function SyncForm() {
         </label>
       </div>
 
-      <button
-        type="submit"
+      <SubmitButton
+        loadingText="Démarrage de la synchronisation..."
         className="rounded-pill bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
       >
         Start sync
-      </button>
+      </SubmitButton>
     </form>
   );
 }

@@ -1,5 +1,12 @@
 import { WhatsAppClient } from "@kapso/whatsapp-cloud-api";
 import { toWhatsApp } from "@/lib/utils/phone";
+import { normalizeVariableName, isValidVariableName } from "@/lib/campaign/variables";
+
+export interface KapsoVariableParam {
+  type?: "text";
+  text: string;
+  parameter_name?: string;
+}
 
 export interface KapsoSendOptions {
   /** Raw Moroccan number in any format; normalised to E.164 before sending. */
@@ -9,11 +16,10 @@ export interface KapsoSendOptions {
   /** Template language code, e.g. `fr` or `ar`. */
   language: string;
   /**
-   * Body placeholders in template order. These become the `body` component
-   * parameters the Cloud API expects, so the values must match the approved
-   * template's variable order exactly.
+   * Body placeholders in template order or with parameter names.
+   * Parameter names are normalized to lowercase snake_case (^[a-z0-9_]+$) for Meta compliance.
    */
-  variables: string[];
+  variables: (string | KapsoVariableParam)[];
 }
 
 export interface KapsoSendResult {
@@ -32,7 +38,7 @@ export interface KapsoConfig {
 
 export function getKapsoConfig(): KapsoConfig {
   return {
-    baseUrl: process.env.KAPSO_BASE_URL || "https://app.kapso.ai/api/meta/",
+    baseUrl: process.env.KAPSO_BASE_URL || "https://api.kapso.ai/meta/whatsapp",
     apiKey: process.env.KAPSO_API_KEY,
     phoneNumberId: process.env.KAPSO_PHONE_NUMBER_ID,
     configured: Boolean(process.env.KAPSO_API_KEY && process.env.KAPSO_PHONE_NUMBER_ID),
@@ -58,6 +64,23 @@ export async function sendWhatsAppViaKapso(opts: KapsoSendOptions): Promise<Kaps
     kapsoApiKey: cfg.apiKey,
   });
 
+  const formattedParams = opts.variables.map((item) => {
+    if (typeof item === "string") {
+      return { type: "text" as const, text: item };
+    }
+    const param: { type: "text"; text: string; parameter_name?: string } = {
+      type: "text",
+      text: item.text,
+    };
+    if (item.parameter_name) {
+      const normalized = normalizeVariableName(item.parameter_name);
+      if (isValidVariableName(normalized) && !/^\d+$/.test(normalized)) {
+        param.parameter_name = normalized;
+      }
+    }
+    return param;
+  });
+
   try {
     const response = await client.messages.sendTemplate({
       phoneNumberId: cfg.phoneNumberId,
@@ -65,11 +88,11 @@ export async function sendWhatsAppViaKapso(opts: KapsoSendOptions): Promise<Kaps
       template: {
         name: opts.template,
         language: { code: opts.language },
-        components: opts.variables.length
+        components: formattedParams.length
           ? [
               {
                 type: "body",
-                parameters: opts.variables.map((text) => ({ type: "text", text })),
+                parameters: formattedParams,
               },
             ]
           : undefined,
