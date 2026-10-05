@@ -4,13 +4,17 @@ import prisma from "@/lib/prisma";
 import { toInstant, toJson } from "@/src/prisma/codecs";
 import {
   MONTHLY_SEARCH_BUDGET,
+  PRIMARY_DENTAL_KEYWORDS,
   SearchBudget,
   SearchBudgetExceededError,
   buildCityQueries,
+  getSerpApiAccountInfo,
   inferSpecialties,
   mapSerpApiPlaceToClinic,
   normalizeMoroccanPhone,
   parseOperatingHours,
+  parseRating,
+  parseReviewCount,
   searchPlaces,
   slugify,
   syncCityWithKeywords as syncCityCore,
@@ -34,8 +38,11 @@ export interface SerpApiPlace {
     latitude: number;
     longitude: number;
   };
-  rating?: number;
-  reviews?: number;
+  rating?: number | string;
+  reviews?: number | string;
+  user_reviews?: number;
+  reviews_original?: number;
+  rating_summary?: Array<{ stars: number; amount: number }>;
   type?: string;
   types?: string[];
   type_id?: string;
@@ -76,6 +83,7 @@ export interface SerpApiResponse {
     query_displayed?: string;
   };
   local_results?: SerpApiPlace[];
+  place_results?: SerpApiPlace;
   serpapi_pagination?: SerpApiPagination;
   error?: string;
 }
@@ -109,10 +117,14 @@ export {
   SearchBudget,
   SearchBudgetExceededError,
   buildCityQueries,
+  PRIMARY_DENTAL_KEYWORDS,
+  getSerpApiAccountInfo,
   inferSpecialties,
   mapSerpApiPlaceToClinic,
   normalizeMoroccanPhone,
   parseOperatingHours,
+  parseRating,
+  parseReviewCount,
   searchPlaces,
   slugify,
 };
@@ -160,7 +172,9 @@ export async function fetchClinicsForCity(
       return { citySlug, cityName: city.name, fetched: 0, clinics: [], searchesUsed: 1, error };
     }
 
-    const clinics = places.map((place: SerpApiPlace) => mapSerpApiPlaceToClinic(place, city) as Clinic);
+    const clinics = places.map(
+      (place: SerpApiPlace) => mapSerpApiPlaceToClinic(place, city) as unknown as Clinic,
+    );
 
     return {
       citySlug,
@@ -241,8 +255,13 @@ export async function syncAllCities(options?: {
     ? cities.filter((c) => options.cityFilter?.includes(c.slug))
     : cities;
 
+  const defaultMax = targetCities.length > 1 ? 15 : 7;
+  const configuredMax = Number(
+    process.env.SERPAPI_MAX_SEARCHES ?? process.env.SERAPI_MAX_SEARCHES ?? defaultMax,
+  );
+  const searchLimit = options?.maxSearches ?? configuredMax;
   const budget =
-    options?.budget ?? new SearchBudget(options?.maxSearches ?? MONTHLY_SEARCH_BUDGET);
+    options?.budget ?? new SearchBudget(Math.min(searchLimit, MONTHLY_SEARCH_BUDGET));
 
   return (await syncAllCitiesCore(targetCities, key ?? "", {
     budget,
@@ -264,24 +283,34 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
       const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
       const hours = toJson(clinic.hours);
 
+      // Match existing clinic by googlePlaceId, exact slug, or name in the same city
+      const existing =
+        (clinic.googlePlaceId
+          ? await prisma.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
+          : null) ||
+        (await prisma.orm.public.Clinic.where({ slug: clinic.slug }).first()) ||
+        (await prisma.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).first());
+
+      const slugToUse = existing?.slug || clinic.slug;
+
       const upserted = await prisma.orm.public.Clinic.upsert({
-        conflictOn: { slug: clinic.slug },
+        conflictOn: { slug: slugToUse },
         update: {
-          googlePlaceId: clinic.googlePlaceId,
+          googlePlaceId: clinic.googlePlaceId || existing?.googlePlaceId || clinic.googlePlaceId,
           name: clinic.name,
-          nameAr: clinic.nameAr,
+          nameAr: clinic.nameAr || existing?.nameAr || clinic.name,
           citySlug: clinic.citySlug,
           neighborhoodFr: clinic.neighborhood.fr,
           neighborhoodAr: clinic.neighborhood.ar,
           addressFr: clinic.address.fr,
           addressAr: clinic.address.ar,
-          phone: clinic.phone,
-          phoneHref: clinic.phoneHref,
-          whatsapp: clinic.whatsapp,
-          website: clinic.website,
+          phone: clinic.phone ?? existing?.phone,
+          phoneHref: clinic.phoneHref ?? existing?.phoneHref,
+          whatsapp: clinic.whatsapp ?? existing?.whatsapp,
+          website: clinic.website ?? existing?.website,
           rating: clinic.rating,
           reviewCount: clinic.reviewCount,
-          verified: clinic.verified,
+          verified: clinic.verified || Boolean(existing?.verified),
           descriptionFr: clinic.description.fr,
           descriptionAr: clinic.description.ar,
           lat: clinic.lat,
@@ -290,7 +319,7 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
           lastSyncedAt,
         },
         create: {
-          slug: clinic.slug,
+          slug: slugToUse,
           googlePlaceId: clinic.googlePlaceId,
           name: clinic.name,
           nameAr: clinic.nameAr,

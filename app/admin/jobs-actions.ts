@@ -12,7 +12,8 @@ import {
   hasRunningJobDb,
   type JobRunKind,
 } from "@/lib/repositories/job-runs";
-import { runClinicSync, sendCampaign } from "@/lib/services/campaign-sender";
+import { sendCampaign } from "@/lib/services/campaign-sender";
+import { runClinicSync } from "@/lib/services/clinic-sync";
 
 /**
  * Admin-triggered batch jobs (WhatsApp campaign, SerpApi sync).
@@ -81,8 +82,13 @@ export async function startSyncAction(formData: FormData): Promise<void> {
   await requireAdmin();
 
   const city = String(formData.get("city") ?? "").trim() || undefined;
-  // SerpApi bills one credit per search, so cap the run explicitly.
-  const maxSearches = Math.max(1, Math.min(Number(formData.get("maxSearches") ?? 10) || 10, 250));
+  const keywordMode = String(formData.get("keywordMode") ?? "primary").trim();
+  const rawMaxSearches = Number(formData.get("maxSearches"));
+  const defaultMax = city ? 7 : 15;
+  const maxSearches = Math.max(1, Math.min(rawMaxSearches || defaultMax, 250));
+
+  const { DENTAL_KEYWORDS, PRIMARY_DENTAL_KEYWORDS } = await import("@/lib/services/serpapi");
+  const keywords = keywordMode === "all" ? DENTAL_KEYWORDS : PRIMARY_DENTAL_KEYWORDS;
 
   if (await hasRunningJobDb("SERPAPI_SYNC")) {
     return redirect("/admin/jobs?error=running");
@@ -91,13 +97,13 @@ export async function startSyncAction(formData: FormData): Promise<void> {
   const jobRunId = await createJobRunDb({
     kind: "SERPAPI_SYNC" as JobRunKind,
     requestedBy: await requestedBy(),
-    params: { city: city ?? null, maxSearches },
-    message: `Starting sync (max ${maxSearches} searches)`,
+    params: { city: city ?? null, maxSearches, keywordMode },
+    message: `Starting sync (${city ? `City: ${city}` : "All cities"}, max ${maxSearches} searches)`,
   });
 
   after(async () => {
     try {
-      await runClinicSync({ city, maxSearches, jobRunId });
+      await runClinicSync({ city, maxSearches, keywords, jobRunId });
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       await finishJobRunDb(jobRunId, {

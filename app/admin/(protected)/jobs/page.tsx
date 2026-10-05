@@ -230,16 +230,24 @@ function CampaignForm({ templates }: { templates: CampaignTemplate[] }) {
 function SyncForm() {
   return (
     <form action={startSyncAction} className="mt-4 space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <label className="block text-sm">
-          <span className="mb-1 block font-medium">City (optional)</span>
+          <span className="mb-1 block font-medium">Target</span>
           <select name="city" className="w-full rounded-xl border border-border bg-background px-3 py-2" defaultValue="">
-            <option value="">All target cities</option>
+            <option value="">All Moroccan cities (15)</option>
             {cities.map((city) => (
               <option key={city.slug} value={city.slug}>
                 {city.name}
               </option>
             ))}
+          </select>
+        </label>
+
+        <label className="block text-sm">
+          <span className="mb-1 block font-medium">Keywords mode</span>
+          <select name="keywordMode" className="w-full rounded-xl border border-border bg-background px-3 py-2" defaultValue="primary">
+            <option value="primary">Primary only (1 search/city — recommended)</option>
+            <option value="all">Deep sync (all 7 specialties)</option>
           </select>
         </label>
 
@@ -250,11 +258,15 @@ function SyncForm() {
             type="number"
             min={1}
             max={250}
-            defaultValue={10}
+            defaultValue={15}
             className="w-full rounded-xl border border-border bg-background px-3 py-2"
           />
         </label>
       </div>
+
+      <p className="text-xs text-muted">
+        Tip: <strong>Primary only</strong> consumes 1 SerpApi credit per city, keeping total monthly spend well below the 250 free quota.
+      </p>
 
       <SubmitButton
         loadingText="Démarrage de la synchronisation..."

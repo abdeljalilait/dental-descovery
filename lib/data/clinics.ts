@@ -17,7 +17,7 @@ function stdHours(morning: string, evening: string): Clinic["hours"] {
 export const clinics: SeedClinic[] = [
   {
     slug: "dental-clinica-el-ouazzani",
-    googlePlaceId: "ChIJxxxxxxxx-tanger-001",
+    googlePlaceId: "ChIJ4Sbk3eZ_DA0RwFPROegvTYM",
     name: "Dental Clinica El Ouazzani",
     nameAr: "عيادة إلوازاني لطب الأسنان",
     citySlug: "tanger",
@@ -31,7 +31,7 @@ export const clinics: SeedClinic[] = [
     whatsapp: "212660670919",
     website: "https://drelouazzani.ma",
     rating: 5.0,
-    reviewCount: 48,
+    reviewCount: 88,
     specialtySlugs: ["implantologie", "facettes", "orthodontie", "blanchiment"],
     verified: true,
     claimed: true,
@@ -40,10 +40,10 @@ export const clinics: SeedClinic[] = [
       fr: "Clinique dentaire premium à Tanger dirigée par le Dr Chaimae El Ouazzani : implantologie, facettes, Hollywood Smile et orthodontie, avec suivi des patients internationaux.",
       ar: "عيادة أسنان راقية في طنجة يديرها الدكتورة شيماء إلوازاني: زراعة الأسنان، القشور، ابتسامة هوليوود وتقويم الأسنان، مع متابعة المرضى الدوليين."
     },
-    lat: 35.7791,
-    lng: -5.8122,
+    lat: 35.779142,
+    lng: -5.8121994,
     hours: stdHours("09:00 – 19:00", "10:00 – 13:00"),
-    lastSyncedAt: "2026-08-28"
+    lastSyncedAt: "2026-10-05"
   },
   {
     slug: "cabinet-dentaire-tanger-center",

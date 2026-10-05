@@ -24,8 +24,11 @@ import dotenv from "dotenv";
 
 import { cities } from "../lib/data/cities.ts";
 import {
+  DENTAL_KEYWORDS,
   MONTHLY_SEARCH_BUDGET,
+  PRIMARY_DENTAL_KEYWORDS,
   SearchBudget,
+  getSerpApiAccountInfo,
   syncAllCities,
 } from "../lib/services/serpapi-core.mjs";
 
@@ -50,8 +53,31 @@ const args = process.argv.slice(2);
 const isDryRun = args.includes("--dry-run");
 const cityArg = args.find((a) => a.startsWith("--city="))?.split("=")[1]?.toLowerCase();
 const maxSearchesArg = args.find((a) => a.startsWith("--max-searches="))?.split("=")[1];
+const keywordsArg = args.find((a) => a.startsWith("--keywords="))?.split("=")[1];
+const keywordArg = args.find((a) => a.startsWith("--keyword="))?.split("=")[1];
+const isAllKeywords = args.includes("--all-keywords") || keywordsArg === "all";
+const isQuick = args.includes("--quick") || args.includes("--primary");
 
-const budgetLimit = maxSearchesArg ? Number(maxSearchesArg) : MONTHLY_SEARCH_BUDGET;
+// Resolve keywords strategy
+let selectedKeywords = undefined;
+if (keywordArg) {
+  selectedKeywords = [keywordArg.trim()];
+} else if (keywordsArg && keywordsArg !== "all") {
+  selectedKeywords = keywordsArg.split(",").map((k) => k.trim());
+} else if (isAllKeywords) {
+  selectedKeywords = DENTAL_KEYWORDS;
+} else if (isQuick) {
+  selectedKeywords = PRIMARY_DENTAL_KEYWORDS;
+}
+
+// Calculate safe search budget to protect the 250/month free tier
+const defaultMax = cityArg ? (selectedKeywords ? selectedKeywords.length : 7) : 15;
+const configuredMax = Number(
+  process.env.SERPAPI_MAX_SEARCHES ?? process.env.SERAPI_MAX_SEARCHES ?? defaultMax,
+);
+let budgetLimit = maxSearchesArg
+  ? Math.min(Number(maxSearchesArg), MONTHLY_SEARCH_BUDGET)
+  : Math.min(configuredMax, MONTHLY_SEARCH_BUDGET);
 
 async function saveToDatabase(clinics) {
   if (!process.env.DATABASE_URL) {
@@ -69,24 +95,34 @@ async function saveToDatabase(clinics) {
       const lastSyncedAt = toInstant(clinic.lastSyncedAt || new Date().toISOString());
       const hours = toJson(clinic.hours);
 
+      // Match existing clinic by googlePlaceId, exact slug, or name in the same city
+      const existing =
+        (clinic.googlePlaceId
+          ? await db.orm.public.Clinic.where({ googlePlaceId: clinic.googlePlaceId }).first()
+          : null) ||
+        (await db.orm.public.Clinic.where({ slug: clinic.slug }).first()) ||
+        (await db.orm.public.Clinic.where({ name: clinic.name, citySlug: clinic.citySlug }).first());
+
+      const slugToUse = existing?.slug || clinic.slug;
+
       const upserted = await db.orm.public.Clinic.upsert({
-        conflictOn: { slug: clinic.slug },
+        conflictOn: { slug: slugToUse },
         update: {
-          googlePlaceId: clinic.googlePlaceId,
+          googlePlaceId: clinic.googlePlaceId || existing?.googlePlaceId || clinic.googlePlaceId,
           name: clinic.name,
-          nameAr: clinic.nameAr,
+          nameAr: clinic.nameAr || existing?.nameAr || clinic.name,
           citySlug: clinic.citySlug,
           neighborhoodFr: clinic.neighborhood.fr,
           neighborhoodAr: clinic.neighborhood.ar,
           addressFr: clinic.address.fr,
           addressAr: clinic.address.ar,
-          phone: clinic.phone,
-          phoneHref: clinic.phoneHref,
-          whatsapp: clinic.whatsapp,
-          website: clinic.website,
+          phone: clinic.phone ?? existing?.phone,
+          phoneHref: clinic.phoneHref ?? existing?.phoneHref,
+          whatsapp: clinic.whatsapp ?? existing?.whatsapp,
+          website: clinic.website ?? existing?.website,
           rating: clinic.rating,
           reviewCount: clinic.reviewCount,
-          verified: clinic.verified,
+          verified: clinic.verified || Boolean(existing?.verified),
           descriptionFr: clinic.description.fr,
           descriptionAr: clinic.description.ar,
           lat: clinic.lat,
@@ -95,7 +131,7 @@ async function saveToDatabase(clinics) {
           lastSyncedAt,
         },
         create: {
-          slug: clinic.slug,
+          slug: slugToUse,
           googlePlaceId: clinic.googlePlaceId,
           name: clinic.name,
           nameAr: clinic.nameAr,
@@ -152,10 +188,24 @@ async function run() {
     process.exit(1);
   }
 
+  // Check live account info (costs 0 search credits)
+  const accountInfo = await getSerpApiAccountInfo(SERPAPI_KEY);
+
   console.log(`\n======================================================`);
   console.log(`  Dentora - SerpApi Clinic Sync`);
-  console.log(`  Target Cities: ${targetCities.length}`);
-  console.log(`  Search Budget This Run: ${budgetLimit}`);
+  if (accountInfo) {
+    console.log(`  SerpApi Plan: ${accountInfo.planName}`);
+    console.log(`  Monthly Usage: ${accountInfo.thisMonthUsage} / ${accountInfo.searchesPerMonth} searches used`);
+    console.log(`  Remaining In Plan: ${accountInfo.totalSearchesLeft} searches`);
+    if (accountInfo.totalSearchesLeft > 0 && accountInfo.totalSearchesLeft < budgetLimit) {
+      console.log(`  \x1b[33m[NOTICE]\x1b[0m Capping run budget to remaining plan credits: ${accountInfo.totalSearchesLeft}`);
+      budgetLimit = accountInfo.totalSearchesLeft;
+    }
+  }
+  budgetLimit = Math.max(1, budgetLimit);
+  console.log(`  Target Cities: ${targetCities.length} (${targetCities.map((c) => c.name).join(", ")})`);
+  console.log(`  Run Budget Cap: ${budgetLimit} searches (Max ${MONTHLY_SEARCH_BUDGET}/mo)`);
+  console.log(`  Keyword Strategy: ${selectedKeywords ? selectedKeywords.join(", ") : targetCities.length > 1 ? 'Primary ("dentiste", 1 search/city to protect quota)' : 'All specialties'}`);
   console.log(`  Mode: ${isDryRun ? "DRY-RUN (nothing written)" : "LIVE SYNC"}`);
   console.log(`======================================================\n`);
 
@@ -163,6 +213,7 @@ async function run() {
 
   const report = await syncAllCities(targetCities, SERPAPI_KEY, {
     budget,
+    keywords: selectedKeywords,
     onQuery: ({ city, query, index, total }) => {
       console.log(`\x1b[36m[SYNC]\x1b[0m [${index + 1}/${total}] ${city.name} — "${query}"`);
     },

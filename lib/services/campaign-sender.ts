@@ -17,7 +17,8 @@ import {
 } from "@/lib/campaign/variables";
 
 /**
- * Batch runners started from `/admin/jobs`.
+ * WhatsApp outreach campaign runner: queries eligible clinics from PostgreSQL
+ * and dispatches approved templates via Kapso.
  */
 export interface CampaignSendOptions {
   dryRun?: boolean;
@@ -342,69 +343,4 @@ export async function sendCampaign(options: CampaignSendOptions = {}): Promise<C
   });
 
   return result;
-}
-
-export interface SyncRunOptions {
-  city?: string;
-  maxSearches?: number;
-  delayMs?: number;
-  budget?: number;
-  jobRunId?: string;
-}
-
-export interface SyncRunResult extends JobRunCounters {
-  searchesUsed: number;
-  cities: string[];
-}
-
-/**
- * SerpApi sync as an admin-triggered run.
- *
- * SerpApi bills one credit per search, so `maxSearches` defaults to the monthly
- * budget guard and the run reports per-city progress into `job_runs`.
- */
-export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncRunResult> {
-  const { syncAllCities } = await import("@/lib/services/serpapi");
-  const maxSearches = options.maxSearches ?? Number(process.env.SERAPI_MAX_SEARCHES ?? 40);
-  const delayMs = options.delayMs ?? Number(process.env.SERAPI_DELAY_MS ?? 1500);
-  const cityFilter = options.city ? [options.city] : undefined;
-
-  await report(options.jobRunId, {
-    total: cityFilter ? cityFilter.length : 10,
-    processed: 0,
-    succeeded: 0,
-    failed: 0,
-    skipped: 0,
-    message: `Syncing with ${maxSearches} SerpApi searches`,
-  });
-
-  const report_ = await syncAllCities({
-    cityFilter,
-    delayMs,
-    maxSearches,
-  });
-
-  const syncErrors = report_.details
-    .filter((city) => Boolean(city.error))
-    .map((city) => `${city.cityName || city.citySlug}: ${city.error}`);
-
-  const counters: JobRunCounters = {
-    total: report_.totalCities,
-    processed: report_.details.length,
-    succeeded: report_.details.filter((city) => city.fetched > 0).length,
-    failed: report_.details.filter((city) => city.fetched === 0).length,
-    skipped: 0,
-  };
-
-  const status: JobRunStatus =
-    counters.total > 0 && counters.failed === counters.total ? "FAILED" : "COMPLETED";
-
-  await report(options.jobRunId, {
-    ...counters,
-    status,
-    message: `${report_.totalClinics} clinics from ${report_.searchesUsed} searches`,
-    errors: syncErrors.length > 0 ? syncErrors : undefined,
-  });
-
-  return { ...counters, searchesUsed: report_.searchesUsed, cities: report_.details.map((c) => c.citySlug) };
 }

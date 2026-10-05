@@ -112,9 +112,9 @@ npm run sync:clinics -- --dry-run
   [`app/api/webhooks/kapso/route.ts`](app/api/webhooks/kapso/route.ts), which matches
   `clinic_outreach.providerMessageId` and fails closed without
   `KAPSO_WEBHOOK_SECRET`.
-- **SerpApi sync**: `runClinicSync` in the same module, capped per run by
-  `SERAPI_MAX_SEARCHES` because each search spends one of 250 monthly credits
-  (a full 10-city sweep costs 10).
+- **SerpApi sync**: `runClinicSync` in [`lib/services/clinic-sync.ts`](lib/services/clinic-sync.ts), capped per run by
+  `SERPAPI_MAX_SEARCHES` because each search spends one of 250 monthly credits
+  (a full sweep costs 15 searches).
 - **Deployment**: multi-stage [`Dockerfile`](Dockerfile), built with `make all` and
   pushed to `registry.hakiware.com` with `make push`.
 

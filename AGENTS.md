@@ -222,7 +222,7 @@ There is no Bree, no cron and no `app/api/cron`. Both heavy jobs are started by 
   templates via Kapso. `SENT` = accepted by WhatsApp; `DELIVERED`/`READ` come from
   `app/api/webhooks/kapso/route.ts`, matched on `clinic_outreach.providerMessageId`. The webhook
   fails closed unless `KAPSO_WEBHOOK_SECRET` is set.
-- **SerpApi sync**: `runClinicSync()` in the same module, capped per run by `SERAPI_MAX_SEARCHES`.
+- **SerpApi sync**: `runClinicSync()` in `lib/services/clinic-sync.ts`, capped per run by `SERPAPI_MAX_SEARCHES`.
 - **Free Tier Budget**: 250 searches/month, 50/hour. The 10 target cities in `lib/data/cities.ts`
   cost 10 searches for a full sweep; the 1.5s delay keeps throughput under the hourly limit.
 - **Deployment**: `make all` builds the image, `make push` publishes to `registry.hakiware.com`.
