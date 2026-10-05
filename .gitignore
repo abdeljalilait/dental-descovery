@@ -52,6 +52,10 @@ dist/
 # generated outreach campaign lists
 outreach/
 
+# database dumps from scripts/backup-db.sh
+backups/
+*.sql.gz
+
 # Generated sync artefact, intentionally not tracked
 lib/data/synced-clinics.json
 .devin
