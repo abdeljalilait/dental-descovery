@@ -8,7 +8,11 @@ import {
   updateKapsoAccountDb,
   deleteKapsoAccountDb,
 } from "@/lib/repositories/kapso";
-import { testKapsoAccountConnection, syncKapsoTemplates } from "@/lib/services/kapso";
+import {
+  testKapsoAccountConnection,
+  syncKapsoTemplates,
+  normalizeKapsoBaseUrl,
+} from "@/lib/services/kapso";
 
 export async function createKapsoAccountAction(formData: FormData): Promise<void> {
   await requireAdmin();
@@ -17,7 +21,7 @@ export async function createKapsoAccountAction(formData: FormData): Promise<void
   const phoneNumberId = String(formData.get("phoneNumberId") ?? "").trim();
   const businessAccountId = String(formData.get("businessAccountId") ?? "").trim() || null;
   const apiKey = String(formData.get("apiKey") ?? "").trim();
-  const baseUrl = String(formData.get("baseUrl") ?? "").trim() || "https://app.kapso.ai/api/meta/";
+  const baseUrl = normalizeKapsoBaseUrl(String(formData.get("baseUrl") ?? ""));
   const isDefault = formData.get("isDefault") === "on";
 
   if (!name || !phoneNumberId || !apiKey) {
@@ -48,10 +52,10 @@ export async function updateKapsoAccountAction(formData: FormData): Promise<void
   const phoneNumberId = String(formData.get("phoneNumberId") ?? "").trim();
   const businessAccountId = String(formData.get("businessAccountId") ?? "").trim() || null;
   const apiKey = String(formData.get("apiKey") ?? "").trim();
-  const baseUrl = String(formData.get("baseUrl") ?? "").trim() || "https://app.kapso.ai/api/meta/";
+  const baseUrl = normalizeKapsoBaseUrl(String(formData.get("baseUrl") ?? ""));
   const isDefault = formData.get("isDefault") === "on";
 
-  if (!id || !name || !phoneNumberId || !apiKey) {
+  if (!id || !name || !phoneNumberId) {
     redirect("/admin/kapso?error=missing_fields");
   }
 
@@ -59,12 +63,17 @@ export async function updateKapsoAccountAction(formData: FormData): Promise<void
     name,
     phoneNumberId,
     businessAccountId,
-    apiKey,
+    apiKey: apiKey || undefined,
     baseUrl,
     isDefault,
   });
 
+  // Re-test connection after updating account details
+  await testKapsoAccountConnection(id);
+
   revalidatePath("/admin/kapso");
+  revalidatePath("/admin/jobs");
+  revalidatePath("/admin/clinics");
   redirect("/admin/kapso?updated=1");
 }
 

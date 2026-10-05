@@ -79,6 +79,35 @@ export async function resolveKapsoAccount(accountId?: string): Promise<KapsoAcco
 }
 
 /**
+ * Automatically discovers the WhatsApp Business Account ID (WABA ID)
+ * from Kapso Platform API if not explicitly configured.
+ */
+export async function discoverWabaId(apiKey: string, phoneNumberId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://api.kapso.ai/platform/v1/whatsapp/phone_numbers?phone_number_id=${encodeURIComponent(phoneNumberId.trim())}`,
+      {
+        headers: {
+          "X-API-Key": apiKey.trim(),
+          Accept: "application/json",
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      data?: Array<{ phone_number_id?: string; id?: string; business_account_id?: string }>;
+    };
+    const list = json.data || [];
+    const matched = list.find(
+      (item) => item.phone_number_id === phoneNumberId || item.id === phoneNumberId
+    );
+    return matched?.business_account_id || list[0]?.business_account_id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Tests connection to Kapso by querying the phone number information via WhatsAppClient.
  */
 export async function testKapsoAccountConnection(accountId: string): Promise<TestConnectionResult> {
@@ -111,8 +140,14 @@ export async function testKapsoAccountConnection(accountId: string): Promise<Tes
       codeVerificationStatus: (body.code_verification_status || body.codeVerificationStatus) as string | undefined,
     };
 
+    let discoveredWabaId = account.businessAccountId;
+    if (!discoveredWabaId) {
+      discoveredWabaId = await discoverWabaId(account.apiKey, account.phoneNumberId);
+    }
+
     await updateKapsoAccountDb(account.id, {
       baseUrl,
+      businessAccountId: discoveredWabaId || undefined,
       status: "ACTIVE",
       lastTestedAt: new Date(),
       testResult: details,
@@ -171,10 +206,26 @@ export async function syncKapsoTemplates(accountId: string): Promise<SyncTemplat
     kapsoApiKey: account.apiKey,
   });
 
-  const targetId = account.businessAccountId?.trim() || account.phoneNumberId.trim();
+  let wabaId = account.businessAccountId?.trim() || null;
+  if (!wabaId) {
+    wabaId = await discoverWabaId(account.apiKey, account.phoneNumberId);
+    if (wabaId) {
+      await updateKapsoAccountDb(account.id, { businessAccountId: wabaId });
+    }
+  }
+
+  if (!wabaId) {
+    return {
+      ok: false,
+      synced: 0,
+      message:
+        "WhatsApp Business Account ID (WABA ID) introuvable. Veuillez renseigner votre Business Account ID dans les paramètres du compte pour synchroniser les templates.",
+      templates: [],
+    };
+  }
 
   try {
-    const data = (await client.request("GET", `${targetId}/message_templates`, {
+    const data = (await client.request("GET", `${wabaId}/message_templates`, {
       query: { limit: 100 },
       responseType: "json",
     })) as { data?: RawKapsoTemplateItem[] };
@@ -231,6 +282,7 @@ export async function syncKapsoTemplates(accountId: string): Promise<SyncTemplat
 
     await updateKapsoAccountDb(account.id, {
       baseUrl,
+      businessAccountId: wabaId,
       lastSyncedAt: new Date(),
     });
 
@@ -244,11 +296,8 @@ export async function syncKapsoTemplates(accountId: string): Promise<SyncTemplat
     };
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    const isWabaError =
-      !account.businessAccountId &&
-      (errMsg.includes("not found") || errMsg.includes("OAuthException") || errMsg.includes("404"));
-    const friendlyMessage = isWabaError
-      ? "Pour synchroniser les templates Meta, veuillez renseigner votre Business Account ID (WABA ID) dans la configuration du compte (visible dans votre tableau de bord Meta / Kapso)."
+    const friendlyMessage = errMsg.includes("configuration not found")
+      ? `Configuration WhatsApp introuvable sur le compte ${wabaId}. Vérifiez vos autorisations dans votre tableau de bord Kapso.`
       : errMsg;
     return { ok: false, synced: 0, message: friendlyMessage, templates: [] };
   }

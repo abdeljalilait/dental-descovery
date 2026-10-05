@@ -11,6 +11,7 @@ import {
   syncKapsoTemplatesAction,
 } from "@/app/admin/kapso-actions";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { EditKapsoAccountModal } from "@/components/admin/edit-kapso-account-modal";
 import {
   CheckCircle2,
   XCircle,
@@ -236,6 +237,9 @@ export default async function AdminKapsoPage({
                         Synchroniser templates
                       </SubmitButton>
                     </form>
+
+                    {/* Edit Account */}
+                    <EditKapsoAccountModal account={acc} />
 
                     {/* Delete Account */}
                     <form action={deleteKapsoAccountAction} className="ms-auto">
