@@ -11,28 +11,17 @@ import { ClinicCard } from "@/components/directory/clinic-card";
 import { ButtonLink } from "@/components/ui/button-link";
 import { StructuredData } from "@/components/seo/structured-data";
 import { articleSchema, breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
-import { getBlogArticleBySlugDb, getBlogSlugsDb } from "@/lib/repositories/blog";
+import { getBlogArticleBySlugDb } from "@/lib/repositories/blog";
 import { getClinicsByCityDb } from "@/lib/repositories/clinics";
 import { getCityDb } from "@/lib/repositories/cities";
 import { blogPostPath, cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 import { defaultOgImageUrl, OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/lib/seo/og-image";
 
-export const dynamicParams = true;
-
-/**
- * Published posts are re-read hourly. Drafts are never generated, and a post
- * published from the admin revalidates its own path on save.
- */
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 /** Per-post image override, falling back to the cover image when one is set. */
 function ogImageUrlFor(post: { ogImageUrl: string | null; coverImageUrl: string | null }) {
   return post.ogImageUrl ?? post.coverImageUrl;
-}
-
-export async function generateStaticParams() {
-  const slugs = await getBlogSlugsDb();
-  return locales.flatMap((lang) => slugs.map((slug) => ({ lang, slug })));
 }
 
 export async function generateMetadata({

@@ -14,32 +14,11 @@ import { LeadModal } from "@/components/clinic/lead-modal";
 import { StructuredData } from "@/components/seo/structured-data";
 import { breadcrumbSchema, dentistSchema, graph, websiteSchema } from "@/lib/seo/schema";
 import { cityDisplayName } from "@/lib/utils/city-display";
-import { getCityDb, getCitySlugsDb } from "@/lib/repositories/cities";
+import { getCityDb } from "@/lib/repositories/cities";
 import { getClinicDb, getClinicsByCityDb } from "@/lib/repositories/clinics";
 import { clinicPath, cityPath, localizedPath } from "@/lib/routes";
 
-export const dynamicParams = true;
-
-/** Clinic data refreshes on the monthly SerpApi sync, so revalidate hourly. */
-export const revalidate = 3600;
-
-/** Prebuild the best-rated clinics per city; the rest render on demand and cache. */
-const PREBUILT_PER_CITY = 10;
-
-export async function generateStaticParams() {
-  const citySlugs = await getCitySlugsDb();
-  const perCity = await Promise.all(
-    citySlugs.map(async (citySlug) => {
-      const clinics = await getClinicsByCityDb(citySlug, PREBUILT_PER_CITY);
-      return clinics.map((clinic) => ({ citySlug, slug: clinic.slug }));
-    }),
-  );
-
-  const pairs = perCity.flat();
-  return locales.flatMap((locale) =>
-    pairs.map(({ citySlug, slug }) => ({ lang: locale, city: citySlug, clinic: slug })),
-  );
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

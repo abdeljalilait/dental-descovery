@@ -18,6 +18,8 @@ import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 import { getResolvedPricingPlans } from "@/lib/pricing/plans";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {

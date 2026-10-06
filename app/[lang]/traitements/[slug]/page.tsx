@@ -15,19 +15,13 @@ import {
   getCitiesWithSpecialtyDb,
   getClinicCountBySpecialtyDb,
   getSpecialtyDb,
-  getSpecialtySlugsDb,
 } from "@/lib/repositories/specialties";
 import { getCitiesDb } from "@/lib/repositories/cities";
 import { getClinicsBySpecialtyDb } from "@/lib/repositories/clinics";
 import { getBlogArticlesBySpecialtyDb } from "@/lib/repositories/blog";
 import { cityPath, localizedPath, treatmentPath, blogPostPath } from "@/lib/routes";
 
-export const dynamicParams = false;
-
-export async function generateStaticParams() {
-  const slugs = await getSpecialtySlugsDb();
-  return locales.flatMap((locale) => slugs.map((slug) => ({ lang: locale, slug })));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

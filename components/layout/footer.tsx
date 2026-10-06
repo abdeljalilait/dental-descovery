@@ -7,8 +7,16 @@ import { cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { siteConfig } from "@/lib/site.config";
 
+import type { City, Specialty } from "@/lib/data/types";
+
 export async function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
-  const [cities, specialties] = await Promise.all([getCitiesDb(), getSpecialtiesDb()]);
+  let cities: City[] = [];
+  let specialties: Specialty[] = [];
+  try {
+    [cities, specialties] = await Promise.all([getCitiesDb(), getSpecialtiesDb()]);
+  } catch {
+    // If DB is unreachable during build or transient drop, render gracefully
+  }
 
   const year = new Date().getFullYear();
 

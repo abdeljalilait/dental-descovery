@@ -41,9 +41,7 @@ export const metadata: Metadata = {
   },
 };
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ lang: locale }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function RootLayout({
   children,

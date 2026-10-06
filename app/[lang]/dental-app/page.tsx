@@ -9,11 +9,7 @@ import { LeadForm } from "@/components/clinic/lead-form";
 import { FaqSection } from "@/components/landing/faq-section";
 import { localizedPath } from "@/lib/routes";
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return locales.map((locale) => ({ lang: locale }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

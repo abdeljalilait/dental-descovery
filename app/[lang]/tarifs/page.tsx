@@ -13,11 +13,7 @@ import { ClinicRoiCalculator } from "@/components/landing/clinic-roi-calculator"
 import { PricingPlans } from "@/components/landing/pricing-plans";
 import { getResolvedPricingPlans } from "@/lib/pricing/plans";
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return locales.map((locale) => ({ lang: locale }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

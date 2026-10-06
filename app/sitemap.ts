@@ -14,6 +14,9 @@ import { getBlogArticlesDb } from "@/lib/repositories/blog";
  * If that produces too much thin-content signal, the lever is to require a
  * website or phone on the row rather than to truncate the list.
  */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
   const entries: MetadataRoute.Sitemap = [];

@@ -13,22 +13,14 @@ import { FinalCtaSection } from "@/components/landing/final-cta";
 import { StructuredData } from "@/components/seo/structured-data";
 import { breadcrumbSchema, graph, itemListSchema, websiteSchema } from "@/lib/seo/schema";
 import { cityDisplayName } from "@/lib/utils/city-display";
-import { getCitiesDb, getCityDb, getCitySlugsDb } from "@/lib/repositories/cities";
+import { getCitiesDb, getCityDb } from "@/lib/repositories/cities";
 import { getClinicsByCityDb } from "@/lib/repositories/clinics";
 import { getClinicCountByCityDb } from "@/lib/repositories/stats";
 import { getSpecialtiesDb } from "@/lib/repositories/specialties";
 import { cityPath, localizedPath, treatmentPath } from "@/lib/routes";
 import { cn } from "@/lib/utils/cn";
 
-export const dynamicParams = false;
-
-/** Clinic data refreshes on the monthly SerpApi sync, so revalidate hourly. */
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  const slugs = await getCitySlugsDb();
-  return locales.flatMap((locale) => slugs.map((city) => ({ lang: locale, city })));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

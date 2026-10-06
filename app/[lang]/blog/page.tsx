@@ -11,14 +11,7 @@ import { getBlogArticlesDb } from "@/lib/repositories/blog";
 import { buildDynamicMetadata } from "@/lib/seo/page-seo";
 import { blogPostPath, localizedPath } from "@/lib/routes";
 
-export const dynamicParams = true;
-
-/** Published posts are re-read hourly; the admin revalidates this path on save. */
-export const revalidate = 3600;
-
-export function generateStaticParams() {
-  return locales.map((locale) => ({ lang: locale }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
