@@ -17,11 +17,12 @@ import { Building2 } from "lucide-react";
 interface LeadModalProps {
   type: LeadType;
   locale: Locale;
+  planKey?: string;
   clinicName?: string;
   trigger: React.ReactNode;
 }
 
-export function LeadModal({ type, locale, clinicName, trigger }: LeadModalProps) {
+export function LeadModal({ type, locale, planKey, clinicName, trigger }: LeadModalProps) {
   const [open, setOpen] = useState(false);
 
   const titles: Record<LeadType, { fr: string; ar: string }> = {
@@ -85,6 +86,7 @@ export function LeadModal({ type, locale, clinicName, trigger }: LeadModalProps)
           <LeadForm
             type={type}
             locale={locale}
+            planKey={planKey}
             clinicName={clinicName}
             inModal={true}
             onSuccess={() => {

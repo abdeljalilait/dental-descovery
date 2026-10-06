@@ -11,6 +11,7 @@ type LeadTypeValue = "APP_DEMO" | "WEBSITE_QUOTE" | "CLINIC_CLAIM" | "CONTACT";
 
 interface LeadPayload {
   type: ClientLeadType;
+  planKey?: string;
   clinicName?: string;
   name: string;
   email: string;
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
     try {
       const record = await prisma.orm.public.Lead.create({
         type: typeMap[body.type],
+        planKey: body.planKey ?? null,
         clinicName: body.clinicName ?? null,
         name: body.name,
         email: body.email,

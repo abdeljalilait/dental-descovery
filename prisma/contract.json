@@ -1670,6 +1670,13 @@
                   "kind": "scalar"
                 }
               },
+              "planKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "status": {
                 "nullable": false,
                 "type": {
@@ -1741,6 +1748,9 @@
                 },
                 "phone": {
                   "column": "phone"
+                },
+                "planKey": {
+                  "column": "planKey"
                 },
                 "status": {
                   "column": "status"
@@ -3665,6 +3675,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "planKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "status": {
                   "codecId": "pg/text@1",
                   "default": {
@@ -4257,7 +4272,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1624c4c81abcc6f75f674ef1a6d14b6484e9ff6728ec7ae14de7b606dd15ec94"
+    "storageHash": "2d3fafc52d2b5af0e956db2e95ae850602d7c41b31eb72f5326a57320576cf65"
   },
   "execution": {
     "executionHash": "22eb9fcfc80d2f97866a5557352f5b9c660098582506d995f0b2646224f000ee",

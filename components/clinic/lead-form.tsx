@@ -49,6 +49,7 @@ export function LeadForm({
   type,
   labels,
   locale = "fr",
+  planKey,
   clinicName,
   showClinicName = true,
   showCity = true,
@@ -62,6 +63,7 @@ export function LeadForm({
   type: "app-demo" | "website-quote" | "clinic-claim" | "contact";
   labels?: LeadFormLabels;
   locale?: Locale;
+  planKey?: string;
   clinicName?: string;
   showClinicName?: boolean;
   showCity?: boolean;
@@ -83,6 +85,7 @@ export function LeadForm({
     const data = new FormData(form);
     const payload = {
       type,
+      planKey,
       clinicName: (data.get("clinicName") as string) || clinicName || undefined,
       name: data.get("name") as string,
       email: data.get("email") as string,

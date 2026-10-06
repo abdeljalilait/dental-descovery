@@ -44,6 +44,7 @@ export default async function AdminLeadsPage() {
             <tr className="border-b border-border">
               <th className="p-3 text-left">Date</th>
               <th className="p-3 text-left">Type</th>
+              <th className="p-3 text-left">Plan</th>
               <th className="p-3 text-left">Name</th>
               <th className="p-3 text-left">Email</th>
               <th className="p-3 text-left">Phone</th>
@@ -56,6 +57,7 @@ export default async function AdminLeadsPage() {
               <tr key={lead.id} className="border-b border-border last:border-0">
                 <td className="p-3 text-muted">{String(lead.createdAt ?? "").split("T")[0]}</td>
                 <td className="p-3">{lead.type ?? "-"}</td>
+                <td className="p-3">{lead.planKey ?? "-"}</td>
                 <td className="p-3 font-medium">{lead.name ?? "-"}</td>
                 <td className="p-3">{lead.email ?? "-"}</td>
                 <td className="p-3">{lead.phone ?? "-"}</td>
@@ -65,7 +67,7 @@ export default async function AdminLeadsPage() {
             ))}
             {leads.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-4 text-center text-muted">
+                <td colSpan={8} className="p-4 text-center text-muted">
                   No leads yet.
                 </td>
               </tr>

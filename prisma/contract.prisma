@@ -99,6 +99,7 @@ model Lead {
   type        String   // APP_DEMO, WEBSITE_QUOTE, CLINIC_CLAIM, CONTACT
   clinicId    String?
   clinic      Clinic?  @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  planKey     String?
   clinicName  String?
   name        String
   email       String
@@ -335,4 +336,3 @@ model WhatsAppTemplate {
   @@index([status])
   @@map("whatsapp_templates")
 }
-

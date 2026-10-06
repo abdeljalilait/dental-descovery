@@ -73,6 +73,7 @@ export function PricingPlans({
             <LeadModal
               type={plan.leadType}
               locale={locale}
+              planKey={plan.key}
               trigger={
                 <button
                   type="button"
