@@ -6,7 +6,11 @@ import {
   type JobRunStatus,
   updateJobRunProgressDb,
 } from "@/lib/repositories/job-runs";
-import { syncAllCities, upsertClinicsToDatabase } from "@/lib/services/serpapi";
+import {
+  syncAllCities,
+  upsertClinicsToDatabase,
+  type SyncedClinicSummary,
+} from "@/lib/services/serpapi";
 
 export interface SyncRunOptions {
   city?: string;
@@ -61,7 +65,7 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
   });
 
   const allClinics = report_.details.flatMap((d) => d.clinics);
-  let syncedClinics = [];
+  let syncedClinics: SyncedClinicSummary[] = [];
   if (allClinics.length > 0) {
     const upsertRes = await upsertClinicsToDatabase(allClinics);
     syncedClinics = upsertRes.syncedClinics;
