@@ -116,9 +116,9 @@ export function SyncedClinicsModal({
                     key={index}
                     className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-surface px-2.5 py-1 font-mono text-[11px] font-semibold text-foreground shadow-2xs"
                   >
-                    <span className="text-primary font-bold">"</span>
+                    <span className="text-primary font-bold">&quot;</span>
                     <span>{query}</span>
-                    <span className="text-primary font-bold">"</span>
+                    <span className="text-primary font-bold">&quot;</span>
                   </span>
                 ))}
               </div>
