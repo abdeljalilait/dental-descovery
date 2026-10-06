@@ -1,7 +1,10 @@
 import prisma from "@/lib/prisma";
 import type { ResultType } from "@prisma/orm-postgres/components/runtime";
 import type { JsonValue } from "@prisma/orm-framework/contract";
-import { toInstant } from "@/src/prisma/codecs";
+import { toInstant, toJson } from "@/src/prisma/codecs";
+import type { SyncedClinicSummary } from "@/lib/services/serpapi";
+
+export type { SyncedClinicSummary };
 
 /**
  * Admin-triggered batch runs (WhatsApp campaign, SerpApi sync).
@@ -34,6 +37,48 @@ export function parseJobErrors(raw: unknown): string[] {
       return [raw];
     } catch {
       return [raw];
+    }
+  }
+  return [];
+}
+
+export function parseSyncedClinics(raw: unknown): SyncedClinicSummary[] {
+  if (!raw) return [];
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (typeof raw === "object" && raw !== null && "syncedClinics" in raw) {
+    const list = (raw as Record<string, unknown>).syncedClinics;
+    if (Array.isArray(list)) return list as SyncedClinicSummary[];
+  }
+  return [];
+}
+
+export function parseSearchQueries(raw: unknown): string[] {
+  if (!raw) return [];
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (typeof raw === "object" && raw !== null) {
+    const obj = raw as Record<string, unknown>;
+    if (Array.isArray(obj.searchQueries) && obj.searchQueries.length > 0) {
+      return obj.searchQueries as string[];
+    }
+    // Reconstruct from keywords and city if available in params
+    if (Array.isArray(obj.keywords) && obj.keywords.length > 0) {
+      const kws = obj.keywords as string[];
+      if (typeof obj.city === "string" && obj.city) {
+        return kws.map((k) => `${k} ${obj.city} maroc`);
+      }
+      return kws;
     }
   }
   return [];
@@ -74,6 +119,10 @@ export interface JobRunProgress extends JobRunCounters {
   status?: JobRunStatus;
   /** Error messages or failure details. */
   errors?: string[];
+  /** Synced clinic summaries to inspect in admin modal. */
+  syncedClinics?: SyncedClinicSummary[];
+  /** Search queries used by the SerpApi job. */
+  searchQueries?: string[];
 }
 
 /**
@@ -93,6 +142,20 @@ function isStale(updatedAt: unknown): boolean {
 }
 
 export async function updateJobRunProgressDb(id: string, progress: JobRunProgress): Promise<void> {
+  let paramsValue = undefined;
+  if (
+    (progress.syncedClinics && progress.syncedClinics.length > 0) ||
+    (progress.searchQueries && progress.searchQueries.length > 0)
+  ) {
+    const existing = await jobRuns().where({ id }).first();
+    const existingParams = (existing?.params as Record<string, unknown> | null) ?? {};
+    paramsValue = toJson({
+      ...existingParams,
+      ...(progress.syncedClinics ? { syncedClinics: progress.syncedClinics } : {}),
+      ...(progress.searchQueries ? { searchQueries: progress.searchQueries } : {}),
+    });
+  }
+
   await jobRuns()
     .where({ id })
     .update({
@@ -106,7 +169,8 @@ export async function updateJobRunProgressDb(id: string, progress: JobRunProgres
       status: progress.status,
       // Omitted on intermediate ticks, so the newest message is never wiped.
       message: progress.message,
-      errors: progress.errors !== undefined ? progress.errors : undefined,
+      errors: progress.errors !== undefined ? toJson(progress.errors) : undefined,
+      params: paramsValue,
     });
 }
 

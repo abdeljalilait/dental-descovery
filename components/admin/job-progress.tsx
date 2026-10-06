@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle, Building2, ChevronDown } from "lucide-react";
+import { SyncedClinicsModal } from "@/components/admin/synced-clinics-modal";
+import type { SyncedClinicSummary } from "@/lib/repositories/job-runs";
 
 export interface JobRunView {
   id: string;
@@ -15,6 +17,8 @@ export interface JobRunView {
   skipped: number;
   message: string | null;
   errors?: string[] | null;
+  syncedClinics?: SyncedClinicSummary[] | null;
+  searchQueries?: string[] | null;
   finishedAt: string | null;
 }
 
@@ -28,6 +32,7 @@ const POLL_INTERVAL_MS = 2000;
  */
 export function JobProgress({ initialRun }: { initialRun: JobRunView }) {
   const [run, setRun] = useState(initialRun);
+  const [showClinicsModal, setShowClinicsModal] = useState(false);
   const [showErrors, setShowErrors] = useState(
     (initialRun.failed > 0 || initialRun.status === "FAILED") &&
       Boolean(initialRun.errors?.length || initialRun.message),
@@ -44,6 +49,14 @@ export function JobProgress({ initialRun }: { initialRun: JobRunView }) {
         setRun(data);
         if (data.failed > 0 || (data.errors && data.errors.length > 0)) {
           setShowErrors(true);
+        }
+        if (
+          data.status === "COMPLETED" &&
+          run.status === "RUNNING" &&
+          data.syncedClinics &&
+          data.syncedClinics.length > 0
+        ) {
+          setShowClinicsModal(true);
         }
       } catch {
         // A transient poll failure must not stop the UI from retrying.
@@ -97,17 +110,30 @@ export function JobProgress({ initialRun }: { initialRun: JobRunView }) {
 
       {run.message ? <p className="mt-1 text-xs text-muted">{run.message}</p> : null}
 
-      {hasErrors && !showErrors ? (
-        <button
-          type="button"
-          onClick={() => setShowErrors(true)}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-        >
-          <AlertCircle className="h-3.5 w-3.5 text-red-600 shrink-0" />
-          <span>Show errors ({errorList.length})</span>
-          <ChevronDown className="h-3.5 w-3.5" />
-        </button>
-      ) : null}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {run.syncedClinics && run.syncedClinics.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setShowClinicsModal(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary-soft/80 px-2.5 py-1 text-xs font-bold text-primary hover:bg-primary-soft hover:border-primary/40 transition-colors shadow-2xs"
+          >
+            <Building2 className="h-3.5 w-3.5 shrink-0" />
+            <span>Voir les cliniques synchronisées ({run.syncedClinics.length})</span>
+          </button>
+        ) : null}
+
+        {hasErrors && !showErrors ? (
+          <button
+            type="button"
+            onClick={() => setShowErrors(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+          >
+            <AlertCircle className="h-3.5 w-3.5 text-red-600 shrink-0" />
+            <span>Show errors ({errorList.length})</span>
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+      </div>
 
       {hasErrors && showErrors ? (
         <div className="mt-3 rounded-xl border border-red-200 bg-red-50/80 p-3 text-xs text-red-900">
@@ -136,6 +162,16 @@ export function JobProgress({ initialRun }: { initialRun: JobRunView }) {
             ))}
           </ul>
         </div>
+      ) : null}
+
+      {run.syncedClinics && run.syncedClinics.length > 0 ? (
+        <SyncedClinicsModal
+          open={showClinicsModal}
+          onOpenChange={setShowClinicsModal}
+          clinics={run.syncedClinics}
+          searchQueries={run.searchQueries ?? []}
+          jobMessage={run.message}
+        />
       ) : null}
     </div>
   );

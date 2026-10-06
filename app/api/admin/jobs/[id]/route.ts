@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin/auth";
-import { getJobRunDb, parseJobErrors } from "@/lib/repositories/job-runs";
+import {
+  getJobRunDb,
+  parseJobErrors,
+  parseSearchQueries,
+  parseSyncedClinics,
+} from "@/lib/repositories/job-runs";
 
 /**
  * Live progress for one admin-triggered run.
@@ -24,6 +29,8 @@ export async function GET(
   }
 
   const errors = parseJobErrors(run.errors);
+  const syncedClinics = parseSyncedClinics(run.params);
+  const searchQueries = parseSearchQueries(run.params);
 
   return NextResponse.json({
     id: run.id,
@@ -36,6 +43,8 @@ export async function GET(
     skipped: run.skipped,
     message: run.message,
     errors,
+    syncedClinics,
+    searchQueries,
     createdAt: String(run.createdAt ?? ""),
     finishedAt: run.finishedAt ? String(run.finishedAt) : null,
   });

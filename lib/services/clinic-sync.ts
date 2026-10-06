@@ -1,4 +1,5 @@
 import { cities } from "@/lib/data/cities";
+import { PRIMARY_DENTAL_KEYWORDS } from "@/lib/services/serpapi-core.mjs";
 import {
   type JobRunCounters,
   type JobRunProgress,
@@ -60,8 +61,10 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
   });
 
   const allClinics = report_.details.flatMap((d) => d.clinics);
+  let syncedClinics = [];
   if (allClinics.length > 0) {
-    await upsertClinicsToDatabase(allClinics);
+    const upsertRes = await upsertClinicsToDatabase(allClinics);
+    syncedClinics = upsertRes.syncedClinics;
   }
 
   const syncErrors = report_.details
@@ -79,11 +82,20 @@ export async function runClinicSync(options: SyncRunOptions = {}): Promise<SyncR
   const status: JobRunStatus =
     counters.total > 0 && counters.failed === counters.total ? "FAILED" : "COMPLETED";
 
+  const targetCities = cityFilter ? cities.filter((c) => cityFilter.includes(c.slug)) : cities;
+  const effectiveKeywords =
+    options.keywords && options.keywords.length > 0 ? options.keywords : PRIMARY_DENTAL_KEYWORDS;
+  const searchQueries = targetCities.flatMap((c) =>
+    effectiveKeywords.map((k) => `${k} ${c.name} maroc`),
+  );
+
   await report(options.jobRunId, {
     ...counters,
     status,
-    message: `${report_.totalClinics} clinics from ${report_.searchesUsed} searches`,
+    message: `${report_.totalClinics} clinics from ${report_.searchesUsed} searches (${syncedClinics.length} saved)`,
     errors: syncErrors.length > 0 ? syncErrors : undefined,
+    syncedClinics,
+    searchQueries,
   });
 
   return {

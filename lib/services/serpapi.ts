@@ -304,12 +304,26 @@ export async function syncAllCities(options?: {
   })) as SyncReport;
 }
 
+export interface SyncedClinicSummary {
+  name: string;
+  slug: string;
+  citySlug: string;
+  phone?: string | null;
+  address?: string | null;
+  rating?: number | null;
+  reviewCount?: number | null;
+  action: "created" | "updated";
+}
+
 /**
  * Upsert synced clinics into PostgreSQL via Prisma
  */
-export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ count: number }> {
-  if (!process.env.DATABASE_URL) return { count: 0 };
+export async function upsertClinicsToDatabase(
+  clinics: Clinic[],
+): Promise<{ count: number; syncedClinics: SyncedClinicSummary[] }> {
+  if (!process.env.DATABASE_URL) return { count: 0, syncedClinics: [] };
   let count = 0;
+  const syncedClinics: SyncedClinicSummary[] = [];
 
   for (const clinic of clinics) {
     try {
@@ -448,10 +462,23 @@ export async function upsertClinicsToDatabase(clinics: Clinic[]): Promise<{ coun
           });
         }
       }
+      syncedClinics.push({
+        name: clinic.name,
+        slug: slugToUse,
+        citySlug: clinic.citySlug,
+        phone: clinic.phone ?? existing?.phone ?? null,
+        address: clinic.address?.fr || clinic.address?.ar || null,
+        rating: clinic.rating ?? existing?.rating ?? null,
+        reviewCount: Math.max(
+          Number(existing?.reviewCount ?? 0),
+          Number(clinic.reviewCount ?? 0),
+        ),
+        action: existing ? "updated" : "created",
+      });
       count++;
     } catch (e) {
       console.error(`[DB] Failed to upsert clinic ${clinic.slug}:`, e);
     }
   }
-  return { count };
+  return { count, syncedClinics };
 }

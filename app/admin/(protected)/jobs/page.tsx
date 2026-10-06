@@ -21,6 +21,8 @@ import {
   getCampaignDeliverySummaryDb,
   listJobRunsDb,
   parseJobErrors,
+  parseSearchQueries,
+  parseSyncedClinics,
   reapStaleJobRunsDb,
 } from "@/lib/repositories/job-runs";
 
@@ -45,6 +47,7 @@ function toView(run: {
   skipped: number;
   message: string | null;
   errors?: unknown;
+  params?: unknown;
   finishedAt: unknown;
 }): JobRunView {
   return {
@@ -58,6 +61,8 @@ function toView(run: {
     skipped: run.skipped ?? 0,
     message: run.message,
     errors: parseJobErrors(run.errors),
+    syncedClinics: parseSyncedClinics(run.params),
+    searchQueries: parseSearchQueries(run.params),
     finishedAt: run.finishedAt ? String(run.finishedAt) : null,
   };
 }
