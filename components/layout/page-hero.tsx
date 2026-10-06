@@ -15,7 +15,7 @@ export function PageHero({
 }: {
   eyebrow?: string;
   title: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   crumbs?: Crumb[];
   children?: React.ReactNode;
 }) {
@@ -62,7 +62,7 @@ export function PageHero({
           </div>
         ) : null}
         <h1 className="display-heading mt-4 max-w-3xl text-balance text-3xl sm:text-4xl lg:text-5xl font-black">{title}</h1>
-        {subtitle ? <p className="mt-4 max-w-2xl text-pretty text-sm sm:text-base leading-relaxed text-white/85">{subtitle}</p> : null}
+        {subtitle ? <div className="mt-4 max-w-2xl text-pretty text-sm sm:text-base leading-relaxed text-white/85">{subtitle}</div> : null}
         {children ? <div className="mt-8">{children}</div> : null}
       </div>
     </section>

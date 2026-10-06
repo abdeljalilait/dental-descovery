@@ -76,7 +76,12 @@ export default async function ClinicPage({
       <PageHero
         eyebrow={cityName}
         title={clinicName}
-        subtitle={clinic.neighborhood[locale]}
+        subtitle={
+          <span className="inline-flex items-start gap-1.5">
+            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/80" strokeWidth={1.8} aria-hidden />
+            <span>{clinic.address[locale] || clinic.address.fr || clinic.neighborhood[locale]}</span>
+          </span>
+        }
         crumbs={[
           { label: dict.nav.home, href: `/${locale}` },
           { label: dict.nav.dentists, href: localizedPath("dentists", locale) },
