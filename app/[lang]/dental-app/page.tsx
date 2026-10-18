@@ -8,6 +8,9 @@ import { Section, SectionHeading } from "@/components/ui/section";
 import { LeadForm } from "@/components/clinic/lead-form";
 import { FaqSection } from "@/components/landing/faq-section";
 import { localizedPath } from "@/lib/routes";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
+import { StructuredData } from "@/components/seo/structured-data";
+import { breadcrumbSchema, graph, organizationSchema, softwareApplicationSchema, websiteSchema } from "@/lib/seo/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -19,14 +22,7 @@ export async function generateMetadata({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  return {
-    title: { absolute: `Dental App — ${dict.appSection.title}` },
-    description: dict.appSection.subtitle,
-    alternates: {
-      canonical: localizedPath("app", locale),
-      languages: { fr: localizedPath("app", "fr"), ar: localizedPath("app", "ar"), "x-default": localizedPath("app", locale) },
-    },
-  };
+  return buildDynamicMetadata({ routeKey: "app", locale, defaultTitle: `Dental App — ${dict.appSection.title}`, defaultDescription: dict.appSection.subtitle, canonicalPath: localizedPath("app", locale) });
 }
 
 import { InteractiveAppStudio } from "@/components/landing/interactive-app-studio";
@@ -45,6 +41,17 @@ export default async function DentalAppPage({
 
   return (
     <>
+      <StructuredData
+        data={graph(
+          websiteSchema(locale),
+          organizationSchema(),
+          softwareApplicationSchema(locale),
+          breadcrumbSchema([
+            { name: dict.nav.home, path: `/${locale}` },
+            { name: dict.nav.app, path: localizedPath("app", locale) },
+          ])
+        )}
+      />
       <PageHero
         eyebrow={dict.appPage.eyebrow}
         title={dict.appPage.title}

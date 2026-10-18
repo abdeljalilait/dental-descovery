@@ -60,7 +60,10 @@ export function Header({ locale, nav }: { locale: Locale; nav: HeaderNav }) {
             type="clinic-claim"
             locale={locale}
             trigger={
-              <button className="inline-flex h-9.5 cursor-pointer items-center gap-1.5 rounded-pill bg-primary px-4 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift">
+              <button
+                type="button"
+                className="inline-flex h-9.5 cursor-pointer items-center gap-1.5 rounded-pill bg-primary px-4 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift"
+              >
                 <Building2 className="h-3.5 w-3.5 text-accent" />
                 <span>{nav.listClinic}</span>
               </button>
@@ -74,6 +77,7 @@ export function Header({ locale, nav }: { locale: Locale; nav: HeaderNav }) {
             type="button"
             onClick={() => setOpen(!open)}
             aria-expanded={open}
+            aria-controls="mobile-menu"
             aria-label={open ? nav.close : nav.menu}
             className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-pill border border-border bg-surface text-foreground"
           >
@@ -106,6 +110,7 @@ export function Header({ locale, nav }: { locale: Locale; nav: HeaderNav }) {
               locale={locale}
               trigger={
                 <button
+                  type="button"
                   onClick={() => setOpen(false)}
                   className="w-full inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary text-base font-bold text-white shadow-lift"
                 >

@@ -4,13 +4,14 @@
  * Kept as a plain presentational component so both the campaign and the sync
  * panels can render the same bar without pulling in client state.
  */
-export function ProgressBar({ percent }: { percent: number }) {
+export function ProgressBar({ percent, label }: { percent: number; label?: string }) {
   const clamped = Math.max(0, Math.min(100, percent));
 
   return (
     <div
       className="h-2 w-full overflow-hidden rounded-full bg-surface-subtle"
       role="progressbar"
+      aria-label={label ?? "Progression"}
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}

@@ -70,7 +70,10 @@ export function InteractiveAppStudio({
               type="app-demo"
               locale={locale}
               trigger={
-                <button className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift w-full sm:w-auto">
+                <button
+                  type="button"
+                  className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift w-full sm:w-auto"
+                >
                   <Play className="h-3.5 w-3.5 text-accent" />
                   <span>{isAr ? "طلب تجربة كاملة" : "Essayer en direct"}</span>
                 </button>
@@ -132,6 +135,7 @@ export function InteractiveAppStudio({
                 {/* Prompt Actions */}
                 <div className="flex flex-wrap gap-2 mb-5">
                   <button
+                    type="button"
                     onClick={() => setCopilotAction("briefing")}
                     className={cn(
                       "inline-flex cursor-pointer items-center gap-1.5 rounded-pill px-3.5 py-1.5 text-xs font-bold transition-all",
@@ -144,6 +148,7 @@ export function InteractiveAppStudio({
                     <span>{isAr ? "ملخص صباحي للعيادة" : "Briefing Matinal"}</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setCopilotAction("slot")}
                     className={cn(
                       "inline-flex cursor-pointer items-center gap-1.5 rounded-pill px-3.5 py-1.5 text-xs font-bold transition-all",
@@ -156,6 +161,7 @@ export function InteractiveAppStudio({
                     <span>{isAr ? "ملء إلغاء الساعة 15:00" : "Remplir Créneau Annulé (15h)"}</span>
                   </button>
                   <button
+                    type="button"
                     onClick={() => setCopilotAction("quotes")}
                     className={cn(
                       "inline-flex cursor-pointer items-center gap-1.5 rounded-pill px-3.5 py-1.5 text-xs font-bold transition-all",
@@ -428,7 +434,10 @@ export function InteractiveAppStudio({
                           <Tooltip key={t.id}>
                             <TooltipTrigger asChild>
                               <button
+                                type="button"
                                 onClick={() => setSelectedTooth(t.id)}
+                                aria-label={`Dent #${t.id} : ${t.name} (${t.status === "implant" ? "Implant" : t.status === "treatment" ? "Soin" : "Sain"})`}
+                                aria-pressed={isSelected}
                                 className={cn(
                                   "flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all cursor-pointer",
                                   isSelected
@@ -524,7 +533,9 @@ export function InteractiveAppStudio({
                     </p>
                     <div className="mt-3 flex gap-2">
                       <button
+                        type="button"
                         onClick={() => setWhatsappSent(true)}
+                        aria-label={whatsappSent ? (isAr ? "تم تأكيد الموعد" : "Rendez-vous confirmé") : (isAr ? "تأكيد الموعد" : "Confirmer le rendez-vous")}
                         className="flex-1 rounded-lg bg-emerald-600 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                       >
                         <CheckCircle2 className="h-3.5 w-3.5" />

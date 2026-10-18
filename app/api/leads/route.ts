@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { clientKey, createRateLimiter } from "@/lib/rate-limit";
 
 type ClientLeadType = "app-demo" | "website-quote" | "clinic-claim" | "contact";
+
+/** Caps lead-post spam per caller without blocking a genuine visitor retrying. */
+const perCaller = createRateLimiter({ limit: 6, windowMs: 10 * 60 * 1000 });
 
 /**
  * `Lead.type` is a `text` column in the contract, so the allowed values are a
@@ -29,6 +33,10 @@ const typeMap: Record<ClientLeadType, LeadTypeValue> = {
 };
 
 export async function POST(request: Request) {
+  if (!perCaller.check(clientKey(request)).allowed) {
+    return NextResponse.json({ ok: false, error: "Too many requests" }, { status: 429 });
+  }
+
   let body: LeadPayload;
   try {
     body = (await request.json()) as LeadPayload;
@@ -68,7 +76,17 @@ export async function POST(request: Request) {
     }
   }
 
-  console.log("[lead captured]", JSON.stringify({ ...body, leadId, timestamp: new Date().toISOString() }));
+  // Log the lead id and type only: the payload carries personal data (name,
+  // email, phone) and stdout is not an appropriate store for it.
+  console.log(
+    "[lead captured]",
+    JSON.stringify({
+      type: body.type,
+      planKey: body.planKey ?? null,
+      leadId,
+      timestamp: new Date().toISOString(),
+    }),
+  );
 
   return NextResponse.json({ ok: true, leadId });
 }

@@ -54,7 +54,10 @@ export function FinalCtaSection({ locale, dict }: { locale: Locale; dict: Dictio
                 type="app-demo"
                 locale={locale}
                 trigger={
-                  <button className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-white px-8 h-12 text-base font-extrabold text-primary-dark shadow-lift transition-all hover:bg-white/90 hover:scale-[1.02]">
+                  <button
+                    type="button"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-white px-8 h-12 text-base font-extrabold text-primary-dark shadow-lift transition-all hover:bg-white/90 hover:scale-[1.02]"
+                  >
                     <Building2 className="h-4.5 w-4.5 text-accent" strokeWidth={2} />
                     <span>{dict.finalCta.clinicCta}</span>
                   </button>

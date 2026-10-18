@@ -21,10 +21,6 @@ export default function ClinicLoginPage() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (res.status === 404 && data.contact) {
-        setMsg("Aucun cabinet trouvé avec cet email. Contactez-nous pour corriger votre email.");
-        return;
-      }
       if (!res.ok) throw new Error(data.error || "Erreur");
       router.push(`/pour-les-cliniques/verify?email=${encodeURIComponent(email)}`);
     } catch (err) {

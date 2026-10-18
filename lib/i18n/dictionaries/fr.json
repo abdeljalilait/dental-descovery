@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Dentora — Trouvez un dentiste de confiance au Maroc",
-    "description": "Annuaire des dentistes et cliniques dentaires au Maroc : Tanger, Casablanca, Rabat, Marrakech et tout le Royaume. Avis, spécialités, contact direct."
+    "title": "Dentora — Annuaire des dentistes et logiciel dentaire au Maroc",
+    "description": "Dentora réunit un annuaire de dentistes au Maroc pour les patients et un logiciel de gestion de cabinet dentaire pour les praticiens."
   },
   "nav": {
     "home": "Accueil",
@@ -45,10 +45,10 @@
     "skipToContent": "Aller au contenu"
   },
   "hero": {
-    "eyebrow": "Annuaire dentaire du Maroc",
-    "title": "Trouvez un dentiste de confiance",
-    "titleHighlight": "près de chez vous",
-    "subtitle": "Comparez les cliniques dentaires de votre ville : avis, spécialités, horaires et contact direct. Gratuit, sans inscription.",
+    "eyebrow": "Annuaire dentaire et logiciel de gestion au Maroc",
+    "title": "Trouvez un dentiste au Maroc",
+    "titleHighlight": "ou gérez votre cabinet avec Dental App",
+    "subtitle": "Dentora aide les patients à trouver et contacter des cliniques dentaires, et accompagne les dentistes avec un logiciel de gestion conçu pour leur cabinet.",
     "popularCities": "Villes populaires :",
     "verifiedReviews": "avis vérifiés",
     "citiesCoverage": "villes du Maroc",
@@ -251,6 +251,11 @@
     "faqTitle": "Questions fréquentes",
     "relatedTreatments": "Traitements populaires à"
   },
+  "cityBridge": {
+    "title": "Vous êtes dentiste dans cette ville ?",
+    "description": "Reprenez le contrôle de votre fiche Dentora, puis découvrez Dental App pour gérer l'agenda, les dossiers patients et les rappels de votre cabinet.",
+    "cta": "Découvrir le logiciel Dental App"
+  },
   "clinicPage": {
     "aboutTitle": "À propos de la clinique",
     "requestAppointment": "Demander un rendez-vous",
@@ -274,8 +279,8 @@
   },
   "appPage": {
     "eyebrow": "Dental App",
-    "title": "Le cabinet dentaire, orchestré",
-    "subtitle": "Rendez-vous, agenda, dossiers patients et rappels : Dental App connecte votre cabinet aux patients de l'annuaire Dentora.",
+    "title": "Logiciel de gestion de cabinet dentaire au Maroc",
+    "subtitle": "Dental App est le logiciel dentaire Dentora pour gérer rendez-vous, agenda, dossiers patients et rappels, tout en reliant votre cabinet aux patients de l'annuaire marocain.",
     "workflowTitle": "Votre journée type avec Dental App",
     "workflow": [
       {

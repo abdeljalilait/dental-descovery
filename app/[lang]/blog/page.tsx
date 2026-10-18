@@ -9,6 +9,8 @@ import { Section } from "@/components/ui/section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 import { getBlogArticlesDb } from "@/lib/repositories/blog";
 import { buildDynamicMetadata } from "@/lib/seo/page-seo";
+import { StructuredData } from "@/components/seo/structured-data";
+import { breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
 import { blogPostPath, localizedPath } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +47,15 @@ export default async function BlogPage({
 
   return (
     <>
+      <StructuredData
+        data={graph(
+          websiteSchema(locale),
+          breadcrumbSchema([
+            { name: dict.nav.home, path: `/${locale}` },
+            { name: dict.nav.blog, path: localizedPath("blog", locale) },
+          ])
+        )}
+      />
       <PageHero
         eyebrow={dict.blogSection.eyebrow}
         title={dict.blogPage.title}

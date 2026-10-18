@@ -8,6 +8,9 @@ import { Section } from "@/components/ui/section";
 import { LeadForm } from "@/components/clinic/lead-form";
 import { AppPromoSection } from "@/components/landing/app-promo";
 import { localizedPath } from "@/lib/routes";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
+import { StructuredData } from "@/components/seo/structured-data";
+import { breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -19,14 +22,7 @@ export async function generateMetadata({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  return {
-    title: { absolute: `${dict.forClinicsPage.eyebrow} — ${dict.forClinicsPage.title}` },
-    description: dict.forClinicsPage.subtitle,
-    alternates: {
-      canonical: localizedPath("forClinics", locale),
-      languages: { fr: localizedPath("forClinics", "fr"), ar: localizedPath("forClinics", "ar"), "x-default": localizedPath("forClinics", locale) },
-    },
-  };
+  return buildDynamicMetadata({ routeKey: "forClinics", locale, defaultTitle: `${dict.forClinicsPage.eyebrow} — ${dict.forClinicsPage.title}`, defaultDescription: dict.forClinicsPage.subtitle, canonicalPath: localizedPath("forClinics", locale) });
 }
 
 export default async function ForClinicsPage({
@@ -40,6 +36,15 @@ export default async function ForClinicsPage({
 
   return (
     <>
+      <StructuredData
+        data={graph(
+          websiteSchema(locale),
+          breadcrumbSchema([
+            { name: dict.nav.home, path: `/${locale}` },
+            { name: dict.nav.forClinics, path: localizedPath("forClinics", locale) },
+          ])
+        )}
+      />
       <PageHero
         eyebrow={dict.forClinicsPage.eyebrow}
         title={dict.forClinicsPage.title}

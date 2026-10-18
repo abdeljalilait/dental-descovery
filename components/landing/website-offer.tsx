@@ -63,7 +63,10 @@ export function WebsiteOfferSection({ locale, dict }: { locale: Locale; dict: Di
             type="website-quote"
             locale={locale}
             trigger={
-              <button className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary px-6 h-12 text-base font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift">
+              <button
+                type="button"
+                className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-primary px-6 h-12 text-base font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift"
+              >
                 <Globe className="h-4.5 w-4.5 text-accent" strokeWidth={1.8} />
                 <span>{locale === "ar" ? "طلب موقع مخصص لعيادتي" : "Demander un devis site web"}</span>
               </button>

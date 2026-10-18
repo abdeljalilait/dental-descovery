@@ -24,6 +24,7 @@ export async function ClinicCard({
   const href = clinicPath(locale, clinic.citySlug, clinic.slug);
   // Specialties arrive resolved on the clinic row, so no per-card lookup.
   const firstSpecialty = clinic.specialties[0];
+  const clinicName = locale === "ar" ? clinic.nameAr : clinic.name;
 
   return (
     <article
@@ -32,7 +33,7 @@ export async function ClinicCard({
         className
       )}
     >
-      <Link href={href} className="block" aria-label={clinic.name}>
+      <Link href={href} className="block" aria-label={clinicName}>
         <div className="relative flex h-32 items-end justify-between overflow-hidden bg-gradient-to-br from-primary-dark via-primary to-primary-light p-4 text-white">
           <div
             className="absolute inset-0 bg-grid-subtle opacity-15"
@@ -93,6 +94,7 @@ export async function ClinicCard({
           {clinic.phoneHref ? (
             <a
               href={`tel:${clinic.phoneHref}`}
+              aria-label={`${dict.callNow} — ${clinicName}`}
               className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-pill border border-border bg-surface text-xs sm:text-sm font-bold text-foreground transition-all hover:border-primary hover:text-primary hover:bg-primary-soft/50"
             >
               <Phone className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
@@ -101,6 +103,7 @@ export async function ClinicCard({
           ) : null}
           <Link
             href={href}
+            aria-label={`${dict.viewProfile} — ${clinicName}`}
             className="inline-flex h-10 flex-1 items-center justify-center rounded-pill bg-primary text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:bg-primary-dark hover:shadow-lift"
           >
             {dict.viewProfile}

@@ -18,6 +18,8 @@ import { getClinicsByCityDb } from "@/lib/repositories/clinics";
 import { getClinicCountByCityDb } from "@/lib/repositories/stats";
 import { getSpecialtiesDb } from "@/lib/repositories/specialties";
 import { cityPath, localizedPath, treatmentPath } from "@/lib/routes";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
+import { citySeoRouteKey } from "@/lib/seo/page-seo-routes";
 import { cn } from "@/lib/utils/cn";
 
 export const dynamic = "force-dynamic";
@@ -32,14 +34,13 @@ export async function generateMetadata({
   if (!city) return {};
   const locale = (locales as readonly string[]).includes(localeValue) ? (localeValue as Locale) : "fr";
   const inCity = locale === "ar" ? `أطباء الأسنان في ${city.nameAr}` : `Dentistes à ${city.name}`;
-  return {
-    title: { absolute: `${inCity} — ${locale === "ar" ? "دليل العيادات" : "Annuaire des cliniques"}` },
-    description: city.seoIntro[locale],
-    alternates: {
-      canonical: cityPath(locale, city.slug),
-      languages: { fr: cityPath("fr", city.slug), ar: cityPath("ar", city.slug), "x-default": cityPath(locale, city.slug) },
-    },
-  };
+  return buildDynamicMetadata({
+    routeKey: citySeoRouteKey(city.slug),
+    locale,
+    defaultTitle: `${inCity} — ${locale === "ar" ? "دليل العيادات" : "Annuaire des cliniques"}`,
+    defaultDescription: city.seoIntro[locale],
+    canonicalPath: cityPath(locale, city.slug),
+  });
 }
 
 export default async function CityDentistsPage({
@@ -64,6 +65,10 @@ export default async function CityDentistsPage({
     getClinicCountByCityDb(),
   ]);
   const activeSpecialty = spec && specialties.some((s) => s.slug === spec) ? spec : null;
+  const citySpecialties = specialties
+    .map((specialty) => ({ specialty, count: allClinics.filter((clinic) => clinic.specialtySlugs.includes(specialty.slug)).length }))
+    .filter((item) => item.count > 0)
+    .sort((a, b) => b.count - a.count);
   const clinics = activeSpecialty
     ? allClinics.filter((c) => c.specialtySlugs.includes(activeSpecialty))
     : allClinics;
@@ -183,18 +188,25 @@ export default async function CityDentistsPage({
               {dict.dentistsPage.relatedTreatments} {cityName}
             </h2>
             <ul className="mt-4 flex flex-wrap gap-2">
-              {specialties.slice(0, 6).map((specialty) => (
+              {citySpecialties.slice(0, 6).map(({ specialty, count }) => (
                 <li key={specialty.slug}>
                   <Link
                     href={`${treatmentPath(locale, specialty.slug)}`}
                     className="inline-flex items-center gap-1.5 rounded-pill border border-border bg-background px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/50 hover:text-primary"
                   >
                     <Check className="h-3.5 w-3.5 text-accent" strokeWidth={2.5} aria-hidden />
-                    {specialty.name[locale]}
+                    {specialty.name[locale]} <span className="text-muted">({count})</span>
                   </Link>
                 </li>
               ))}
             </ul>
+          </div>
+          <div className="mt-8 rounded-card bg-primary-soft p-6 sm:p-8">
+            <h2 className="text-xl font-bold text-primary-dark">{dict.cityBridge.title}</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{dict.cityBridge.description}</p>
+            <Link href={localizedPath("app", locale)} className="mt-4 inline-flex rounded-pill bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-dark">
+              {dict.cityBridge.cta}
+            </Link>
           </div>
         </Container>
       </Section>

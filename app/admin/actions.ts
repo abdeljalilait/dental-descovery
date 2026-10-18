@@ -19,6 +19,8 @@ import {
 } from "@/lib/repositories/blog";
 import type { BlogPostInput, PageSeoInput } from "@/lib/data/types";
 import type { PageBlockInput } from "@/lib/repositories/blog";
+import { staticSeoRoutes } from "@/lib/seo/page-seo-routes";
+import { getCityDb } from "@/lib/repositories/cities";
 import { isBlogPostStatus } from "@/lib/data/types";
 import {
   endAdminSession,
@@ -67,6 +69,9 @@ function revalidateListing(routeKey?: string): void {
     if (routeKey) {
       if (routeKey in routes) {
         revalidatePath(localizedPath(routeKey as RouteKey, locale));
+      } else if (routeKey.startsWith("city:")) {
+        const citySlug = routeKey.slice("city:".length);
+        if (/^[a-z0-9-]+$/.test(citySlug)) revalidatePath(`/${locale}/dentistes/${citySlug}`);
       } else {
         revalidatePath(`/${locale}/${routeKey}`);
       }
@@ -266,6 +271,13 @@ export async function savePageSeoAction(
 
   const routeKey = text(formData, "routeKey");
   if (!routeKey) return { error: "A route key is required." };
+  const isCityRoute = /^city:[a-z0-9-]+$/.test(routeKey);
+  if (!staticSeoRoutes.some((route) => route.key === routeKey) && !isCityRoute) {
+    return { error: "Unknown page route." };
+  }
+  if (isCityRoute && !(await getCityDb(routeKey.slice("city:".length)))) {
+    return { error: "Unknown city page." };
+  }
 
   const locale = text(formData, "locale");
   if (!isLocale(locale)) return { error: "Locale must be fr or ar." };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarCheck, Clock, ExternalLink, MapPin, Phone, MessageCircle } from "lucide-react";
-import { locales, type Locale } from "@/lib/i18n/config";
+import { defaultLocale, locales, type Locale } from "@/lib/i18n/config";
 import { getDictionaryFor } from "@/lib/i18n/dictionaries";
 import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
@@ -34,7 +34,9 @@ export async function generateMetadata({
     description: clinic.description[locale],
     alternates: {
       canonical: clinicPath(locale, citySlug, clinicSlug),
-      languages: { fr: clinicPath("fr", citySlug, clinicSlug), ar: clinicPath("ar", citySlug, clinicSlug), "x-default": clinicPath(locale, citySlug, clinicSlug) },
+      // `x-default` must resolve to the same URL on every locale variant, so it
+      // always points at the default locale rather than the one being rendered.
+      languages: { fr: clinicPath("fr", citySlug, clinicSlug), ar: clinicPath("ar", citySlug, clinicSlug), "x-default": clinicPath(defaultLocale, citySlug, clinicSlug) },
     },
   };
 }
@@ -222,7 +224,10 @@ export default async function ClinicPage({
                         locale={locale}
                         clinicName={clinicName}
                         trigger={
-                          <button className="w-full inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-pill bg-accent text-sm sm:text-base font-bold text-white shadow-sm transition-all hover:bg-accent/90 hover:shadow-lift">
+                          <button
+                            type="button"
+                            className="w-full inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-pill bg-accent text-sm sm:text-base font-bold text-white shadow-sm transition-all hover:bg-accent/90 hover:shadow-lift"
+                          >
                             <CalendarCheck className="h-4.5 w-4.5" strokeWidth={2} aria-hidden />
                             <span>{dict.clinicPage.claimThisClinic}</span>
                           </button>
@@ -256,6 +261,13 @@ export default async function ClinicPage({
               </div>
             </div>
           ) : null}
+          <div className="mt-12 rounded-card bg-primary-soft p-6 sm:p-8">
+            <h2 className="text-xl font-bold text-primary-dark">{dict.cityBridge.title}</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">{dict.cityBridge.description}</p>
+            <Link href={localizedPath("app", locale)} className="mt-4 inline-flex rounded-pill bg-primary px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary-dark">
+              {dict.cityBridge.cta}
+            </Link>
+          </div>
         </Container>
       </Section>
     </>

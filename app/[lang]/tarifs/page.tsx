@@ -7,11 +7,12 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { FaqSection } from "@/components/landing/faq-section";
 import { StructuredData } from "@/components/seo/structured-data";
-import { faqSchema, graph, offerCatalogSchema, websiteSchema } from "@/lib/seo/schema";
+import { breadcrumbSchema, faqSchema, graph, offerCatalogSchema, websiteSchema } from "@/lib/seo/schema";
 import { localizedPath } from "@/lib/routes";
 import { ClinicRoiCalculator } from "@/components/landing/clinic-roi-calculator";
 import { PricingPlans } from "@/components/landing/pricing-plans";
 import { getResolvedPricingPlans } from "@/lib/pricing/plans";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
 
 export const dynamic = "force-dynamic";
 
@@ -23,18 +24,7 @@ export async function generateMetadata({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  return {
-    title: { absolute: `${dict.pricingPage.title}` },
-    description: dict.pricingPage.subtitle,
-    alternates: {
-      canonical: localizedPath("pricing", locale),
-      languages: {
-        fr: localizedPath("pricing", "fr"),
-        ar: localizedPath("pricing", "ar"),
-        "x-default": localizedPath("pricing", locale),
-      },
-    },
-  };
+  return buildDynamicMetadata({ routeKey: "pricing", locale, defaultTitle: dict.pricingPage.title, defaultDescription: dict.pricingPage.subtitle, canonicalPath: localizedPath("pricing", locale) });
 }
 
 export default async function PricingPage({
@@ -98,7 +88,11 @@ export default async function PricingPage({
         data={graph(
           websiteSchema(locale),
           faqSchema(dict.faqSection.items.map((item) => ({ question: item.question, answer: item.answer }))),
-          offerCatalogSchema(plans, locale)
+          offerCatalogSchema(plans, locale),
+          breadcrumbSchema([
+            { name: dict.nav.home, path: `/${locale}` },
+            { name: dict.pricingTeaser.eyebrow, path: localizedPath("pricing", locale) },
+          ])
         )}
       />
       <PageHero

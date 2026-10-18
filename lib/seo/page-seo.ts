@@ -46,7 +46,7 @@ export async function buildDynamicMetadata(options: SeoOptions): Promise<Metadat
     ...(robots ? { robots } : {}),
     alternates: {
       // An explicit canonical override wins over the route's own path.
-      canonical: override?.canonicalUrl || url,
+      canonical: override?.canonicalUrl || canonicalPath,
       languages: {
         fr: `${siteConfig.url}/fr${hreflangPath}`,
         ar: `${siteConfig.url}/ar${hreflangPath}`,

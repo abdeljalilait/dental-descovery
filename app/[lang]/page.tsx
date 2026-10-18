@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/lib/i18n/config";
 import { getDictionaryFor } from "@/lib/i18n/dictionaries";
-import { siteConfig } from "@/lib/site.config";
 import { StructuredData } from "@/components/seo/structured-data";
-import { faqSchema, graph, websiteSchema } from "@/lib/seo/schema";
+import { faqSchema, graph, organizationSchema, softwareApplicationSchema, websiteSchema } from "@/lib/seo/schema";
 import { Hero } from "@/components/landing/hero";
 import { StatsBar } from "@/components/landing/stats-bar";
 import { CitiesSection } from "@/components/landing/cities-section";
@@ -17,6 +16,7 @@ import { BlogHighlightsSection } from "@/components/landing/blog-highlights";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 import { getResolvedPricingPlans } from "@/lib/pricing/plans";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,21 +28,13 @@ export async function generateMetadata({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  return {
-    title: { absolute: dict.meta.title },
-    description: dict.meta.description,
-    alternates: {
-      canonical: `/${locale}`,
-      languages: { fr: "/fr", ar: "/ar", "x-default": "/fr" },
-    },
-    openGraph: {
-      type: "website",
-      siteName: siteConfig.name,
-      url: siteConfig.url,
-      title: dict.meta.title,
-      description: dict.meta.description,
-    },
-  };
+  return buildDynamicMetadata({
+    routeKey: "home",
+    locale,
+    defaultTitle: dict.meta.title,
+    defaultDescription: dict.meta.description,
+    canonicalPath: `/${locale}`,
+  });
 }
 
 export default async function HomePage({
@@ -60,6 +52,8 @@ export default async function HomePage({
       <StructuredData
         data={graph(
           websiteSchema(locale),
+          organizationSchema(),
+          softwareApplicationSchema(locale),
           faqSchema(dict.faqSection.items.map((item) => ({ question: item.question, answer: item.answer })))
         )}
       />

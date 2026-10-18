@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { LeadModal } from "@/components/clinic/lead-modal";
 import type { Locale } from "@/lib/i18n/config";
 import { Calculator, TrendingUp, ArrowRight } from "lucide-react";
@@ -13,6 +13,12 @@ export function ClinicRoiCalculator({
   dict?: Dictionary;
 }) {
   const isAr = locale === "ar";
+  const uid = useId();
+  const chairsId = `${uid}-chairs`;
+  const patientsId = `${uid}-patients`;
+  const ticketId = `${uid}-ticket`;
+  const noShowId = `${uid}-noshow`;
+
   const [chairs, setChairs] = useState(2);
   const [patientsPerDay, setPatientsPerDay] = useState(12);
   const [avgTicket, setAvgTicket] = useState(600);
@@ -50,15 +56,23 @@ export function ClinicRoiCalculator({
             {/* Slider 1: Chairs */}
             <div>
               <div className="flex justify-between text-xs font-bold text-foreground mb-1.5">
-                <span>{isAr ? "عدد قاعات / كراسي العلاج" : "Nombre de fauteuils dentaires"}</span>
-                <span className="text-primary font-extrabold text-sm">{chairs} {isAr ? "كراسي" : "fauteuils"}</span>
+                <label htmlFor={chairsId} id={`${chairsId}-label`}>
+                  {isAr ? "عدد قاعات / كراسي العلاج" : "Nombre de fauteuils dentaires"}
+                </label>
+                <span className="text-primary font-extrabold text-sm" aria-hidden="true">{chairs} {isAr ? "كراسي" : "fauteuils"}</span>
               </div>
               <input
+                id={chairsId}
                 type="range"
                 min="1"
                 max="8"
                 step="1"
                 value={chairs}
+                aria-labelledby={`${chairsId}-label`}
+                aria-valuemin={1}
+                aria-valuemax={8}
+                aria-valuenow={chairs}
+                aria-valuetext={`${chairs} ${isAr ? "كراسي" : "fauteuils"}`}
                 onChange={(e) => setChairs(Number(e.target.value))}
                 className="w-full accent-primary cursor-pointer h-2 bg-surface-subtle rounded-lg border border-border"
               />
@@ -67,15 +81,23 @@ export function ClinicRoiCalculator({
             {/* Slider 2: Patients/day */}
             <div>
               <div className="flex justify-between text-xs font-bold text-foreground mb-1.5">
-                <span>{isAr ? "متوسط عدد المرضى يومياً (لكل كرسي)" : "Patients reçus par jour (par fauteuil)"}</span>
-                <span className="text-primary font-extrabold text-sm">{patientsPerDay} {isAr ? "مرضى" : "patients/j"}</span>
+                <label htmlFor={patientsId} id={`${patientsId}-label`}>
+                  {isAr ? "متوسط عدد المرضى يومياً (لكل كرسي)" : "Patients reçus par jour (par fauteuil)"}
+                </label>
+                <span className="text-primary font-extrabold text-sm" aria-hidden="true">{patientsPerDay} {isAr ? "مرضى" : "patients/j"}</span>
               </div>
               <input
+                id={patientsId}
                 type="range"
                 min="5"
                 max="25"
                 step="1"
                 value={patientsPerDay}
+                aria-labelledby={`${patientsId}-label`}
+                aria-valuemin={5}
+                aria-valuemax={25}
+                aria-valuenow={patientsPerDay}
+                aria-valuetext={`${patientsPerDay} ${isAr ? "مرضى باليوم" : "patients par jour"}`}
                 onChange={(e) => setPatientsPerDay(Number(e.target.value))}
                 className="w-full accent-primary cursor-pointer h-2 bg-surface-subtle rounded-lg border border-border"
               />
@@ -84,15 +106,23 @@ export function ClinicRoiCalculator({
             {/* Slider 3: Average Ticket MAD */}
             <div>
               <div className="flex justify-between text-xs font-bold text-foreground mb-1.5">
-                <span>{isAr ? "متوسط قيمة الاستشارة / العلاج (درهم)" : "Panier moyen par acte (MAD)"}</span>
-                <span className="text-primary font-extrabold text-sm">{avgTicket.toLocaleString()} MAD</span>
+                <label htmlFor={ticketId} id={`${ticketId}-label`}>
+                  {isAr ? "متوسط قيمة الاستشارة / العلاج (درهم)" : "Panier moyen par acte (MAD)"}
+                </label>
+                <span className="text-primary font-extrabold text-sm" aria-hidden="true">{avgTicket.toLocaleString()} MAD</span>
               </div>
               <input
+                id={ticketId}
                 type="range"
                 min="200"
                 max="2500"
                 step="50"
                 value={avgTicket}
+                aria-labelledby={`${ticketId}-label`}
+                aria-valuemin={200}
+                aria-valuemax={2500}
+                aria-valuenow={avgTicket}
+                aria-valuetext={`${avgTicket.toLocaleString()} MAD`}
                 onChange={(e) => setAvgTicket(Number(e.target.value))}
                 className="w-full accent-primary cursor-pointer h-2 bg-surface-subtle rounded-lg border border-border"
               />
@@ -101,15 +131,23 @@ export function ClinicRoiCalculator({
             {/* Slider 4: No-show rate */}
             <div>
               <div className="flex justify-between text-xs font-bold text-foreground mb-1.5">
-                <span>{isAr ? "نسبة الغياب الحالية عن المواعيد (No-Show)" : "Taux d'absentéisme actuel (No-Show)"}</span>
-                <span className="text-destructive font-extrabold text-sm">{noShowRate} %</span>
+                <label htmlFor={noShowId} id={`${noShowId}-label`}>
+                  {isAr ? "نسبة الغياب الحالية عن المواعيد (No-Show)" : "Taux d'absentéisme actuel (No-Show)"}
+                </label>
+                <span className="text-destructive font-extrabold text-sm" aria-hidden="true">{noShowRate} %</span>
               </div>
               <input
+                id={noShowId}
                 type="range"
                 min="5"
                 max="35"
                 step="1"
                 value={noShowRate}
+                aria-labelledby={`${noShowId}-label`}
+                aria-valuemin={5}
+                aria-valuemax={35}
+                aria-valuenow={noShowRate}
+                aria-valuetext={`${noShowRate} %`}
                 onChange={(e) => setNoShowRate(Number(e.target.value))}
                 className="w-full accent-destructive cursor-pointer h-2 bg-surface-subtle rounded-lg border border-border"
               />
@@ -157,7 +195,10 @@ export function ClinicRoiCalculator({
               type="app-demo"
               locale={locale}
               trigger={
-                <button className="w-full inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-white px-5 py-3 text-sm font-extrabold text-primary-dark shadow-lg transition-all hover:bg-white/90 hover:scale-[1.02]">
+                <button
+                  type="button"
+                  className="w-full inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-white px-5 py-3 text-sm font-extrabold text-primary-dark shadow-lg transition-all hover:bg-white/90 hover:scale-[1.02]"
+                >
                   <span>{isAr ? "احصل على دراسة مخصصة لعيادتك" : "Activer pour mon Cabinet"}</span>
                   <ArrowRight className="h-4 w-4 rtl:rotate-180" />
                 </button>

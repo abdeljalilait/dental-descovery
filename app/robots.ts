@@ -6,7 +6,24 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/llms.txt", "/llms-full.txt"],
+        disallow: ["/api/", "/admin"],
+      },
+      {
+        // Explicitly welcome major LLM search crawlers and AI agents
+        userAgent: [
+          "GPTBot",
+          "OAI-SearchBot",
+          "ChatGPT-User",
+          "ClaudeBot",
+          "Claude-Web",
+          "PerplexityBot",
+          "Google-Extended",
+          "Applebot-Extended",
+          "cohere-ai",
+          "Diffbot",
+        ],
+        allow: ["/", "/llms.txt", "/llms-full.txt"],
         disallow: ["/api/", "/admin"],
       },
     ],

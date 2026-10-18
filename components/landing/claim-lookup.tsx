@@ -134,7 +134,10 @@ export function ClaimLookup({
                         locale={locale}
                         clinicName={locale === "ar" ? clinic.nameAr : clinic.name}
                         trigger={
-                          <button className="inline-flex h-9.5 cursor-pointer items-center rounded-pill bg-accent px-4 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:bg-accent/90 hover:shadow-lift">
+                          <button
+                            type="button"
+                            className="inline-flex h-9.5 cursor-pointer items-center rounded-pill bg-accent px-4 text-xs sm:text-sm font-bold text-white shadow-sm transition-all hover:bg-accent/90 hover:shadow-lift"
+                          >
                             {labels.claimCta}
                           </button>
                         }
@@ -153,7 +156,10 @@ export function ClaimLookup({
                   type="clinic-claim"
                   locale={locale}
                   trigger={
-                    <button className="inline-flex h-11 cursor-pointer items-center rounded-pill bg-primary px-5 text-sm font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lift">
+                    <button
+                      type="button"
+                      className="inline-flex h-11 cursor-pointer items-center rounded-pill bg-primary px-5 text-sm font-bold text-white transition-all hover:bg-primary-dark hover:shadow-lift"
+                    >
                       {labels.createCta}
                     </button>
                   }

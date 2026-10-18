@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { deletePageSeoAction, savePageSeoAction, type PageSeoFormState } from "@/app/admin/actions";
 import type { PageSeoRecord } from "@/lib/data/types";
+import { staticSeoRoutes } from "@/lib/seo/page-seo-routes";
 import { localeNames, locales, type Locale } from "@/lib/i18n/config";
 
 const inputClass =
@@ -14,18 +15,6 @@ const inputClass =
  * here actually affects. Offering a free-text key would let an editor save a
  * row that nothing ever reads.
  */
-const KNOWN_ROUTE_KEYS = [
-  { key: "home", label: "Home" },
-  { key: "dentists", label: "Dentists directory" },
-  { key: "treatments", label: "Treatments index" },
-  { key: "blog", label: "Blog index" },
-  { key: "app", label: "Dental App" },
-  { key: "forClinics", label: "For clinics" },
-  { key: "website", label: "Website offering" },
-  { key: "pricing", label: "Pricing" },
-  { key: "contact", label: "Contact" },
-];
-
 function SaveButton() {
   const { pending } = useFormStatus();
   return (
@@ -39,7 +28,7 @@ function SaveButton() {
   );
 }
 
-function SeoFields({ record }: { record?: PageSeoRecord }) {
+function SeoFields({ record, routeOptions }: { record?: PageSeoRecord; routeOptions: { key: string; label: string }[] }) {
   const [state, formAction] = useActionState<PageSeoFormState, FormData>(savePageSeoAction, {});
 
   return (
@@ -52,7 +41,7 @@ function SeoFields({ record }: { record?: PageSeoRecord }) {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           <select name="routeKey" required className={inputClass} defaultValue="blog">
-            {KNOWN_ROUTE_KEYS.map((route) => (
+            {routeOptions.map((route) => (
               <option key={route.key} value={route.key}>
                 {route.label}
               </option>
@@ -122,7 +111,8 @@ function SeoFields({ record }: { record?: PageSeoRecord }) {
   );
 }
 
-export function PageSeoEditor({ records }: { records: PageSeoRecord[] }) {
+export function PageSeoEditor({ records, cityRoutes = [] }: { records: PageSeoRecord[]; cityRoutes?: { key: string; label: string }[] }) {
+  const routeOptions = [...staticSeoRoutes, ...cityRoutes];
   return (
     <div className="space-y-8">
       <section>
@@ -150,7 +140,7 @@ export function PageSeoEditor({ records }: { records: PageSeoRecord[] }) {
                   </span>
                 </summary>
                 <div className="mt-4 space-y-4">
-                  <SeoFields record={record} />
+                  <SeoFields record={record} routeOptions={routeOptions} />
                   <form action={deletePageSeoAction}>
                     <input type="hidden" name="routeKey" value={record.routeKey} />
                     <input type="hidden" name="locale" value={record.locale} />
@@ -173,7 +163,7 @@ export function PageSeoEditor({ records }: { records: PageSeoRecord[] }) {
           Add an override
         </h2>
         <div className="max-w-2xl rounded-2xl border border-border bg-surface p-4">
-          <SeoFields />
+          <SeoFields routeOptions={routeOptions} />
         </div>
       </section>
     </div>

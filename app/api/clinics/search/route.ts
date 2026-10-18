@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { searchClinicsDb } from "@/lib/repositories/clinics";
+import { clientKey, createRateLimiter } from "@/lib/rate-limit";
 
 export const revalidate = 0;
+
+/** Generous enough for type-ahead search, tight enough to stop scraping. */
+const perCaller = createRateLimiter({ limit: 60, windowMs: 60 * 1000 });
 
 /**
  * Clinic lookup for the "claim your profile" flow.
@@ -10,6 +14,10 @@ export const revalidate = 0;
  * are claimable and not just the handful of hand-written demo rows.
  */
 export async function GET(request: Request) {
+  if (!perCaller.check(clientKey(request)).allowed) {
+    return NextResponse.json({ clinics: [], error: "rate_limited" }, { status: 429 });
+  }
+
   const query = new URL(request.url).searchParams.get("q")?.trim() ?? "";
 
   if (query.length < 2) {

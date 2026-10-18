@@ -14,6 +14,47 @@ export function websiteSchema(locale: string) {
   };
 }
 
+export function organizationSchema() {
+  return {
+    "@type": "Organization",
+    "@id": `${siteConfig.url}/#organization`,
+    name: siteConfig.name,
+    url: siteConfig.url,
+    email: siteConfig.email,
+    areaServed: [
+      { "@type": "Country", name: siteConfig.country },
+      { "@type": "Country", name: siteConfig.countryAr },
+    ],
+    knowsAbout: [
+      "Dental clinic directory",
+      "Dental practice management software",
+      "Dentists in Morocco",
+      "Chirurgie dentaire au Maroc",
+      "Implantologie et prothèse dentaire",
+      "Orthodontie et aligneurs invisibles",
+      "طب الأسنان في المغرب",
+      "زراعة الأسنان بالمغرب",
+      "إدارة عيادات الأسنان",
+    ],
+  };
+}
+
+export function softwareApplicationSchema(locale: Locale) {
+  const url = `${siteConfig.url}/${locale}/dental-app`;
+  return {
+    "@type": "SoftwareApplication",
+    "@id": `${url}#software`,
+    name: "Dental App by Dentora",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    url,
+    description: siteConfig.appTagline[locale],
+    inLanguage: localeHtmlLang[locale],
+    creator: { "@id": `${siteConfig.url}/#organization` },
+    audience: { "@type": "BusinessAudience", audienceType: "Dental clinics and dentists" },
+  };
+}
+
 export function breadcrumbSchema(items: { name: string; path: string }[]) {
   return {
     "@type": "BreadcrumbList",
@@ -51,6 +92,9 @@ export function dentistSchema(clinic: Clinic, locale: string, citySlug: string, 
       addressLocality: cityName,
       addressCountry: "MA",
     },
+    ...(clinic.specialties.length > 0
+      ? { medicalSpecialty: clinic.specialties.map((specialty) => specialty.name[locale === "ar" ? "ar" : "fr"]) }
+      : {}),
     geo: {
       "@type": "GeoCoordinates",
       latitude: clinic.lat,

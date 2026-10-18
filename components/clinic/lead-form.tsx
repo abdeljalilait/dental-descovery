@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { Locale } from "@/lib/i18n/config";
@@ -74,6 +74,14 @@ export function LeadForm({
   inModal?: boolean;
   onSuccess?: () => void;
 }) {
+  const uid = useId();
+  const clinicId = `${uid}-clinic`;
+  const nameId = `${uid}-name`;
+  const emailId = `${uid}-email`;
+  const phoneId = `${uid}-phone`;
+  const cityId = `${uid}-city`;
+  const messageId = `${uid}-message`;
+
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const formLabels = labels ?? defaultLabels[locale];
 
@@ -138,11 +146,11 @@ export function LeadForm({
         >
           {showClinicName ? (
             <div>
-              <label htmlFor={`${type}-clinic`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+              <label htmlFor={clinicId} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
                 {formLabels.clinicName}
               </label>
               <input
-                id={`${type}-clinic`}
+                id={clinicId}
                 name="clinicName"
                 type="text"
                 className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -153,11 +161,11 @@ export function LeadForm({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor={`${type}-name`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+              <label htmlFor={nameId} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
                 {formLabels.yourName} *
               </label>
               <input
-                id={`${type}-name`}
+                id={nameId}
                 name="name"
                 type="text"
                 required
@@ -167,11 +175,11 @@ export function LeadForm({
             </div>
 
             <div>
-              <label htmlFor={`${type}-email`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+              <label htmlFor={emailId} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
                 {formLabels.yourEmail} *
               </label>
               <input
-                id={`${type}-email`}
+                id={emailId}
                 name="email"
                 type="email"
                 required
@@ -184,11 +192,11 @@ export function LeadForm({
           <div className="grid gap-3 sm:grid-cols-2">
             {showPhone ? (
               <div>
-                <label htmlFor={`${type}-phone`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                <label htmlFor={phoneId} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
                   {formLabels.yourPhone}
                 </label>
                 <input
-                  id={`${type}-phone`}
+                  id={phoneId}
                   name="phone"
                   type="tel"
                   className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -199,11 +207,11 @@ export function LeadForm({
 
             {showCity ? (
               <div>
-                <label htmlFor={`${type}-city`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+                <label htmlFor={cityId} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
                   {formLabels.city}
                 </label>
                 <input
-                  id={`${type}-city`}
+                  id={cityId}
                   name="city"
                   type="text"
                   className="h-10.5 sm:h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -215,11 +223,11 @@ export function LeadForm({
 
           {showMessage ? (
             <div>
-              <label htmlFor={`${type}-message`} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
+              <label htmlFor={messageId} className="mb-1 block text-xs sm:text-sm font-semibold text-foreground">
                 {formLabels.message}
               </label>
               <textarea
-                id={`${type}-message`}
+                id={messageId}
                 name="message"
                 rows={2}
                 className="w-full rounded-xl border border-border bg-surface px-3.5 py-2 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -256,19 +264,19 @@ export function LeadForm({
     <form onSubmit={handleSubmit} className={cn("grid gap-4 sm:grid-cols-2", className)} noValidate={false}>
       {showClinicName ? (
         <div className="sm:col-span-2">
-          <label htmlFor={`${type}-clinic`} className="mb-1.5 block text-sm font-semibold text-foreground">
+          <label htmlFor={clinicId} className="mb-1.5 block text-sm font-semibold text-foreground">
             {formLabels.clinicName}
           </label>
-          <input id={`${type}-clinic`} name="clinicName" type="text" className={inputClass} autoComplete="organization" />
+          <input id={clinicId} name="clinicName" type="text" className={inputClass} autoComplete="organization" />
         </div>
       ) : null}
 
       <div>
-        <label htmlFor={`${type}-name`} className="mb-1.5 block text-sm font-semibold text-foreground">
+        <label htmlFor={nameId} className="mb-1.5 block text-sm font-semibold text-foreground">
           {formLabels.yourName} *
         </label>
         <input
-          id={`${type}-name`}
+          id={nameId}
           name="name"
           type="text"
           required
@@ -278,11 +286,11 @@ export function LeadForm({
       </div>
 
       <div>
-        <label htmlFor={`${type}-email`} className="mb-1.5 block text-sm font-semibold text-foreground">
+        <label htmlFor={emailId} className="mb-1.5 block text-sm font-semibold text-foreground">
           {formLabels.yourEmail} *
         </label>
         <input
-          id={`${type}-email`}
+          id={emailId}
           name="email"
           type="email"
           required
@@ -293,29 +301,29 @@ export function LeadForm({
 
       {showPhone ? (
         <div>
-          <label htmlFor={`${type}-phone`} className="mb-1.5 block text-sm font-semibold text-foreground">
+          <label htmlFor={phoneId} className="mb-1.5 block text-sm font-semibold text-foreground">
             {formLabels.yourPhone}
           </label>
-          <input id={`${type}-phone`} name="phone" type="tel" className={inputClass} autoComplete="tel" />
+          <input id={phoneId} name="phone" type="tel" className={inputClass} autoComplete="tel" />
         </div>
       ) : null}
 
       {showCity ? (
         <div>
-          <label htmlFor={`${type}-city`} className="mb-1.5 block text-sm font-semibold text-foreground">
+          <label htmlFor={cityId} className="mb-1.5 block text-sm font-semibold text-foreground">
             {formLabels.city}
           </label>
-          <input id={`${type}-city`} name="city" type="text" className={inputClass} autoComplete="address-level2" />
+          <input id={cityId} name="city" type="text" className={inputClass} autoComplete="address-level2" />
         </div>
       ) : null}
 
       {showMessage ? (
         <div className="sm:col-span-2">
-          <label htmlFor={`${type}-message`} className="mb-1.5 block text-sm font-semibold text-foreground">
+          <label htmlFor={messageId} className="mb-1.5 block text-sm font-semibold text-foreground">
             {formLabels.message}
           </label>
           <textarea
-            id={`${type}-message`}
+            id={messageId}
             name="message"
             rows={4}
             className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"

@@ -1,6 +1,6 @@
 import { db } from "@/src/prisma/db";
 import { toInstant } from "@/src/prisma/codecs";
-import { createHash, randomInt } from "node:crypto";
+import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 
 export interface CreateOtpInput {
   email: string;
@@ -14,12 +14,24 @@ export async function createOtp(input: CreateOtpInput) {
   const code = String(randomInt(100000, 1000000));
   const codeHash = hashCode(code);
   const expiresAt = toInstant(Date.now() + ttlMin * 60 * 1000);
+
+  // Carry forward the failure count of an outstanding, unexpired challenge.
+  // Without this, requesting a fresh code resets `attempts` and the per-challenge
+  // cap becomes bypassable by simply asking for a new code.
+  const previous = await db.orm.public.ClinicOtp
+    .where({ email, purpose: "LOGIN" })
+    .orderBy((otp) => otp.createdAt.desc())
+    .first();
+  const stillOpen =
+    previous && !previous.consumedAt && new Date(String(previous.expiresAt)) > new Date();
+  const attempts = stillOpen ? previous.attempts ?? 0 : 0;
+
   const row = await db.orm.public.ClinicOtp.create({
     email,
     purpose: "LOGIN",
     codeHash,
     expiresAt,
-    attempts: 0,
+    attempts,
     ip: input.ip ?? null,
   });
   return { row, code };
@@ -40,13 +52,24 @@ export async function verifyOtp(email: string, code: string) {
   if (new Date(String(row.expiresAt)) < new Date()) return { ok: false, reason: "expired" };
   if ((row.attempts ?? 0) >= maxAttempts) return { ok: false, reason: "too_many_attempts" };
 
-  if (row.codeHash !== hashCode(code)) {
+  if (!hashesMatch(row.codeHash, hashCode(code))) {
     await db.orm.public.ClinicOtp.where({ id: row.id }).update({ attempts: (row.attempts ?? 0) + 1 });
     return { ok: false, reason: "wrong_code" };
   }
 
   await db.orm.public.ClinicOtp.where({ id: row.id }).update({ consumedAt: toInstant(new Date()) });
   return { ok: true, email: row.email };
+}
+
+/**
+ * Constant-time comparison of two equal-length hex digests. SHA-256 output is
+ * always 64 characters, so the length check only guards malformed input.
+ */
+function hashesMatch(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }
 
 /**

@@ -56,6 +56,10 @@ export default async function RootLayout({
 
   return (
     <html lang={localeHtmlLang[locale]} dir={localeDir[locale]} data-scroll-behavior="smooth" className={`${manrope.variable} ${notoArabic.variable}`}>
+      <head>
+        <link rel="help" type="text/plain" href="/llms.txt" title="LLMs.txt" />
+        <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs-full.txt" />
+      </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <a
           href="#main"

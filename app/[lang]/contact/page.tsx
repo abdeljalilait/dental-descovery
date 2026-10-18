@@ -8,6 +8,9 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { LeadForm } from "@/components/clinic/lead-form";
 import { localizedPath } from "@/lib/routes";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
+import { StructuredData } from "@/components/seo/structured-data";
+import { breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -19,14 +22,7 @@ export async function generateMetadata({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  return {
-    title: dict.contactPage.title,
-    description: dict.contactPage.subtitle,
-    alternates: {
-      canonical: localizedPath("contact", locale),
-      languages: { fr: localizedPath("contact", "fr"), ar: localizedPath("contact", "ar"), "x-default": localizedPath("contact", locale) },
-    },
-  };
+  return buildDynamicMetadata({ routeKey: "contact", locale, defaultTitle: dict.contactPage.title, defaultDescription: dict.contactPage.subtitle, canonicalPath: localizedPath("contact", locale) });
 }
 
 export default async function ContactPage({
@@ -40,6 +36,15 @@ export default async function ContactPage({
 
   return (
     <>
+      <StructuredData
+        data={graph(
+          websiteSchema(locale),
+          breadcrumbSchema([
+            { name: dict.nav.home, path: `/${locale}` },
+            { name: dict.footer.contactUs, path: localizedPath("contact", locale) },
+          ])
+        )}
+      />
       <PageHero
         eyebrow={dict.contactPage.eyebrow}
         title={dict.contactPage.title}

@@ -255,7 +255,10 @@ export function AppPromoSection({ locale, dict }: { locale: Locale; dict: Dictio
             type="app-demo"
             locale={locale}
             trigger={
-              <button className="w-full sm:w-auto inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-surface border border-border px-6 h-12 text-sm sm:text-base font-bold text-foreground hover:bg-primary-soft hover:text-primary hover:border-primary/40 transition-all shadow-xs">
+              <button
+                type="button"
+                className="w-full sm:w-auto inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill bg-surface border border-border px-6 h-12 text-sm sm:text-base font-bold text-foreground hover:bg-primary-soft hover:text-primary hover:border-primary/40 transition-all shadow-xs"
+              >
                 <Bot className="h-4.5 w-4.5 text-accent" strokeWidth={2} />
                 <span>{dict.appSection.cta}</span>
               </button>

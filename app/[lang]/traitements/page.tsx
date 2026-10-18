@@ -7,6 +7,9 @@ import { Section } from "@/components/ui/section";
 import { SpecialtiesSection } from "@/components/landing/specialties-section";
 import { FinalCtaSection } from "@/components/landing/final-cta";
 import { localizedPath } from "@/lib/routes";
+import { buildDynamicMetadata } from "@/lib/seo/page-seo";
+import { StructuredData } from "@/components/seo/structured-data";
+import { breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -18,18 +21,7 @@ export async function generateMetadata({
   const { lang: value } = await params;
   const locale = (locales as readonly string[]).includes(value) ? (value as Locale) : "fr";
   const dict = await getDictionaryFor(locale);
-  return {
-    title: dict.treatmentsPage.title,
-    description: dict.treatmentsPage.subtitle,
-    alternates: {
-      canonical: localizedPath("treatments", locale),
-      languages: {
-        fr: localizedPath("treatments", "fr"),
-        ar: localizedPath("treatments", "ar"),
-        "x-default": localizedPath("treatments", locale)
-        },
-    },
-  };
+  return buildDynamicMetadata({ routeKey: "treatments", locale, defaultTitle: dict.treatmentsPage.title, defaultDescription: dict.treatmentsPage.subtitle, canonicalPath: localizedPath("treatments", locale) });
 }
 
 export default async function TreatmentsPage({
@@ -43,6 +35,15 @@ export default async function TreatmentsPage({
 
   return (
     <>
+      <StructuredData
+        data={graph(
+          websiteSchema(locale),
+          breadcrumbSchema([
+            { name: dict.nav.home, path: `/${locale}` },
+            { name: dict.nav.treatments, path: localizedPath("treatments", locale) },
+          ])
+        )}
+      />
       <PageHero
         eyebrow={dict.specialtiesSection.eyebrow}
         title={dict.treatmentsPage.title}

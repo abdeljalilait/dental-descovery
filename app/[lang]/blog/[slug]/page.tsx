@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
-import { locales, type Locale } from "@/lib/i18n/config";
+import { defaultLocale, locales, type Locale } from "@/lib/i18n/config";
 import { getDictionaryFor } from "@/lib/i18n/dictionaries";
 import { PageHero } from "@/components/layout/page-hero";
 import { Container } from "@/components/ui/container";
@@ -10,6 +10,7 @@ import { Section } from "@/components/ui/section";
 import { ClinicCard } from "@/components/directory/clinic-card";
 import { ButtonLink } from "@/components/ui/button-link";
 import { StructuredData } from "@/components/seo/structured-data";
+import { ArticleBody } from "@/components/blog/article-body";
 import { articleSchema, breadcrumbSchema, graph, websiteSchema } from "@/lib/seo/schema";
 import { getBlogArticleBySlugDb } from "@/lib/repositories/blog";
 import { getClinicsByCityDb } from "@/lib/repositories/clinics";
@@ -47,7 +48,9 @@ export async function generateMetadata({
     ...(keywords ? { keywords } : {}),
     alternates: {
       canonical: blogPostPath(locale, slug),
-      languages: { fr: blogPostPath("fr", slug), ar: blogPostPath("ar", slug), "x-default": blogPostPath(locale, slug) },
+      // `x-default` must resolve to the same URL on every locale variant, so it
+      // always points at the default locale rather than the one being rendered.
+      languages: { fr: blogPostPath("fr", slug), ar: blogPostPath("ar", slug), "x-default": blogPostPath(defaultLocale, slug) },
     },
     openGraph: {
       type: "article",
@@ -82,7 +85,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ lang:
   ]);
   if (!post) notFound();
 
-  const paragraphs = (post.content[locale] || "").split("\n\n");
   const city = post.relatedCitySlug ? await getCityDb(post.relatedCitySlug) : undefined;
   const cityClinics = city ? (await getClinicsByCityDb(city.slug)).slice(0, 3) : [];
 
@@ -127,20 +129,26 @@ export default async function BlogPostPage({ params }: { params: Promise<{ lang:
 
       <Section>
         <Container className="max-w-3xl">
-          <article className="space-y-5">
-            {paragraphs.map((paragraph, i) => (
-              <p
-                key={i}
-                className={
-                  i === 0
-                    ? "text-lg leading-relaxed text-foreground first-letter:float-left first-letter:me-3 first-letter:text-5xl first-letter:font-extrabold first-letter:leading-[0.85] first-letter:text-primary"
-                    : "leading-relaxed text-muted"
-                }
-              >
-                {paragraph}
-              </p>
-            ))}
-          </article>
+          {post.coverImageUrl ? (
+            <figure className="mb-8 overflow-hidden rounded-2xl border border-border/80 shadow-soft">
+              {/*
+                Admin-supplied remote URL, so a plain <img> avoids allow-listing
+                every possible host. Explicit width/height keep CLS at zero, and
+                the cover is the LCP candidate, so it loads eagerly.
+              */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={post.coverImageUrl}
+                alt={post.title[locale]}
+                width={OG_IMAGE_WIDTH}
+                height={OG_IMAGE_HEIGHT}
+                className="h-auto w-full object-cover"
+                decoding="async"
+                fetchPriority="high"
+              />
+            </figure>
+          ) : null}
+          <ArticleBody content={post.content[locale]} />
 
           <div className="mt-12 rounded-2xl border border-primary/30 bg-gradient-to-b from-primary-soft/40 via-surface to-surface p-6 sm:p-8 shadow-soft">
             <h2 className="text-base font-extrabold text-foreground">{dict.blogPage.relatedLinks}</h2>
